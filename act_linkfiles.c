@@ -53,6 +53,10 @@ extern void linkfiles(file_t *files, const int linktype, const int only_current)
   static unsigned int symsrc;
   static char rel_path[PATHBUF_SIZE];
 #endif
+#ifdef ENABLE_CLONEFILE_LINK
+  static unsigned int srcfile_preserved_flags = 0;
+  static unsigned int dupfile_preserved_flags = 0;
+#endif
 
   LOUD(fprintf(stderr, "linkfiles(%d): %p\n", linktype, files);)
   curfile = files;
@@ -121,6 +125,20 @@ extern void linkfiles(file_t *files, const int linktype, const int only_current)
       if (!ISFLAG(flags, F_HIDEPROGRESS)) {
         printf("[SRC] "); fwprint(stdout, srcfile->d_name, 1);
       }
+#ifdef ENABLE_CLONEFILE_LINK
+      if (linktype == 2) {
+        if (STAT(srcfile->d_name, &s) != 0) {
+          fprintf(stderr, "warning: stat() on source file failed, skipping:\n[SRC] ");
+          fwprint(stderr, srcfile->d_name, 1);
+          continue;
+        }
+
+        /* macOS unexpectedly copies the compressed flag when copying metadata
+         * (which can result in files being unreadable), so we want to retain
+         * the compression flag of srcfile */
+        srcfile_preserved_flags = s.st_flags & UF_COMPRESSED;
+      }
+#endif
       for (; x <= counter; x++) {
         if (linktype == 1 || linktype == 2) {
           /* Can't hard link files on different devices */
@@ -203,6 +221,20 @@ extern void linkfiles(file_t *files, const int linktype, const int only_current)
           continue;
         }
 #endif
+#ifdef ENABLE_CLONEFILE_LINK
+        if (linktype == 2) {
+          if (STAT(dupelist[x]->d_name, &s) != 0) {
+            fprintf(stderr, "warning: stat() on destination file failed, skipping:\n-##-> ");
+            fwprint(stderr, dupelist[x]->d_name, 1);
+            continue;
+          }
+
+          /* macOS unexpectedly copies the compressed flag when copying metadata
+           * (which can result in files being unreadable), so we want to ignore
+           * the compression flag on dstfile in favor of the one from srcfile */
+          dupfile_preserved_flags = s.st_flags & ~(unsigned int)UF_COMPRESSED;
+        }
+#endif
 
         /* Make sure the name will fit in the buffer before trying */
         name_len = strlen(dupelist[x]->d_name) + 14;
@@ -250,9 +282,22 @@ extern void linkfiles(file_t *files, const int linktype, const int only_current)
           if (link(srcfile->d_name, dupelist[x]->d_name) == 0) success = 1;
  #ifdef ENABLE_CLONEFILE_LINK
         } else if (linktype == 2) {
-          if (clonefile(srcfile->d_name, dupelist[x]->d_name, 0) == 0) success = 1;
-	  /* Preserve all file metadata on macOS */
-          copyfile(tempname, dupelist[x]->d_name, NULL, COPYFILE_METADATA);
+          if (clonefile(srcfile->d_name, dupelist[x]->d_name, 0) == 0) {
+            if (copyfile(tempname, dupelist[x]->d_name, NULL, COPYFILE_METADATA) == 0) {
+              if (chflags(dupelist[x]->d_name, srcfile_preserved_flags | dupfile_preserved_flags) == 0) {
+                success = 1;
+              } else {
+                fprintf(stderr, "warning: chflags() failed for destination file, reverting:\n-##-> ");
+                fwprint(stderr, dupelist[x]->d_name, 1);
+              }
+            } else {
+              fprintf(stderr, "warning: copyfile() failed for destination file, reverting:\n-##-> ");
+              fwprint(stderr, dupelist[x]->d_name, 1);
+            }
+          } else {
+            fprintf(stderr, "warning: clonefile() failed for destination file, reverting:\n-##-> ");
+            fwprint(stderr, dupelist[x]->d_name, 1);
+          }
  #endif /* ENABLE_CLONEFILE_LINK */
         }
  #ifndef NO_SYMLINKS
