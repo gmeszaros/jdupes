@@ -56,6 +56,8 @@ extern void linkfiles(file_t *files, const int linktype, const int only_current)
 #ifdef ENABLE_CLONEFILE_LINK
   static unsigned int srcfile_preserved_flags = 0;
   static unsigned int dupfile_preserved_flags = 0;
+  static unsigned int dupfile_original_flags = 0;
+  static struct timeval dupfile_original_tval[2];
 #endif
 
   LOUD(fprintf(stderr, "linkfiles(%d): %p\n", linktype, files);)
@@ -233,6 +235,11 @@ extern void linkfiles(file_t *files, const int linktype, const int only_current)
            * (which can result in files being unreadable), so we want to ignore
            * the compression flag on dstfile in favor of the one from srcfile */
           dupfile_preserved_flags = s.st_flags & ~(unsigned int)UF_COMPRESSED;
+          dupfile_original_flags = s.st_flags;
+          dupfile_original_tval[0].tv_sec = s.st_atime;
+          dupfile_original_tval[1].tv_sec = s.st_mtime;
+          dupfile_original_tval[0].tv_usec = 0;
+          dupfile_original_tval[1].tv_usec = 0;
         }
 #endif
 
@@ -284,8 +291,18 @@ extern void linkfiles(file_t *files, const int linktype, const int only_current)
         } else if (linktype == 2) {
           if (clonefile(srcfile->d_name, dupelist[x]->d_name, 0) == 0) {
             if (copyfile(tempname, dupelist[x]->d_name, NULL, COPYFILE_METADATA) == 0) {
-              if (chflags(dupelist[x]->d_name, srcfile_preserved_flags | dupfile_preserved_flags) == 0) {
+              /* If the preserved flags match what we just copied from the original dupfile, we're done.
+               * Otherwise, we need to update the flags to avoid data loss due to differing compression flags */
+              if (dupfile_original_flags == (srcfile_preserved_flags | dupfile_preserved_flags)) {
                 success = 1;
+              } else if (chflags(dupelist[x]->d_name, srcfile_preserved_flags | dupfile_preserved_flags) == 0) {
+                /* chflags overrides the timestamps that were restored by copyfile, so we need to reapply those as well */
+                if (utimes(dupelist[x]->d_name, dupfile_original_tval) == 0) {
+                  success = 1;
+                } else {
+                  fprintf(stderr, "warning: utimes() failed for destination file, reverting:\n-##-> ");
+                  fwprint(stderr, dupelist[x]->d_name, 1);
+                }
               } else {
                 fprintf(stderr, "warning: chflags() failed for destination file, reverting:\n-##-> ");
                 fwprint(stderr, dupelist[x]->d_name, 1);
