@@ -35,8 +35,8 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ghcr.io/jbruchon/jdupes:latest
-            ghcr.io/jbruchon/jdupes:${{ github.ref_name }}            
+            ghcr.io/joooostb/jdupes:latest
+            ghcr.io/joooostb/jdupes:${{ github.ref_name }}            
       -
         name: Build and push alpine
         uses: docker/build-push-action@v2
