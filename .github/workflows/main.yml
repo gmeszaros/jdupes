@@ -36,7 +36,7 @@ jobs:
           push: true
           tags: |
             ghcr.io/jbruchon/jdupes:latest
-            ghcr.io/jbruchon/jdupes:${GITHUB_REF_NAME}            
+            ghcr.io/jbruchon/jdupes:${{ GITHUB_REF_NAME }}            
       -
         name: Build and push alpine
         uses: docker/build-push-action@v2
@@ -47,4 +47,4 @@ jobs:
           push: true
           tags: |
             ghcr.io/jbruchon/jdupes:alpine
-            ghcr.io/jbruchon/jdupes:${GITHUB_REF_NAME}-alpine
+            ghcr.io/jbruchon/jdupes:${{ GITHUB_REF_NAME }}-alpine
