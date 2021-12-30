@@ -9,7 +9,13 @@ on:
 jobs:
   docker:
     runs-on: ubuntu-latest
+    
     steps:
+      - name: set lower case owner name
+        run: |
+          echo "OWNER_LC=${OWNER,,}" >>${GITHUB_ENV}
+        env:
+          OWNER: '${{ github.repository_owner }}'
       -
         name: Checkout
         uses: actions/checkout@v2
@@ -24,7 +30,7 @@ jobs:
         uses: docker/login-action@v1 
         with:
           registry: ghcr.io
-          username: ${{ github.repository_owner }}
+          username: ${{ OWNER }}
           password: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
       -
         name: Build and push slim
@@ -35,8 +41,8 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/jdupes:latest
-            ghcr.io/${{ github.repository_owner }}/jdupes:${{ github.ref_name }}            
+            ghcr.io/${{ OWNER }}/jdupes:latest
+            ghcr.io/${{ OWNER }}/jdupes:${{ github.ref_name }}            
       -
         name: Build and push alpine
         uses: docker/build-push-action@v2
@@ -46,5 +52,5 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/jdupes:alpine
-            ghcr.io/${{ github.repository_owner }}/jdupes:${{ github.ref_name }}-alpine
+            ghcr.io/${{ OWNER }}/jdupes:alpine
+            ghcr.io/${{ OWNER }}/jdupes:${{ github.ref_name }}-alpine
