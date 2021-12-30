@@ -24,8 +24,8 @@ jobs:
         uses: docker/login-action@v1 
         with:
           registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GH_TOKEN }}
+          username: "JoooostB"
+          password: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
       -
         name: Build and push slim
         uses: docker/build-push-action@v2
