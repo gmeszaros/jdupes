@@ -2138,8 +2138,11 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
       }
       SETFLAG(a_flags, FA_DEDUPEFILES);
-      /* btrfs will do the byte-for-byte check itself */
-      SETFLAG(flags, F_QUICKCOMPARE);
+      /* don't set quickcompare if partial is already set, see issue#207 */
+      if(!ISFLAG(flags, F_PARTIALONLY)) {
+         /* btrfs will do the byte-for-byte check itself */
+         SETFLAG(flags, F_QUICKCOMPARE);
+      }
       /* It is completely useless to dedupe zero-length extents */
       CLEARFLAG(flags, F_INCLUDEEMPTY);
 #else
