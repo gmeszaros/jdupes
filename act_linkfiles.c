@@ -210,7 +210,7 @@ extern void linkfiles(file_t *files, const int linktype, const int only_current)
         /* Assemble a temporary file name */
         strcpy(tempname, dupelist[x]->d_name);
         strcat(tempname, ".__jdupes__.tmp");
-        /* Rename the source file to the temporary name */
+        /* Rename the destination file to the temporary name */
 #ifdef UNICODE
         if (!M2W(tempname, wname2)) {
           fprintf(stderr, "error: MultiByteToWideChar failed: "); fwprint(stderr, srcfile->d_name, 1);
