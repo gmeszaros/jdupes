@@ -248,12 +248,12 @@ extern void linkfiles(file_t *files, const int linktype, const int only_current)
 #else /* ON_WINDOWS */
         if (linktype == 1) {
           if (link(srcfile->d_name, dupelist[x]->d_name) == 0) success = 1;
-#ifdef ENABLE_CLONEFILE_LINK
+ #ifdef ENABLE_CLONEFILE_LINK
         } else if (linktype == 2) {
           if (clonefile(srcfile->d_name, dupelist[x]->d_name, 0) == 0) success = 1;
 	  /* Preserve all file metadata on macOS */
           copyfile(tempname, dupelist[x]->d_name, NULL, COPYFILE_METADATA);
-#endif /* ENABLE_CLONEFILE_LINK */
+ #endif /* ENABLE_CLONEFILE_LINK */
         }
  #ifndef NO_SYMLINKS
         else {
