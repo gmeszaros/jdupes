@@ -32,10 +32,30 @@ extern "C" {
 #include "jody_sort.h"
 #include "version.h"
 
-#include "xxhash.h"
+/* At the time of writing there was concern that the 128-Bit variant
+ * of XXH3 would perform worse than XXH64 on non 64-Bit CPUs.
+ */
+#if defined(UINTPTR_MAX) && defined(UINT32_MAX) && UINTPTR_MAX <= UINT32_MAX
+ #define USE_XXH64 1
+#else
+ #define USE_XXH128 1
+ #if defined(__x86_64__) || defined(__i386__) || defined(_M_IX86) || defined(_M_X64)
+  #define USE_XXH128_DISPATCH 1
+ #endif
+#endif
+
+#ifdef USE_XXH128_DISPATCH
+ #include "xxh_x86dispatch.h"
+#else
+ #include "xxhash.h"
+#endif
 
 /* Set hash type (change this if swapping in a different hash function) */
+#ifdef USE_XXH128
+ typedef XXH128_hash_t jdupes_hash_t;
+#else
  typedef XXH64_hash_t jdupes_hash_t;
+#endif
 
 /* Some types are different on Windows */
 #ifdef ON_WINDOWS

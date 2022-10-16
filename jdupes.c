@@ -42,7 +42,6 @@
 #include <time.h>
 #include <sys/time.h>
 #include "jdupes.h"
-#include "xxhash.h"
 #include "oom.h"
 #ifdef ENABLE_DEDUPE
 #include <sys/utsname.h>
@@ -273,8 +272,29 @@ struct timeval time1, time2;
 /* For path name mangling */
 char tempname[PATHBUF_SIZE * 2];
 
-/* Compare two hashes like memcmp() */
-#define HASH_COMPARE(a,b) ((a > b) ? 1:((a == b) ? 0:-1))
+#ifdef USE_XXH128
+ typedef XXH3_state_t hash_state_t;
+ typedef XXH128_canonical_t hash_canonical_t;
+ #define HASH_COMPARE(a,b) XXH128_cmp(&a, &b)
+ #define HASH_CREATE() XXH3_createState()
+ #define HASH_RESET(state) XXH3_128bits_reset(state)
+ #define HASH_UPDATE(state, input, len) XXH3_128bits_update(state, input, len)
+ #define HASH_DIGEST(state) XXH3_128bits_digest(state)
+ #define HASH_FREE(state) XXH3_freeState(state)
+ #define HASH_CANONICAL(canonical, hash) XXH128_canonicalFromHash(canonical, hash)
+#else
+ typedef XXH64_state_t hash_state_t;
+ typedef XXH64_canonical_t hash_canonical_t;
+ #define HASH_COMPARE(a,b) ((a > b) ? 1:((a == b) ? 0:-1))
+ #define HASH_CREATE() XXH64_createState()
+ #define HASH_RESET(state) XXH64_reset(state, 0)
+ #define HASH_UPDATE(state, input, len) XXH64_update(state, input, len)
+ #define HASH_DIGEST(state) XXH64_digest(state)
+ #define HASH_FREE(state) XXH64_freeState(state)
+ #define HASH_CANONICAL(canonical, hash) XXH64_canonicalFromHash(canonical, hash)
+#endif
+
+
 
 static void help_text_extfilter(void);
 
@@ -1149,6 +1169,28 @@ error_overflow:
 }
 
 
+#define HASH_TO_HEX_BUFFER_SIZE (sizeof(((hash_canonical_t*)NULL)->digest) * 2 + 1)
+
+/* Converts the given hash to a hex string like "043fbd9542e701ad" including a
+ * trailing \0. Expects buffer to be at least HASH_TO_HEX_BUFFER_SIZE bytes long.
+ */
+static void hash_to_hex(const jdupes_hash_t* hash, char* buffer)
+{
+  hash_canonical_t canonical;
+  HASH_CANONICAL(&canonical, *hash);
+
+  static const char lut[16] = "0123456789abcdef";
+
+  for (size_t i = 0; i < sizeof(canonical.digest); ++i) {
+    unsigned char v = canonical.digest[i];
+    buffer[2 * i + 0] = lut[v >> 4];
+    buffer[2 * i + 1] = lut[v & 15];
+  }
+
+  buffer[2 * sizeof(canonical.digest)] = '\0';
+}
+
+
 /* Hash part or all of a file */
 static jdupes_hash_t *get_filehash(const file_t * const restrict checkfile,
                 const size_t max_read)
@@ -1159,7 +1201,7 @@ static jdupes_hash_t *get_filehash(const file_t * const restrict checkfile,
   static jdupes_hash_t *chunk = NULL;
   FILE *file;
   int check = 0;
-  XXH64_state_t *xxhstate;
+  hash_state_t *xxhstate;
 
   if (checkfile == NULL || checkfile->d_name == NULL) nullptr("get_filehash()");
   LOUD(fprintf(stderr, "get_filehash('%s', %" PRIdMAX ")\n", checkfile->d_name, (intmax_t)max_read);)
@@ -1188,7 +1230,7 @@ static jdupes_hash_t *get_filehash(const file_t * const restrict checkfile,
    * the computed hash for that chunk as our starting point.
    */
 
-  *hash = 0;
+  *hash = (jdupes_hash_t){ 0 };
   if (ISFLAG(checkfile->flags, FF_HASH_PARTIAL)) {
     *hash = checkfile->filehash_partial;
     /* Don't bother going further if max_read is already fulfilled */
@@ -1219,9 +1261,9 @@ static jdupes_hash_t *get_filehash(const file_t * const restrict checkfile,
     fsize -= PARTIAL_HASH_SIZE;
   }
 
-  xxhstate = XXH64_createState();
+  xxhstate = HASH_CREATE();
   if (xxhstate == NULL) nullptr("xxhstate");
-  XXH64_reset(xxhstate, 0);
+  HASH_RESET(xxhstate);
 
   /* Read the file in CHUNK_SIZE chunks until we've read it all. */
   while (fsize > 0) {
@@ -1235,7 +1277,7 @@ static jdupes_hash_t *get_filehash(const file_t * const restrict checkfile,
       return NULL;
     }
 
-    XXH64_update(xxhstate, chunk, bytes_to_read);
+    HASH_UPDATE(xxhstate, chunk, bytes_to_read);
 
     if ((off_t)bytes_to_read > fsize) break;
     else fsize -= (off_t)bytes_to_read;
@@ -1251,10 +1293,16 @@ static jdupes_hash_t *get_filehash(const file_t * const restrict checkfile,
 
   fclose(file);
 
-  *hash = XXH64_digest(xxhstate);
-  XXH64_freeState(xxhstate);
+  *hash = HASH_DIGEST(xxhstate);
+  HASH_FREE(xxhstate);
 
-  LOUD(fprintf(stderr, "get_filehash: returning hash: 0x%016jx\n", (uintmax_t)*hash));
+#ifdef LOUD_DEBUG
+  if ISFLAG(flags, F_LOUD) {
+    char buffer[HASH_TO_HEX_BUFFER_SIZE];
+    hash_to_hex(hash, buffer);
+    fprintf(stderr, "get_filehash: returning hash: %s\n", buffer);
+  }
+#endif
   return hash;
 }
 
