@@ -276,21 +276,17 @@ char tempname[PATHBUF_SIZE * 2];
  typedef XXH3_state_t hash_state_t;
  typedef XXH128_canonical_t hash_canonical_t;
  #define HASH_COMPARE(a,b) XXH128_cmp(&a, &b)
- #define HASH_CREATE() XXH3_createState()
  #define HASH_RESET(state) XXH3_128bits_reset(state)
  #define HASH_UPDATE(state, input, len) XXH3_128bits_update(state, input, len)
  #define HASH_DIGEST(state) XXH3_128bits_digest(state)
- #define HASH_FREE(state) XXH3_freeState(state)
  #define HASH_CANONICAL(canonical, hash) XXH128_canonicalFromHash(canonical, hash)
 #else
  typedef XXH64_state_t hash_state_t;
  typedef XXH64_canonical_t hash_canonical_t;
  #define HASH_COMPARE(a,b) ((a > b) ? 1:((a == b) ? 0:-1))
- #define HASH_CREATE() XXH64_createState()
  #define HASH_RESET(state) XXH64_reset(state, 0)
  #define HASH_UPDATE(state, input, len) XXH64_update(state, input, len)
  #define HASH_DIGEST(state) XXH64_digest(state)
- #define HASH_FREE(state) XXH64_freeState(state)
  #define HASH_CANONICAL(canonical, hash) XXH64_canonicalFromHash(canonical, hash)
 #endif
 
@@ -1201,7 +1197,7 @@ static jdupes_hash_t *get_filehash(const file_t * const restrict checkfile,
   static jdupes_hash_t *chunk = NULL;
   FILE *file;
   int check = 0;
-  hash_state_t *xxhstate;
+  hash_state_t xxhstate;
 
   if (checkfile == NULL || checkfile->d_name == NULL) nullptr("get_filehash()");
   LOUD(fprintf(stderr, "get_filehash('%s', %" PRIdMAX ")\n", checkfile->d_name, (intmax_t)max_read);)
@@ -1261,9 +1257,7 @@ static jdupes_hash_t *get_filehash(const file_t * const restrict checkfile,
     fsize -= PARTIAL_HASH_SIZE;
   }
 
-  xxhstate = HASH_CREATE();
-  if (xxhstate == NULL) nullptr("xxhstate");
-  HASH_RESET(xxhstate);
+  HASH_RESET(&xxhstate);
 
   /* Read the file in CHUNK_SIZE chunks until we've read it all. */
   while (fsize > 0) {
@@ -1277,7 +1271,7 @@ static jdupes_hash_t *get_filehash(const file_t * const restrict checkfile,
       return NULL;
     }
 
-    HASH_UPDATE(xxhstate, chunk, bytes_to_read);
+    HASH_UPDATE(&xxhstate, chunk, bytes_to_read);
 
     if ((off_t)bytes_to_read > fsize) break;
     else fsize -= (off_t)bytes_to_read;
@@ -1293,8 +1287,7 @@ static jdupes_hash_t *get_filehash(const file_t * const restrict checkfile,
 
   fclose(file);
 
-  *hash = HASH_DIGEST(xxhstate);
-  HASH_FREE(xxhstate);
+  *hash = HASH_DIGEST(&xxhstate);
 
 #ifdef LOUD_DEBUG
   if ISFLAG(flags, F_LOUD) {

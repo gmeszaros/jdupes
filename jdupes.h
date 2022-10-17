@@ -44,6 +44,7 @@ extern "C" {
  #endif
 #endif
 
+#define XXH_STATIC_LINKING_ONLY
 #ifdef USE_XXH128_DISPATCH
  #include "xxh_x86dispatch.h"
 #else
