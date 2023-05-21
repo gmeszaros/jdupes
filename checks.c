@@ -28,7 +28,8 @@
  *  2 on an absolute match condition met
  * -3 on exclusion due to isolation
  * -4 on exclusion due to same filesystem
- * -5 on exclusion due to permissions */
+ * -5 on exclusion due to permissions
+ * -6 on exclusion due to file name */
 int check_conditions(const file_t * const restrict file1, const file_t * const restrict file2)
 {
   if (unlikely(file1 == NULL || file2 == NULL || file1->d_name == NULL || file2->d_name == NULL)) jc_nullptr("check_conditions()");
@@ -45,6 +46,14 @@ int check_conditions(const file_t * const restrict file1, const file_t * const r
     LOUD(fprintf(stderr, "check_conditions: no match: size of file1 < file2 (%" PRIdMAX " < %"PRIdMAX ")\n",
       (intmax_t)file1->size, (intmax_t)file2->size));
     return 1;
+  }
+
+  /* Exclude files based on -n/--file-name */
+  char *file1_name = basename(file1->d_name);
+  char *file2_name = basename(file2->d_name);
+  if (ISFLAG(flags, F_FILENAME) && (strcmp(file1_name, file2_name) != 0)) {
+    LOUD(fprintf(stderr, "check_conditions: files ignored: filename\n"));
+    return -6;
   }
 
 #ifndef NO_USER_ORDER

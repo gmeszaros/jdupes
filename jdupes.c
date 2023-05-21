@@ -1110,6 +1110,9 @@ int main(int argc, char **argv)
       SETFLAG(a_flags, FA_PRINTMATCHES);
       LOUD(fprintf(stderr, "opt: print matches with a summary (--print-summarize)\n");)
       break;
+    case 'n':
+      SETFLAG(flags, F_FILENAME);
+      break;
 #ifndef NO_DELETE
     case 'N':
       SETFLAG(flags, F_NOPROMPT);

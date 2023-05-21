@@ -163,6 +163,7 @@ option is specified (delete, summarize, link, dedupe, etc.)
  -l --link-soft         make relative symlinks for duplicates w/o prompting
  -L --link-hard         hard link all duplicate files without prompting
                         Windows allows a maximum of 1023 hard links per file
+ -n --file-name         files with different names won't match
  -m --summarize         summarize dupe information
  -M --print-summarize   will print matches and --summarize at the end
  -N --no-prompt         together with --delete, preserve the first file in

@@ -145,6 +145,7 @@ void help_text(void)
   printf(" -m --summarize   \tsummarize dupe information\n");
   printf(" -M --print-summarize\tprint match sets and --summarize at the end\n");
 #ifndef NO_DELETE
+  printf(" -n --file-name   \tfiles with different names won't match\n");
   printf(" -N --no-prompt   \ttogether with --delete, preserve the first file in\n");
   printf("                  \teach set of duplicates and delete the rest without\n");
   printf("                  \tprompting the user\n");
