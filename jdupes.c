@@ -923,6 +923,7 @@ int main(int argc, char **argv)
     { "printwithsummary", 0, 0, 'M'}, //LEGACY
     { "print-summarize", 0, 0, 'M'},
     { "summarize", 0, 0, 'm'},
+    { "file-name", 0, 0, 'n' },
     { "noprompt", 0, 0, 'N' }, //LEGACY
     { "no-prompt", 0, 0, 'N' },
     { "paramorder", 0, 0, 'O' }, //LEGACY
