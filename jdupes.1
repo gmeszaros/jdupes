@@ -24,10 +24,10 @@ sets of matching files.
 output annoying low-level debug info while running
 .TP
 .B -0 --print-null
-when printing matches, use null bytes instead of CR/LF bytes, just
+when printing matches, terminate each with a null instead of a newline, just
 like 'find -print0' does. This has no effect with any action mode other
-than the default "print matches" (delete, link, etc. will still print
-normal line endings in the output.)
+than the default "print matches".  Delete, link, etc. will still print
+normal line ending.
 .TP
 .B -1 --one-file-system
 do not match files that are on different filesystems or devices
@@ -36,34 +36,35 @@ do not match files that are on different filesystems or devices
 exclude hidden files from consideration
 .TP
 .B -B --dedupe
-call same-extents ioctl or clonefile() to trigger a filesystem-level
-data deduplication on disk (known as copy-on-write, CoW, cloning, or
-reflink); only a few filesystems support this (BTRFS; XFS when mkfs.xfs
-was used with -m crc=1,reflink=1; Apple APFS)
+call the same-extents ioctl or clonefile() to trigger filesystem-level
+data deduplication (copy-on-write, CoW, cloning, or reflink).  Only a few
+filesystems support this: Btrfs, XFS when mkfs.xfs was invoked
+with "-m crc=1,reflink=1", and Apple's APFS.
 .TP
 .B -C --chunk-size=\fInumber-of-KiB\fR
-set the I/O chunk size manually; larger values may improve performance
-on rotating media by reducing the number of head seeks required, but
-also increases memory usage and can reduce performance in some cases
+set the I/O chunk size manually. Larger values may improve performance
+on rotating media by reducing the number of head seeks,  but this
+increases memory usage and can reduce performance in some cases
 .TP
 .B -D --debug
 if this feature is compiled in, show debugging statistics and info
 at the end of program execution
 .TP
 .B -d --delete
-prompt user for files to preserve, deleting all others (see
+prompt user for while file(s) (if any) to preserve from each match set.
+All others will be deleted (see
 .B CAVEATS
 below)
 .TP
 .B -e --error-on-dupe
-exit on any duplicate found with status code 255
+exit with status code 255 when a duplicate is found
 .TP
 .B -f --omit-first
 omit the first file in each set of matches
 .TP
 .B -H --hard-links
-normally, when two or more files point to the same disk area they are
-treated as non-duplicates; this option will change this behavior
+when two or more files point to the same disk area they are
+normally treated as non-duplicates.  This option will change this behavior
 .TP
 .B -h --help
 displays help
