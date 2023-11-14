@@ -77,67 +77,34 @@ static void cross_copy_hashes(file_t *file1, file_t *file2)
 #endif  /* NO_HARDLINKS */
 
 
-void registerpair(file_t **matchlist, file_t *newmatch)
+void registerpair(file_t *file1, file_t *file2)
 {
-  file_t *traverse;
-  file_t *back;
+  int compare;
 
   /* NULL pointer sanity checks */
-  if (unlikely(matchlist == NULL || newmatch == NULL)) jc_nullptr("registerpair()");
-  LOUD(fprintf(stderr, "registerpair: '%s', '%s'\n", (*matchlist)->d_name, newmatch->d_name);)
+  if (unlikely(file1 == NULL || file2 == NULL)) jc_nullptr("registerpair()");
+  LOUD(fprintf(stderr, "registerpair: '%s', '%s'\n", file1->d_name, file2->d_name);)
 
 #ifndef NO_ERRORONDUPE
   if (ISFLAG(a_flags, FA_ERRORONDUPE)) {
     if (!ISFLAG(flags, F_HIDEPROGRESS)) fprintf(stderr, "\r");
     fprintf(stderr, "Exiting based on user request (-e); duplicates found:\n");
-    printf("%s\n%s\n", (*matchlist)->d_name, newmatch->d_name);
+    printf("%s\n%s\n", file1->d_name, file2->d_name);
     exit(255);
   }
 #endif
 
-  SETFLAG((*matchlist)->flags, FF_HAS_DUPES);
-  back = NULL;
-  traverse = *matchlist;
+  //TODO: re-implement this entirely
 
-  /* FIXME: This needs to be changed! As it currently stands, the compare
-   * function only runs on a pair as it is registered and future pairs can
-   * mess up the sort order. A separate sorting function should happen before
-   * the dupe chain is acted upon rather than while pairs are registered. */
-fprintf(stderr, "rp1\n");
-  while (traverse) {
-    int compare;
+  SETFLAG(file1->flags, FF_HAS_DUPES);
 
-fprintf(stderr, "rp2\n");
 #ifndef NO_MTIME
     if (ordertype == ORDER_TIME)
-      compare = sort_pairs_by_mtime(newmatch, traverse);
+      compare = sort_pairs_by_mtime(file1, file2);
     else
 #endif /* NO_MTIME */
-      compare = sort_pairs_by_filename(newmatch, traverse);
+      compare = sort_pairs_by_filename(file1, file2);
 
-    if (compare <= 0) {
-      newmatch->duplicates = traverse;
-
-      if (!back) {
-        *matchlist = newmatch; /* update pointer to head of list */
-        SETFLAG(newmatch->flags, FF_HAS_DUPES);
-        CLEARFLAG(traverse->flags, FF_HAS_DUPES); /* flag is only for first file in dupe chain */
-      } else back->duplicates = newmatch;
-
-      break;
-    } else {
-      if (traverse->duplicates == 0) {
-        traverse->duplicates = newmatch;
-        if (!back) SETFLAG(traverse->flags, FF_HAS_DUPES);
-
-        break;
-      }
-    }
-
-    back = traverse;
-fprintf(stderr, "rpX: t %p = t->d %p\n", traverse, traverse->duplicates);
-    traverse = traverse->duplicates;
-  }
   return;
 }
 

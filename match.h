@@ -11,7 +11,7 @@ extern "C" {
 #include <sys/types.h>
 #include "jdupes.h"
 
-void registerpair(file_t **matchlist, file_t *newmatch);
+void registerpair(file_t *file1, file_t *file2);
 int checkmatch(file_t * restrict file1, file_t * const restrict file2);
 int confirmmatch(const char * const restrict file1, const char * const restrict file2, const off_t size);
 

@@ -732,7 +732,7 @@ skip_partialonly_noise:
       }
 
 register_pair:
-      registerpair(&curfile, scanfile);
+      registerpair(curfile, scanfile);
       dupecount++;
 
 skip_register:
