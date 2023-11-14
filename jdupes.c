@@ -37,10 +37,10 @@
  #include "hashdb.h"
 #endif
 #include "helptext.h"
+#include "interrupt.h"
 #include "loaddir.h"
 #include "match.h"
 #include "progress.h"
-#include "interrupt.h"
 #include "sort.h"
 #ifndef NO_TRAVCHECK
  #include "travcheck.h"
@@ -111,14 +111,15 @@ uintmax_t comparisons = 0;
  #endif
 #endif /* DEBUG */
 
-/* File tree head */
-static filetree_t *checktree = NULL;
-
 /* Hash algorithm (see filehash.h) */
 #ifdef USE_JODY_HASH
 int hash_algo = HASH_ALGO_JODYHASH64;
 #else
 int hash_algo = HASH_ALGO_XXHASH2_64;
+#endif
+
+#ifndef NO_MTIME  /* Remove if new order types are added! */
+  ordertype_t ordertype = ORDER_NAME;
 #endif
 
 /* Directory/file parameter position counter */
@@ -155,9 +156,6 @@ int main(int argc, char **argv)
   static int opt;
   static int pm = 1;
   static int partialonly_spec = 0;
-#ifndef NO_MTIME  /* Remove if new order types are added! */
-  static ordertype_t ordertype = ORDER_NAME;
-#endif
 #ifndef NO_CHUNKSIZE
   static long manual_chunk_size = 0;
  #ifdef __linux__
@@ -699,8 +697,6 @@ skip_partialonly_noise:
   if (!ISFLAG(flags, F_HIDEPROGRESS)) jc_alarm_ring = 1;
 
   while (curfile) {
-    static file_t **match = NULL;
-
     if (unlikely(interrupt != 0)) {
       if (!ISFLAG(flags, F_SOFTABORT)) exit(EXIT_FAILURE);
       interrupt = 0;  /* reset interrupt for re-use */
@@ -709,48 +705,39 @@ skip_partialonly_noise:
 
     LOUD(fprintf(stderr, "\nMAIN: current file: %s\n", curfile->d_name));
 
-    if (!checktree) registerfile(&checktree, NONE, curfile);
-    else match = checkmatch(checktree, curfile);
-
-    /* Byte-for-byte check that a matched pair are actually matched */
-    if (match != NULL) {
-      /* Quick or partial-only compare will never run confirmmatch()
-       * Also skip match confirmation for hard-linked files
-       * (This set of comparisons is ugly, but quite efficient) */
-      if (
-             ISFLAG(flags, F_QUICKCOMPARE)
-          || ISFLAG(flags, F_PARTIALONLY)
+    for (file_t *scanfile = curfile->next; scanfile != NULL; scanfile = scanfile->next) {
+      if (checkmatch(curfile, scanfile) == 0) {
+        /* Quick or partial-only compare will never run confirmmatch()
+         * Also skip match confirmation for hard-linked files
+         * (This set of comparisons is ugly, but quite efficient) */
+        if (
+               ISFLAG(flags, F_QUICKCOMPARE)
+            || ISFLAG(flags, F_PARTIALONLY)
 #ifndef NO_HARDLINKS
-          || (ISFLAG(flags, F_CONSIDERHARDLINKS)
-          &&  (curfile->inode == (*match)->inode)
-          &&  (curfile->device == (*match)->device))
+            || (ISFLAG(flags, F_CONSIDERHARDLINKS)
+            &&  (curfile->inode == scanfile->inode)
+            &&  (curfile->device == scanfile->device))
 #endif
-          ) {
-        LOUD(fprintf(stderr, "MAIN: notice: hard linked, quick, or partial-only match (-H/-Q/-T)\n"));
-#ifndef NO_MTIME
-        registerpair(match, curfile, (ordertype == ORDER_TIME) ? sort_pairs_by_mtime : sort_pairs_by_filename);
-#else
-        registerpair(match, curfile, sort_pairs_by_filename);
-#endif
-        dupecount++;
-        goto skip_full_check;
+            ) {
+          LOUD(fprintf(stderr, "MAIN: notice: hard linked, quick, or partial-only match (-H/-Q/-T)\n"));
+          goto register_pair;
+        }
+
+        if (confirmmatch(curfile->d_name, scanfile->d_name, curfile->size) == 0) {
+          LOUD(fprintf(stderr, "MAIN: registering matched file pair\n"));
+        } else {
+          DBG(hash_fail++;)
+          goto skip_register;
+        }
       }
 
-      if (confirmmatch(curfile->d_name, (*match)->d_name, curfile->size) == 0) {
-        LOUD(fprintf(stderr, "MAIN: registering matched file pair\n"));
-#ifndef NO_MTIME
-        registerpair(match, curfile, (ordertype == ORDER_TIME) ? sort_pairs_by_mtime : sort_pairs_by_filename);
-#else
-        registerpair(match, curfile, sort_pairs_by_filename);
-#endif
-        dupecount++;
-      } else {
-	goto skip_full_check;
-        DBG(hash_fail++;)
-      }
-    }
+register_pair:
+      registerpair(&curfile, scanfile);
+      dupecount++;
 
-skip_full_check:
+skip_register:
+    } /* Scan loop end */
+
     curfile = curfile->next;
 
     check_sigusr1();

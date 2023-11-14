@@ -225,15 +225,10 @@ typedef struct _file {
 #endif
 } file_t;
 
-typedef struct _filetree {
-  file_t *file;
-  struct _filetree *left;
-  struct _filetree *right;
-} filetree_t;
-
 /* Progress indicator variables */
 extern uintmax_t filecount, progress, item_progress, dupecount;
 
+extern ordertype_t ordertype;
 extern int hash_algo;
 extern unsigned int user_item_count;
 extern int sort_direction;

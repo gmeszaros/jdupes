@@ -11,12 +11,8 @@ extern "C" {
 #include <sys/types.h>
 #include "jdupes.h"
 
-/* registerfile() direction options */
-enum tree_direction { NONE, LEFT, RIGHT };
-
-void registerpair(file_t **matchlist, file_t *newmatch, int (*comparef)(file_t *f1, file_t *f2));
-void registerfile(filetree_t * restrict * const restrict nodeptr, const enum tree_direction d, file_t * const restrict file);
-file_t **checkmatch(filetree_t * restrict tree, file_t * const restrict file);
+void registerpair(file_t **matchlist, file_t *newmatch);
+int checkmatch(file_t * restrict file1, file_t * const restrict file2);
 int confirmmatch(const char * const restrict file1, const char * const restrict file2, const off_t size);
 
 #ifdef __cplusplus
