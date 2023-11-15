@@ -696,7 +696,7 @@ skip_partialonly_noise:
   /* Force an immediate progress update */
   if (!ISFLAG(flags, F_HIDEPROGRESS)) jc_alarm_ring = 1;
 
-  while (curfile) {
+  while (curfile != NULL) {
     if (unlikely(interrupt != 0)) {
       if (!ISFLAG(flags, F_SOFTABORT)) exit(EXIT_FAILURE);
       interrupt = 0;  /* reset interrupt for re-use */
@@ -706,7 +706,9 @@ skip_partialonly_noise:
     LOUD(fprintf(stderr, "\nMAIN: current file: %s\n", curfile->d_name));
 
     for (file_t *scanfile = curfile->next; scanfile != NULL; scanfile = scanfile->next) {
-      int match = checkmatch(curfile, scanfile);
+      int match;
+
+      match = checkmatch(curfile, scanfile);
       LOUD(fprintf(stderr, "checkmatch returned %d\n", match);)
       if (match == 0) {
         /* Quick or partial-only compare will never run confirmmatch()
@@ -744,6 +746,7 @@ skip_register:
     } /* Scan loop end */
 
     curfile = curfile->next;
+    while (curfile != NULL && ISFLAG(curfile->flags, FF_HAS_DUPES)) curfile = curfile->next;
 
     check_sigusr1();
     if (jc_alarm_ring != 0) {

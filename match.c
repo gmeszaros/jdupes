@@ -143,7 +143,8 @@ void registerpair(file_t *file1, file_t *file2)
 }
 
 
-/* Check two files for a match */
+/* Check two files for a match
+ * file1 should ALWAYS be the "current file" being scanned against */
 int checkmatch(file_t * restrict file1, file_t * const restrict file2)
 {
   int cmpresult = 0;
