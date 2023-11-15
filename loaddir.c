@@ -79,7 +79,7 @@ file_t *grokfile(const char * const restrict name, file_t * restrict * const res
 }
 #endif
 
-/* Load a directory's contents into the file tree, recursing as needed */
+/* Load a directory's contents, recursing as needed */
 void loaddir(char * const restrict dir,
                 file_t * restrict * const restrict filelistp,
                 int recurse)
