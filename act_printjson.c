@@ -134,7 +134,7 @@ void printjson(file_t * restrict files, const int argc, char **argv)
 
   printf("  \"matchSets\": [\n");
   while (files != NULL) {
-    if (ISFLAG(files->flags, FF_HAS_DUPES)) {
+    if (ISFLAG(files->flags, FF_DUPE_CHAIN_HEAD)) {
       if (comma) printf(",\n");
       printf("    {\n      \"fileSize\": %" PRIdMAX ",\n      \"fileList\": [\n        { \"filePath\": \"", (intmax_t)files->size);
       sprintf(temp, "%s", files->d_name);

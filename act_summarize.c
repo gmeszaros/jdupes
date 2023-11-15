@@ -18,7 +18,7 @@ void summarizematches(const file_t * restrict files)
   while (files != NULL) {
     file_t *tmpfile;
 
-    if (ISFLAG(files->flags, FF_HAS_DUPES)) {
+    if (ISFLAG(files->flags, FF_DUPE_CHAIN_HEAD)) {
       numsets++;
       tmpfile = files->duplicates;
       while (tmpfile != NULL) {

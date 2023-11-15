@@ -79,6 +79,7 @@ static void cross_copy_hashes(file_t *file1, file_t *file2)
 
 void registerpair(file_t *file1, file_t *file2)
 {
+  file_t *scan, *src = NULL, *dest = NULL;
   int compare;
 
   /* NULL pointer sanity checks */
@@ -94,10 +95,42 @@ void registerpair(file_t *file1, file_t *file2)
   }
 #endif
 
-  //TODO: re-implement this entirely
+  //TODO: not yet working
 
-  SETFLAG(file1->flags, FF_HAS_DUPES);
+  if (ISFLAG(file1->flags, FF_HAS_DUPES) && ISFLAG(file2->flags, FF_HAS_DUPES)) {
+    // No action needed if both files have dupes and chain_heads are identical
+    if (file1->chain_head == file2->chain_head) return;
 
+    // If both have dupes but chain_heads are different then merge the chains
+    for (scan = file1; scan->duplicates != NULL; scan = scan->duplicates);
+    scan->duplicates = file2->chain_head;
+    CLEARFLAG(file2->chain_head->flags, FF_DUPE_CHAIN_HEAD);
+    for (scan = file2->chain_head; scan != NULL; scan = scan->duplicates) {
+      scan->chain_head = file1->chain_head;
+    }
+    return;
+  }
+  // If one file FF_HAS_DUPES but the other doesn't, insert the other into the chain
+    if (ISFLAG(file1->flags, FF_HAS_DUPES)) {
+      src = file1; dest = file2;
+    } else if (ISFLAG(file2->flags, FF_HAS_DUPES)) {
+      src = file2; dest = file1;
+    }
+    if (src != NULL) {
+      for (scan = src; scan->duplicates != NULL; scan = scan->duplicates);
+      scan->duplicates = dest;
+      dest->chain_head = src->chain_head;
+      SETFLAG(dest->flags, FF_HAS_DUPES);
+      return;
+    }
+  // If neither file FF_HAS_DUPES yet then make a new chain
+    SETFLAG(file1->flags, FF_HAS_DUPES | FF_DUPE_CHAIN_HEAD);
+    SETFLAG(file2->flags, FF_HAS_DUPES);
+    file1->chain_head = file1;
+    file2->chain_head = file1;
+    file1->duplicates = file2;
+
+/* This part doesn't do anything now; it's only here to save for later work */
 #ifndef NO_MTIME
     if (ordertype == ORDER_TIME)
       compare = sort_pairs_by_mtime(file1, file2);
@@ -198,7 +231,7 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
         file1->filehash = file1->filehash_partial;
         SETFLAG(file1->flags, FF_HASH_FULL);
 #ifndef NO_HASHDB
-	dirty1 = 1;
+        dirty1 = 1;
 #endif
         DBG(small_file++;)
       }
@@ -206,7 +239,7 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
         file2->filehash = file2->filehash_partial;
         SETFLAG(file2->flags, FF_HASH_FULL);
 #ifndef NO_HASHDB
-	dirty2 = 1;
+        dirty2 = 1;
 #endif
         DBG(small_file++;)
       }
@@ -222,7 +255,7 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
           file1->filehash = *filehash;
           SETFLAG(file1->flags, FF_HASH_FULL);
 #ifndef NO_HASHDB
-	  dirty1 = 1;
+          dirty1 = 1;
 #endif
         }
 
@@ -233,7 +266,7 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
           file2->filehash = *filehash;
           SETFLAG(file2->flags, FF_HASH_FULL);
 #ifndef NO_HASHDB
-	  dirty2 = 1;
+          dirty2 = 1;
 #endif
         }
 

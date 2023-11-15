@@ -173,9 +173,10 @@ extern uint64_t flags, a_flags, p_flags;
 #define FF_VALID_STAT		(1U << 0)
 #define FF_HASH_PARTIAL		(1U << 1)
 #define FF_HASH_FULL		(1U << 2)
-#define FF_HAS_DUPES		(1U << 3)
-#define FF_IS_SYMLINK		(1U << 4)
-#define FF_NOT_UNIQUE		(1U << 5)
+#define FF_DUPE_CHAIN_HEAD	(1U << 3)
+#define FF_HAS_DUPES		(1U << 4)
+#define FF_IS_SYMLINK		(1U << 5)
+#define FF_NOT_UNIQUE		(1U << 6)
 
 /* Extra print flags */
 #define PF_PARTIAL		(1U << 0)
@@ -193,6 +194,7 @@ typedef enum {
 
 /* Per-file information */
 typedef struct _file {
+  struct _file *chain_head;
   struct _file *duplicates;
   struct _file *next;
   char *d_name;

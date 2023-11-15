@@ -19,7 +19,7 @@ void printmatches(file_t * restrict files)
   if (ISFLAG(a_flags, FA_PRINTNULL)) cr = 2;
 
   while (files != NULL) {
-    if (ISFLAG(files->flags, FF_HAS_DUPES)) {
+    if (ISFLAG(files->flags, FF_DUPE_CHAIN_HEAD)) {
       printed = 1;
       if (!ISFLAG(a_flags, FA_OMITFIRST)) {
         if (ISFLAG(a_flags, FA_SHOWSIZE)) printf("%" PRIdMAX " byte%c each:\n", (intmax_t)files->size,
@@ -57,7 +57,7 @@ void printunique(file_t *files)
 
   scan = files;
   while (scan != NULL) {
-    if (ISFLAG(scan->flags, FF_HAS_DUPES)) {
+    if (ISFLAG(scan->flags, FF_DUPE_CHAIN_HEAD)) {
       chain = scan;
       while (chain != NULL) {
         SETFLAG(chain->flags, FF_NOT_UNIQUE);

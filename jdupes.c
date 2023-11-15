@@ -706,7 +706,9 @@ skip_partialonly_noise:
     LOUD(fprintf(stderr, "\nMAIN: current file: %s\n", curfile->d_name));
 
     for (file_t *scanfile = curfile->next; scanfile != NULL; scanfile = scanfile->next) {
-      if (checkmatch(curfile, scanfile) == 0) {
+      int match = checkmatch(curfile, scanfile);
+      LOUD(fprintf(stderr, "checkmatch returned %d\n", match);)
+      if (match == 0) {
         /* Quick or partial-only compare will never run confirmmatch()
          * Also skip match confirmation for hard-linked files
          * (This set of comparisons is ugly, but quite efficient) */
@@ -723,15 +725,18 @@ skip_partialonly_noise:
           goto register_pair;
         }
 
-        if (confirmmatch(curfile->d_name, scanfile->d_name, curfile->size) == 0) {
-          LOUD(fprintf(stderr, "MAIN: registering matched file pair\n"));
-        } else {
+        if (confirmmatch(curfile->d_name, scanfile->d_name, curfile->size) != 0) {
+          LOUD(fprintf(stderr, "MAIN: confirmation failed, not matching\n"));
           DBG(hash_fail++;)
           goto skip_register;
         }
+      } else {
+        LOUD(fprintf(stderr, "MAIN: checkmatch failed, not matching\n"));
+        goto skip_register;
       }
 
 register_pair:
+      LOUD(fprintf(stderr, "MAIN: registering matched file pair\n"));
       registerpair(curfile, scanfile);
       dupecount++;
 

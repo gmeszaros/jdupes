@@ -95,7 +95,7 @@ void linkfiles(file_t *files, const int linktype, const int only_current)
 
   /* Calculate a maximum */
   while (curfile) {
-    if (ISFLAG(curfile->flags, FF_HAS_DUPES)) {
+    if (ISFLAG(curfile->flags, FF_DUPE_CHAIN_HEAD)) {
       counter = 1;
       tmpfile = curfile->duplicates;
       while (tmpfile) {
@@ -115,7 +115,7 @@ void linkfiles(file_t *files, const int linktype, const int only_current)
   if (!dupelist) jc_oom("linkfiles() dupelist");
 
   while (files) {
-    if (ISFLAG(files->flags, FF_HAS_DUPES)) {
+    if (ISFLAG(files->flags, FF_DUPE_CHAIN_HEAD)) {
       counter = 1;
       dupelist[counter] = files;
 

@@ -36,7 +36,7 @@ static unsigned int get_max_dupes(const file_t *files, unsigned int * const rest
 
   while (files) {
     unsigned int n_dupes;
-    if (ISFLAG(files->flags, FF_HAS_DUPES)) {
+    if (ISFLAG(files->flags, FF_DUPE_CHAIN_HEAD)) {
       groups++;
       n_dupes = 1;
       for (file_t *curdupe = files->duplicates; curdupe; curdupe = curdupe->duplicates) n_dupes++;
@@ -74,7 +74,7 @@ void deletefiles(file_t *files, int prompt, FILE *tty)
   if (!dupelist || !preserve || !preservestr) jc_oom("deletefiles() structures");
 
   for (; files; files = files->next) {
-    if (ISFLAG(files->flags, FF_HAS_DUPES)) {
+    if (ISFLAG(files->flags, FF_DUPE_CHAIN_HEAD)) {
       curgroup++;
       counter = 1;
       dupelist[counter] = files;
