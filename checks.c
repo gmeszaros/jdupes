@@ -35,6 +35,9 @@ int check_conditions(const file_t * const restrict file1, const file_t * const r
 
   LOUD(fprintf(stderr, "check_conditions('%s', '%s')\n", file1->d_name, file2->d_name);)
 
+  /* Do not compare files that already have existing duplicates */
+  if (ISFLAG(file1->flags, FF_HAS_DUPES) && ISFLAG(file2->flags, FF_HAS_DUPES)) return -6;
+
   /* Exclude files that are not the same size */
   if (file1->size > file2->size) {
     LOUD(fprintf(stderr, "check_conditions: no match: size of file1 > file2 (%" PRIdMAX " > %" PRIdMAX ")\n",

@@ -81,6 +81,7 @@ void registerpair(file_t *file1, file_t *file2)
 {
   file_t *scan, *src = NULL, *dest = NULL;
   int compare;
+  (void)compare;
 
   /* NULL pointer sanity checks */
   if (unlikely(file1 == NULL || file2 == NULL)) jc_nullptr("registerpair()");
@@ -146,7 +147,6 @@ void registerpair(file_t *file1, file_t *file2)
 int checkmatch(file_t * restrict file1, file_t * const restrict file2)
 {
   int cmpresult = 0;
-  int cantmatch = 0;
   const uint64_t * restrict filehash;
 #ifndef NO_HASHDB
   int dirty1 = 0, dirty2 = 0;
@@ -174,14 +174,15 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
     case 2:
       cross_copy_hashes(file1, file2);
       return 0;  /* linked files + -H switch */
-    case -2: return -1;  /* linked files, no -H switch */
+    case -2:    /* linked files, no -H switch */
+      cross_copy_hashes(file1, file2);
+      return -1;
 #endif
     case -3:    /* user order */
     case -4:    /* one filesystem */
     case -5:    /* permissions */
-        cantmatch = 1;
-        cmpresult = 0;
-        break;
+    case -6:    /* already has dupes */
+      return -1;
     default: break;
   }
 
@@ -288,11 +289,6 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
     if (dirty2 == 1) add_hashdb_entry(NULL, 0, file2);
  }
 #endif
-
-  if (cantmatch != 0) {
-    LOUD(fprintf(stderr, "checkmatch: rejecting because match not allowed (cantmatch = 1)\n"));
-    return -1;
-  }
 
   if (cmpresult != 0) {
     return -1;
