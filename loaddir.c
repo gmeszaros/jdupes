@@ -17,8 +17,9 @@
 #ifndef NO_HASHDB
  #include "hashdb.h"
 #endif
-#include "progress.h"
 #include "interrupt.h"
+#include "progress.h"
+#include "sizetree.h"
 #ifndef NO_TRAVCHECK
  #include "travcheck.h"
 #endif
@@ -228,6 +229,7 @@ void loaddir(char * const restrict dir,
 #ifndef NO_HASHDB
         if (ISFLAG(flags, F_HASHDB)) read_hashdb_entry(newfile);
 #endif
+	sizetree_add(newfile);
         *filelistp = newfile;
         filecount++;
         progress++;
