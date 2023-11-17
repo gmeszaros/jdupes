@@ -1,9 +1,6 @@
 /* jdupes file size binary search tree
  * This file is part of jdupes; see jdupes.c for license information */
 
-#ifdef __linux__
- #include <fcntl.h>
-#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
