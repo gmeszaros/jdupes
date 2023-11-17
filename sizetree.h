@@ -11,6 +11,7 @@ extern "C" {
 #include "jdupes.h"
 
 void sizetree_add(file_t *file);
+file_t *sizetree_next_list(int reset);
 
 #ifdef __cplusplus
 }

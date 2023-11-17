@@ -13,7 +13,7 @@
 #include "likely_unlikely.h"
 
 
-#define SIZETREE_ALLOC_SLOTS 128
+#define SIZETREE_ALLOC_SLOTS 2
 
 struct sizetree {
   struct sizetree *left;
@@ -23,8 +23,6 @@ struct sizetree {
 };
 
 static struct sizetree *sizetree_head = NULL;
-static file_t **scanlist = NULL;
-static unsigned int scancnt, scanslots;
 
 
 static struct sizetree *sizetree_alloc(file_t *file)
@@ -37,40 +35,43 @@ static struct sizetree *sizetree_alloc(file_t *file)
 }
 
 
-void sizetree_list_free(void)
-{
-  if (scanlist != NULL) {
-    free(scanlist);
-    scanlist = NULL;
-  }
-  scancnt = 0;
-  scanslots = 0;
-  return;
-}
-
-
-/* Return the next file list. Call with *id=0 to start a fresh scan */
-file_t *sizetree_next_list(unsigned int *id)
+/* Return the next file list; reset: 1 = restart, -1 = free resources */
+file_t *sizetree_next_list(int reset)
 {
   struct sizetree *cur;
+  static struct sizetree **stack = NULL;
+  static int stackcnt, stackslots;
 
-  if (*id == 0) {
-    sizetree_list_free();
-    cur = sizetree_head;
-    if (cur == NULL) return NULL;
-    while (1) {
-      // allocate scan result array in chunks
-      if (scancnt == scanslots) {
-        scanlist = (file_t **)realloc(scanlist, scanslots + sizeof(file_t *) * SIZETREE_ALLOC_SLOTS);
-        scanslots += SIZETREE_ALLOC_SLOTS;
-      }
-      // TODO: recurse the tree, adding lists as we go
-    }
-    return scanlist[0];
+  LOUD(fprintf(stderr, "sizetree_next_list(%d)\n", reset);)
+
+  if (unlikely(reset == -1)) {
+    if (stack != NULL) free(stack);
+    return NULL;
   }
-  if (*id > scancnt) return NULL;
-  (*id)++;
-  return scanlist[*id];
+  if (reset == 1 || stack == NULL) {
+    /* Initialize everything and push head of tree */
+    if (stack != NULL) free(stack);
+    stackcnt = 1;
+    stack = (struct sizetree **)realloc(stack, stackslots + sizeof(struct sizetree *) * SIZETREE_ALLOC_SLOTS);
+    stackslots = SIZETREE_ALLOC_SLOTS;
+    if (sizetree_head == NULL) return NULL;
+    stack[0] = sizetree_head;
+    return NULL;
+  } else {
+    /* Pop one off the stack */
+    if (stackcnt < 1) return NULL;
+    cur = stack[--stackcnt];
+  }
+
+  if (stackslots - stackcnt < 2) {
+    stack = (struct sizetree **)realloc(stack, stackslots + sizeof(struct sizetree *) * SIZETREE_ALLOC_SLOTS);
+    stackslots += SIZETREE_ALLOC_SLOTS;
+  }
+
+  /* Push left/right nodes to stack and return current node's list */
+  if (cur->left != NULL) stack[stackcnt++] = cur->left;
+  if (cur->right != NULL) stack[stackcnt++] = cur->right;
+  return cur->list;
 }
 
 
