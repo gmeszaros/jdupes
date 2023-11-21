@@ -41,6 +41,7 @@
 #include "loaddir.h"
 #include "match.h"
 #include "progress.h"
+#include "sizetree.h"
 #include "sort.h"
 #ifndef NO_TRAVCHECK
  #include "travcheck.h"
@@ -552,7 +553,7 @@ int main(int argc, char **argv)
   /* Make noise if people try to use -T because it's super dangerous */
   if (partialonly_spec > 0) {
     if (partialonly_spec > 2) {
-      fprintf(stderr, "Saying -T three or more times? You're a wizard. No reminders for you.\n");
+      if (!ISFLAG(flags, F_HIDEPROGRESS)) fprintf(stderr, "Saying -T three or more times? You're a wizard. No reminders for you.\n");
       goto skip_partialonly_noise;
     }
     fprintf(stderr, "\nBIG FAT WARNING: -T/--partial-only is EXTREMELY DANGEROUS! Read the manual!\n");
@@ -762,6 +763,19 @@ skip_file_scan:
   /* Stop catching CTRL+C and firing alarms */
   signal(SIGINT, SIG_DFL);
   if (!ISFLAG(flags, F_HIDEPROGRESS)) jc_stop_alarm();
+
+// FIXME: this is a testing thing
+  sizetree_next_list(1);
+  file_t *st_next = sizetree_next_list(0);
+  while (st_next != NULL) {
+    int i = 0;
+    fprintf(stderr, "\nList size %ld\n", st_next->size);
+    for (int j = 0; st_next != NULL; j++, st_next = st_next->next)
+      fprintf(stderr, "st [%p, n %p, d %p] [%d,%d] size[%ld] file '%s'\n",
+          st_next, st_next->next, st_next->duplicates, i, j, st_next->size, st_next->d_name);
+    st_next = sizetree_next_list(0);
+    i++;
+  }
 
   if (files == NULL) {
     printf("%s", s_no_dupes);
