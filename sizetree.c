@@ -68,7 +68,9 @@ file_t *sizetree_next_list(int reset)
   }
 
   if (stackslots - stackcnt < 2) {
-    st_stack = (struct sizetree **)realloc(st_stack, stackslots + sizeof(struct sizetree *) * SIZETREE_ALLOC_SLOTS);
+    void *tempalloc = realloc(st_stack, sizeof(struct sizetree *) * (SIZETREE_ALLOC_SLOTS + stackslots));
+    if (tempalloc == NULL) jc_oom("sizetree_alloc realloc");
+    st_stack = (struct sizetree **)tempalloc;
     stackslots += SIZETREE_ALLOC_SLOTS;
   }
 
