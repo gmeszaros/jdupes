@@ -773,15 +773,19 @@ skip_file_scan:
   fprintf(stderr, "\n===== Dumping lists =====\n");
   sizetree_next_list(1);
   file_t *st_next = sizetree_next_list(0);
+  int chains = 0;
   while (st_next != NULL) {
     int i = 0;
     fprintf(stderr, "\nList size %ld\n", st_next->size);
-    for (int j = 0; st_next != NULL; j++, st_next = st_next->next)
+    for (int j = 0; st_next != NULL; j++, st_next = st_next->next) {
       fprintf(stderr, "st [cur %p, nxt %p, dup %p] [%d,%d] size[%ld] file '%s'\n",
           st_next, st_next->next, st_next->duplicates, i, j, st_next->size, st_next->d_name);
+      if (ISFLAG(st_next->flags, FF_DUPE_CHAIN_HEAD)) chains++;
+    }
     st_next = sizetree_next_list(0);
     i++;
   }
+  fprintf(stderr, "Dupe chains: %d\n", chains);
 
 
   if (files == NULL) {
