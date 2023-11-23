@@ -43,7 +43,7 @@ file_t *sizetree_next_list(int reset)
   static struct sizetree **st_stack = NULL;
   static int stackcnt, stackslots;
 
-  LOUD(fprintf(stderr, "sizetree_next_list(%d)\n", reset);)
+//  LOUD(fprintf(stderr, "sizetree_next_list(%d)\n", reset);)
 
   if (unlikely(reset == -1)) {
     if (st_stack != NULL) free(st_stack);

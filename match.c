@@ -154,7 +154,7 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
 #endif
 
   if (unlikely(file1 == NULL || file2 == NULL || file1->d_name == NULL || file2->d_name == NULL)) jc_nullptr("checkmatch()");
-  LOUD(fprintf(stderr, "checkmatch ('%s', '%s')\n", file1->d_name, file2->d_name));
+  LOUD(fprintf(stderr, "checkmatch('%s', '%s')\n", file1->d_name, file2->d_name));
 
   /* If device and inode fields are equal one of the files is a
    * hard link to the other or the files have been listed twice

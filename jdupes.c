@@ -689,71 +689,76 @@ skip_partialonly_noise:
 
   if (ISFLAG(flags, F_REVERSESORT)) sort_direction = -1;
   if (!ISFLAG(flags, F_HIDEPROGRESS)) fprintf(stderr, "\n");
-  if (!files) goto skip_file_scan;
 
   /* Force an immediate progress update */
   progress = 0;
   if (!ISFLAG(flags, F_HIDEPROGRESS)) jc_alarm_ring = 1;
 
-  curfile = files;
-  while (curfile != NULL) {
-    if (unlikely(interrupt != 0)) {
-      if (!ISFLAG(flags, F_SOFTABORT)) exit(EXIT_FAILURE);
-      interrupt = 0;  /* reset interrupt for re-use */
-      goto skip_file_scan;
-    }
-
-    LOUD(fprintf(stderr, "\nMAIN: current file: %s\n", curfile->d_name));
-
-    for (file_t *scanfile = curfile->next; scanfile != NULL; scanfile = scanfile->next) {
-      int match;
-
-      match = checkmatch(curfile, scanfile);
-      LOUD(fprintf(stderr, "checkmatch returned %d\n", match);)
-      if (match == 0) {
-        /* Quick or partial-only compare will never run confirmmatch()
-         * Also skip match confirmation for hard-linked files
-         * (This set of comparisons is ugly, but quite efficient) */
-        if (
-               ISFLAG(flags, F_QUICKCOMPARE)
-            || ISFLAG(flags, F_PARTIALONLY)
-#ifndef NO_HARDLINKS
-            || (ISFLAG(flags, F_CONSIDERHARDLINKS)
-            &&  (curfile->inode == scanfile->inode)
-            &&  (curfile->device == scanfile->device))
-#endif
-            ) {
-          LOUD(fprintf(stderr, "MAIN: notice: hard linked, quick, or partial-only match (-H/-Q/-T)\n"));
-          goto register_pair;
-        }
-
-        if (confirmmatch(curfile->d_name, scanfile->d_name, curfile->size) != 0) {
-          LOUD(fprintf(stderr, "MAIN: confirmation failed, not matching\n"));
-          DBG(hash_fail++;)
-          goto skip_register;
-        }
-      } else {
-        LOUD(fprintf(stderr, "MAIN: checkmatch failed, not matching\n"));
-        goto skip_register;
+// FIXME: big time work in progress
+  sizetree_next_list(1);
+  for(curfile = sizetree_next_list(0); curfile != NULL; curfile = sizetree_next_list(0)) {
+    while (curfile != NULL) {
+      LOUD(fprintf(stderr, "curfile = %p '%s'\n", curfile, curfile->d_name);)
+      if (unlikely(interrupt != 0)) {
+        if (!ISFLAG(flags, F_SOFTABORT)) exit(EXIT_FAILURE);
+        interrupt = 0;  /* reset interrupt for re-use */
+        goto skip_file_scan;
       }
 
-register_pair:
-      LOUD(fprintf(stderr, "MAIN: registering matched file pair\n"));
-      registerpair(curfile, scanfile);
-      dupecount++;
+      for (file_t *scanfile = curfile->next; scanfile != NULL; scanfile = scanfile->next) {
+        int match;
 
-skip_register:
-    } /* Scan loop end */
+        LOUD(fprintf(stderr, "scanfile = %p '%s'\n", scanfile, scanfile->d_name);)
+        match = checkmatch(curfile, scanfile);
+        LOUD(fprintf(stderr, "checkmatch returned %d\n", match);)
+        if (match == 0) {
+          /* Quick or partial-only compare will never run confirmmatch()
+           * Also skip match confirmation for hard-linked files
+           * (This set of comparisons is ugly, but quite efficient) */
+          if (
+                 ISFLAG(flags, F_QUICKCOMPARE)
+              || ISFLAG(flags, F_PARTIALONLY)
+  #ifndef NO_HARDLINKS
+              || (ISFLAG(flags, F_CONSIDERHARDLINKS)
+              &&  (curfile->inode == scanfile->inode)
+              &&  (curfile->device == scanfile->device))
+  #endif
+              ) {
+            LOUD(fprintf(stderr, "MAIN: notice: hard linked, quick, or partial-only match (-H/-Q/-T)\n"));
+            goto register_pair;
+          }
 
-    curfile = curfile->next;
-    while (curfile != NULL && ISFLAG(curfile->flags, FF_HAS_DUPES)) curfile = curfile->next;
+          if (confirmmatch(curfile->d_name, scanfile->d_name, curfile->size) != 0) {
+            LOUD(fprintf(stderr, "MAIN: confirmation failed, not matching\n"));
+            DBG(hash_fail++;)
+            goto skip_register;
+          }
+        } else {
+          LOUD(fprintf(stderr, "MAIN: checkmatch failed, not matching\n"));
+          goto skip_register;
+        }
 
-    check_sigusr1();
-    if (jc_alarm_ring != 0) {
-      jc_alarm_ring = 0;
-      update_phase2_progress(NULL, -1);
+  register_pair:
+        LOUD(fprintf(stderr, "MAIN: registering matched file pair\n"));
+        registerpair(curfile, scanfile);
+        dupecount++;
+
+  skip_register:
+        while (scanfile != NULL && ISFLAG(scanfile->flags, FF_HAS_DUPES) && scanfile->next != NULL) {
+          scanfile = scanfile->next;
+        }
+      if (curfile->next == NULL) break;
+      } /* Scan loop end */
+
+      check_sigusr1();
+      if (jc_alarm_ring != 0) {
+        jc_alarm_ring = 0;
+        update_phase2_progress(NULL, -1);
+      }
+      progress++;
+
+      curfile = curfile->next;
     }
-    progress++;
   }
 
   if (!ISFLAG(flags, F_HIDEPROGRESS)) fprintf(stderr, "\r%60s\r", " ");
@@ -763,7 +768,9 @@ skip_file_scan:
   signal(SIGINT, SIG_DFL);
   if (!ISFLAG(flags, F_HIDEPROGRESS)) jc_stop_alarm();
 
+
 // FIXME: this is a testing thing
+  fprintf(stderr, "\n===== Dumping lists =====\n");
   sizetree_next_list(1);
   file_t *st_next = sizetree_next_list(0);
   while (st_next != NULL) {
@@ -775,6 +782,7 @@ skip_file_scan:
     st_next = sizetree_next_list(0);
     i++;
   }
+
 
   if (files == NULL) {
     printf("%s", s_no_dupes);

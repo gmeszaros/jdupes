@@ -20,7 +20,7 @@ static struct travcheck *travcheck_alloc(const dev_t device, const jdupes_ino_t 
 {
   struct travcheck *trav;
 
-  LOUD(fprintf(stderr, "travcheck_alloc(dev %" PRIdMAX ", ino %" PRIdMAX ", hash %" PRIuMAX ")\n", (intmax_t)device, (intmax_t)inode, hash);)
+  LOUD(fprintf(stderr, "travcheck_alloc(dev %" PRIdMAX ", ino %" PRIdMAX ", hash %" PRIxMAX ")\n", (intmax_t)device, (intmax_t)inode, hash);)
 
   trav = (struct travcheck *)malloc(sizeof(struct travcheck));
   if (trav == NULL) {
