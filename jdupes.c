@@ -771,7 +771,7 @@ skip_file_scan:
     int i = 0;
     fprintf(stderr, "\nList size %ld\n", st_next->size);
     for (int j = 0; st_next != NULL; j++, st_next = st_next->next)
-      fprintf(stderr, "st [%p, n %p, d %p] [%d,%d] size[%ld] file '%s'\n",
+      fprintf(stderr, "st [cur %p, nxt %p, dup %p] [%d,%d] size[%ld] file '%s'\n",
           st_next, st_next->next, st_next->duplicates, i, j, st_next->size, st_next->d_name);
     st_next = sizetree_next_list(0);
     i++;

@@ -43,7 +43,6 @@ static file_t *init_newfile(const size_t len, file_t * restrict * const restrict
   newfile->d_name = (char *)malloc(EXTEND64(len));
   if (!newfile->d_name) jc_oom("init_newfile() filename");
 
-  newfile->next = *filelistp;
 #ifndef NO_USER_ORDER
   newfile->user_order = user_item_count;
 #endif
