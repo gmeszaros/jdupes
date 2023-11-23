@@ -9,7 +9,7 @@ extern "C" {
 #endif
 
 //file_t *grokfile(const char * const restrict name, file_t * restrict * const restrict filelistp);
-void loaddir(char * const restrict dir, file_t * restrict * const restrict filelistp, int recurse);
+int loaddir(char * const restrict dir, int recurse);
 
 #ifdef __cplusplus
 }

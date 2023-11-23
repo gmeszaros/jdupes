@@ -648,7 +648,7 @@ skip_partialonly_noise:
     /* F_RECURSE is not set for directories before --recurse: */
     for (int x = optind; x < firstrecurse; x++) {
       if (unlikely(interrupt)) goto interrupt_exit;
-      loaddir(argv[x], &files, 0);
+      loaddir(argv[x], 0);
       user_item_count++;
     }
 
@@ -657,13 +657,13 @@ skip_partialonly_noise:
 
     for (int x = firstrecurse; x < argc; x++) {
       if (unlikely(interrupt)) goto interrupt_exit;
-      loaddir(argv[x], &files, 1);
+      loaddir(argv[x], 1);
       user_item_count++;
     }
   } else {
     for (int x = optind; x < argc; x++) {
       if (unlikely(interrupt)) goto interrupt_exit;
-      loaddir(argv[x], &files, ISFLAG(flags, F_RECURSE));
+      loaddir(argv[x], ISFLAG(flags, F_RECURSE));
       user_item_count++;
     }
   }
@@ -691,12 +691,11 @@ skip_partialonly_noise:
   if (!ISFLAG(flags, F_HIDEPROGRESS)) fprintf(stderr, "\n");
   if (!files) goto skip_file_scan;
 
-  curfile = files;
-  progress = 0;
-
   /* Force an immediate progress update */
+  progress = 0;
   if (!ISFLAG(flags, F_HIDEPROGRESS)) jc_alarm_ring = 1;
 
+  curfile = files;
   while (curfile != NULL) {
     if (unlikely(interrupt != 0)) {
       if (!ISFLAG(flags, F_SOFTABORT)) exit(EXIT_FAILURE);

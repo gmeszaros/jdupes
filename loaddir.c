@@ -31,14 +31,13 @@
  const char dir_sep = '/';
 #endif /* _WIN32 || __MINGW32__ */
 
-static file_t *init_newfile(const size_t len, file_t * restrict * const restrict filelistp)
+static file_t *init_newfile(const size_t len)
 {
   file_t * const restrict newfile = (file_t *)calloc(1, sizeof(file_t));
 
   if (unlikely(!newfile)) jc_oom("init_newfile() file structure");
-  if (unlikely(!filelistp)) jc_nullptr("init_newfile() filelistp");
 
-  LOUD(fprintf(stderr, "init_newfile(len %" PRIuMAX ", filelistp %p)\n", (uintmax_t)len, filelistp));
+  LOUD(fprintf(stderr, "init_newfile(len %" PRIuMAX ")\n", (uintmax_t)len));
 
   newfile->d_name = (char *)malloc(EXTEND64(len));
   if (!newfile->d_name) jc_oom("init_newfile() filename");
@@ -79,9 +78,7 @@ file_t *grokfile(const char * const restrict name, file_t * restrict * const res
 #endif
 
 /* Load a directory's contents, recursing as needed */
-void loaddir(char * const restrict dir,
-                file_t * restrict * const restrict filelistp,
-                int recurse)
+int loaddir(char * const restrict dir, int recurse)
 {
   file_t * restrict newfile;
   JC_DIRENT *dirinfo;
@@ -94,10 +91,10 @@ void loaddir(char * const restrict dir,
   JC_DIR *cd;
   static int sf_warning = 0; /* single file warning should only appear once */
 
-  if (unlikely(dir == NULL || filelistp == NULL)) jc_nullptr("loaddir()");
+  if (unlikely(dir == NULL)) jc_nullptr("loaddir()");
   LOUD(fprintf(stderr, "loaddir: scanning '%s' (order %d, recurse %d)\n", dir, user_item_count, recurse));
 
-  if (unlikely(interrupt != 0)) return;
+  if (unlikely(interrupt != 0)) return -1;
 
   /* Convert forward slashes to backslashes if on Windows */
   jc_slash_convert(dir);
@@ -127,14 +124,14 @@ void loaddir(char * const restrict dir,
       fprintf(stderr, "More info at jdupes.com or email jody@jodybruchon.com\n");
       sf_warning = 1;
     }
-    return; /* Remove when single file is restored */
+    return -1; /* Remove when single file is restored */
   }
 
 /* Double traversal prevention tree */
 #ifndef NO_TRAVCHECK
   if (likely(!ISFLAG(flags, F_NOTRAVCHECK))) {
     i = traverse_check(device, inode);
-    if (unlikely(i == 1)) return;
+    if (unlikely(i == 1)) return 0;
     if (unlikely(i == 2)) goto error_stat_dir;
   }
 #endif /* NO_TRAVCHECK */
@@ -149,7 +146,7 @@ void loaddir(char * const restrict dir,
     char * restrict tp = tempname;
     size_t d_name_len;
 
-    if (unlikely(interrupt != 0)) return;
+    if (unlikely(interrupt != 0)) return -1;
     LOUD(fprintf(stderr, "loaddir: readdir: '%s'\n", dirinfo->d_name));
     if (unlikely(!jc_streq(dirinfo->d_name, ".") || !jc_streq(dirinfo->d_name, ".."))) continue;
     check_sigusr1();
@@ -174,7 +171,7 @@ void loaddir(char * const restrict dir,
     d_name_len++;
 
     /* Allocate the file_t and the d_name entries */
-    newfile = init_newfile(dirpos + d_name_len + 2, filelistp);
+    newfile = init_newfile(dirpos + d_name_len + 2);
 
     tp = tempname;
     memcpy(newfile->d_name, tp, dirpos + d_name_len);
@@ -204,18 +201,18 @@ void loaddir(char * const restrict dir,
 #ifndef NO_SYMLINKS
         else if (ISFLAG(flags, F_FOLLOWLINKS) || !ISFLAG(newfile->flags, FF_IS_SYMLINK)) {
           LOUD(fprintf(stderr, "loaddir: directory(symlink): recursing (-r/-R)\n"));
-          loaddir(newfile->d_name, filelistp, recurse);
+          loaddir(newfile->d_name, recurse);
         }
 #else
         else {
           LOUD(fprintf(stderr, "loaddir: directory: recursing (-r/-R)\n"));
-          loaddir(newfile->d_name, filelistp, recurse);
+          loaddir(newfile->d_name, recurse);
         }
 #endif /* NO_SYMLINKS */
       } else { LOUD(fprintf(stderr, "loaddir: directory: not recursing\n")); }
       free(newfile->d_name);
       free(newfile);
-      if (unlikely(interrupt != 0)) return;
+      if (unlikely(interrupt != 0)) return -1;
       continue;
     } else {
 //add_single_file:
@@ -229,7 +226,6 @@ void loaddir(char * const restrict dir,
         if (ISFLAG(flags, F_HASHDB)) read_hashdb_entry(newfile);
 #endif
 	sizetree_add(newfile);
-        *filelistp = newfile;
         filecount++;
         progress++;
 
@@ -247,16 +243,16 @@ void loaddir(char * const restrict dir,
 
   jc_closedir(cd);
 
-  return;
+  return 1;
 
 error_stat_dir:
   fprintf(stderr, "\ncould not stat dir "); jc_fwprint(stderr, dir, 1);
   exit_status = EXIT_FAILURE;
-  return;
+  return -1;
 error_cd:
   fprintf(stderr, "\ncould not chdir to "); jc_fwprint(stderr, dir, 1);
   exit_status = EXIT_FAILURE;
-  return;
+  return -1;
 error_overflow:
   fprintf(stderr, "\nerror: a path overflowed (longer than PATHBUF_SIZE) cannot continue\n");
   exit(EXIT_FAILURE);
