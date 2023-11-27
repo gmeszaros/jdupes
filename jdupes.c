@@ -790,6 +790,19 @@ skip_file_scan:
     i++;
   }
   fprintf(stderr, "Dupe chains: %d, headed: %d\n", chains, headed);
+  sizetree_next_list(1);
+  st_next = sizetree_next_list(0);
+  while (st_next != NULL) {
+    for (int j = 0; st_next != NULL; j++, st_next = st_next->next) {
+      if (ISFLAG(st_next->flags, FF_DUPE_CHAIN_HEAD)) {
+        for (file_t *cur = st_next; cur != NULL; cur = cur->duplicates) {
+          printf("%s\n", cur->d_name);
+	}
+	printf("\n");
+      }
+    }
+    st_next = sizetree_next_list(0);
+  }
 
 
   if (files == NULL) {
