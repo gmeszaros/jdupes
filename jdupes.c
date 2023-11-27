@@ -744,10 +744,12 @@ skip_partialonly_noise:
         dupecount++;
 
   skip_register:
+#if 0
         while (scanfile != NULL && ISFLAG(scanfile->flags, FF_HAS_DUPES) && scanfile->next != NULL) {
+          LOUD(fprintf(stderr, "Already has dupes: '%s'\n", scanfile->d_name);)
           scanfile = scanfile->next;
         }
-      if (curfile->next == NULL) break;
+#endif
       } /* Scan loop end */
 
       check_sigusr1();
@@ -773,19 +775,21 @@ skip_file_scan:
   fprintf(stderr, "\n===== Dumping lists =====\n");
   sizetree_next_list(1);
   file_t *st_next = sizetree_next_list(0);
-  int chains = 0;
+  int chains = 0, headed = 0;
   while (st_next != NULL) {
     int i = 0;
     fprintf(stderr, "\nList size %ld\n", st_next->size);
     for (int j = 0; st_next != NULL; j++, st_next = st_next->next) {
-      fprintf(stderr, "st [cur %p, nxt %p, dup %p] [%d,%d] size[%ld] file '%s'\n",
-          st_next, st_next->next, st_next->duplicates, i, j, st_next->size, st_next->d_name);
+      fprintf(stderr, "st [cur %p, nxt %p, dup %p] [%d,%d] size[%ld] file '%s' %s\n",
+          st_next, st_next->next, st_next->duplicates, i, j, st_next->size, st_next->d_name,
+          ISFLAG(st_next->flags, FF_DUPE_CHAIN_HEAD) ? "CHAIN HEAD" : "");
       if (ISFLAG(st_next->flags, FF_DUPE_CHAIN_HEAD)) chains++;
+      if (st_next->chain_head != NULL) headed++;
     }
     st_next = sizetree_next_list(0);
     i++;
   }
-  fprintf(stderr, "Dupe chains: %d\n", chains);
+  fprintf(stderr, "Dupe chains: %d, headed: %d\n", chains, headed);
 
 
   if (files == NULL) {
