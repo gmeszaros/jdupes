@@ -8,20 +8,15 @@
 
 #include "jdupes.h"
 #include "likely_unlikely.h"
+#include "sizetree.h"
 
 
 #define SIZETREE_ALLOC_SLOTS 2
 
-struct sizetree {
-  struct sizetree *left;
-  struct sizetree *right;
-  file_t *list;
-  off_t size;
-};
-
 static struct sizetree *sizetree_head = NULL;
 
 
+/* Allocate a sizetree node */
 static struct sizetree *sizetree_alloc(file_t *file)
 {
   struct sizetree *node;
@@ -83,6 +78,7 @@ file_t *sizetree_next_list(int reset)
 }
 
 
+/* Add a file to the size tree */
 void sizetree_add(file_t *file)
 {
   struct sizetree *cur;

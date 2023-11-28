@@ -10,6 +10,20 @@ extern "C" {
 
 #include "jdupes.h"
 
+struct sizetree {
+  struct sizetree *left;
+  struct sizetree *right;
+  file_t *list;
+  off_t size;
+};
+
+struct sizetree_state {
+  struct sizetree **st_stack;
+  int stackcnt;
+  int stackslots;
+  int reset;
+};
+
 void sizetree_add(file_t *file);
 file_t *sizetree_next_list(int reset);
 
