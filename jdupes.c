@@ -698,7 +698,7 @@ skip_partialonly_noise:
   struct sizetree_state st_state;
   memset(&st_state, 0, sizeof(struct sizetree_state));
   st_state.stackcnt = -1;
-  for(curfile = sizetree_next_list(&st_state); curfile != NULL; curfile = sizetree_next_list(&st_state)) {
+  for (curfile = sizetree_next_list(&st_state); curfile != NULL; curfile = sizetree_next_list(&st_state)) {
     while (curfile != NULL) {
       LOUD(fprintf(stderr, "curfile = %p '%s'\n", curfile, curfile->d_name);)
       if (unlikely(interrupt != 0)) {

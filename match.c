@@ -96,8 +96,6 @@ void registerpair(file_t *file1, file_t *file2)
   }
 #endif
 
-  //TODO: not yet working
-
   if (ISFLAG(file1->flags, FF_HAS_DUPES) && ISFLAG(file2->flags, FF_HAS_DUPES)) {
     // No action needed if both files have dupes and chain_heads are identical
     if (file1->chain_head == file2->chain_head) return;
