@@ -11,6 +11,7 @@
 #include "sizetree.h"
 
 
+/* Number of slots to add at a time; must be at least 2 */
 #define SIZETREE_ALLOC_SLOTS 2
 
 static struct sizetree *sizetree_head = NULL;
@@ -22,7 +23,7 @@ static struct sizetree *sizetree_alloc(file_t *file)
   struct sizetree *node;
 
   if (file == NULL) jc_nullptr("sizetree_alloc");
-//  LOUD(fprintf(stderr, "sizetree_alloc('%s' [%ld])\n", file->d_name, file->size);)
+  LOUD(fprintf(stderr, "sizetree_alloc('%s' [%ld])\n", file->d_name, file->size);)
   node = (struct sizetree *)calloc(1, sizeof(struct sizetree));
   if (node == NULL) jc_oom("sizetree_alloc");
   node->size = file->size;
@@ -32,48 +33,43 @@ static struct sizetree *sizetree_alloc(file_t *file)
 
 
 /* Return the next file list; reset: 1 = restart, -1 = free resources */
-file_t *sizetree_next_list(int reset)
+file_t *sizetree_next_list(struct sizetree_state *st)
 {
   struct sizetree *cur;
-  static struct sizetree **st_stack = NULL;
-  static int stackcnt, stackslots;
 
-//  LOUD(fprintf(stderr, "sizetree_next_list(%d)\n", reset);)
+  LOUD(fprintf(stderr, "sizetree_next_list(%p)\n", st);)
 
-  if (unlikely(reset == -1)) {
-    if (st_stack != NULL) free(st_stack);
+  if (st == NULL) jc_nullptr("sizetree_next_list");
+
+  if (unlikely(st->reset == -1)) {
+    if (st->stack != NULL) free(st->stack);
     return NULL;
   }
 
-  if (reset == 1 || st_stack == NULL) {
-    /* Initialize everything and push head of tree */
-    if (st_stack != NULL) free(st_stack);
-    stackcnt = 1;
-    st_stack = (struct sizetree **)malloc(sizeof(struct sizetree *) * SIZETREE_ALLOC_SLOTS);
-    stackslots = SIZETREE_ALLOC_SLOTS;
-    st_stack[0] = sizetree_head;
-//fprintf(stderr, "st: stack: pushed X %p\n", sizetree_head);
-    return NULL;
-  } else {
-    /* Pop one off the stack */
-    if (stackcnt < 1) return NULL;
-    cur = st_stack[--stackcnt];
-//fprintf(stderr, "st: stack: popped %p [%ld]\n", cur, cur->size);
-    if (cur == NULL) return NULL;
+  if (st->reset == 1 || st->stack == NULL) {
+    /* Initialize everything and push head of tree as first stack item */
+    if (st->stack != NULL) free(st->stack);
+    st->reset = 0;
+    st->stack = (struct sizetree **)malloc(sizeof(struct sizetree *) * SIZETREE_ALLOC_SLOTS);
+    st->stackslots = SIZETREE_ALLOC_SLOTS;
+    st->stackcnt = 1;
+    st->stack[0] = sizetree_head;
   }
+  /* Pop one off the stack */
+  if (st->stackcnt < 1) return NULL;
+  cur = st->stack[--st->stackcnt];
+  if (cur == NULL) return NULL;
 
-  if (stackslots - stackcnt < 2) {
-    void *tempalloc = realloc(st_stack, sizeof(struct sizetree *) * (SIZETREE_ALLOC_SLOTS + stackslots));
+  if (st->stackslots - st->stackcnt < 2) {
+    void *tempalloc = realloc(st->stack, sizeof(struct sizetree *) * (SIZETREE_ALLOC_SLOTS + st->stackslots));
     if (tempalloc == NULL) jc_oom("sizetree_alloc realloc");
-    st_stack = (struct sizetree **)tempalloc;
-    stackslots += SIZETREE_ALLOC_SLOTS;
+    st->stack = (struct sizetree **)tempalloc;
+    st->stackslots += SIZETREE_ALLOC_SLOTS;
   }
 
   /* Push left/right nodes to stack and return current node's list */
-  if (cur->right != NULL) st_stack[stackcnt++] = cur->right;
-//if (cur->right != NULL) fprintf(stderr, "st: stack: pushed R %p\n", st_stack[stackcnt - 1]);
-  if (cur->left != NULL) st_stack[stackcnt++] = cur->left;
-//if (cur->left != NULL) fprintf(stderr, "st: stack: pushed L %p\n", st_stack[stackcnt - 1]);
+  if (cur->right != NULL) st->stack[st->stackcnt++] = cur->right;
+  if (cur->left != NULL) st->stack[st->stackcnt++] = cur->left;
   return cur->list;
 }
 

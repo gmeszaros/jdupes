@@ -18,14 +18,14 @@ struct sizetree {
 };
 
 struct sizetree_state {
-  struct sizetree **st_stack;
+  struct sizetree **stack;
   int stackcnt;
   int stackslots;
   int reset;
 };
 
 void sizetree_add(file_t *file);
-file_t *sizetree_next_list(int reset);
+file_t *sizetree_next_list(struct sizetree_state *st);
 
 #ifdef __cplusplus
 }

@@ -695,8 +695,10 @@ skip_partialonly_noise:
   if (!ISFLAG(flags, F_HIDEPROGRESS)) jc_alarm_ring = 1;
 
 // FIXME: big time work in progress
-  sizetree_next_list(1);
-  for(curfile = sizetree_next_list(0); curfile != NULL; curfile = sizetree_next_list(0)) {
+  struct sizetree_state st_state;
+  memset(&st_state, 0, sizeof(struct sizetree_state));
+  st_state.reset = 1;
+  for(curfile = sizetree_next_list(&st_state); curfile != NULL; curfile = sizetree_next_list(&st_state)) {
     while (curfile != NULL) {
       LOUD(fprintf(stderr, "curfile = %p '%s'\n", curfile, curfile->d_name);)
       if (unlikely(interrupt != 0)) {
@@ -772,10 +774,14 @@ skip_file_scan:
 
 
 // FIXME: this is a testing thing
+  file_t *st_next;
+#if 0
+  int chains, headed;
+  chains = 0;
+  headed = 0;
   fprintf(stderr, "\n===== Dumping lists =====\n");
-  sizetree_next_list(1);
-  file_t *st_next = sizetree_next_list(0);
-  int chains = 0, headed = 0;
+  st_state.reset = 1;
+  st_next = sizetree_next_list(&st_state);
   while (st_next != NULL) {
     int i = 0;
     fprintf(stderr, "\nList size %ld\n", st_next->size);
@@ -786,12 +792,13 @@ skip_file_scan:
       if (ISFLAG(st_next->flags, FF_DUPE_CHAIN_HEAD)) chains++;
       if (st_next->chain_head != NULL) headed++;
     }
-    st_next = sizetree_next_list(0);
+    st_next = sizetree_next_list(&st_state);
     i++;
   }
   fprintf(stderr, "Dupe chains: %d, headed: %d\n", chains, headed);
-  sizetree_next_list(1);
-  st_next = sizetree_next_list(0);
+#endif  // 0
+  st_state.reset = 1;
+  st_next = sizetree_next_list(&st_state);
   while (st_next != NULL) {
     for (int j = 0; st_next != NULL; j++, st_next = st_next->next) {
       if (ISFLAG(st_next->flags, FF_DUPE_CHAIN_HEAD)) {
@@ -801,12 +808,12 @@ skip_file_scan:
 	printf("\n");
       }
     }
-    st_next = sizetree_next_list(0);
+    st_next = sizetree_next_list(&st_state);
   }
 
 
   if (files == NULL) {
-    printf("%s", s_no_dupes);
+//    printf("%s", s_no_dupes);
     exit(exit_status);
   }
 
