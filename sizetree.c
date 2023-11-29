@@ -32,7 +32,7 @@ static struct sizetree *sizetree_alloc(file_t *file)
 }
 
 
-/* Return the next file list; reset: 1 = restart, -1 = free resources */
+/* Return the next file list; stackcnt == -1 resets/inits the state, -2 frees memory */
 file_t *sizetree_next_list(struct sizetree_state *st)
 {
   struct sizetree *cur;
@@ -41,15 +41,14 @@ file_t *sizetree_next_list(struct sizetree_state *st)
 
   if (st == NULL) jc_nullptr("sizetree_next_list");
 
-  if (unlikely(st->reset == -1)) {
+  if (unlikely(st->stackcnt == -2)) {
     if (st->stack != NULL) free(st->stack);
     return NULL;
   }
 
-  if (st->reset == 1 || st->stack == NULL) {
+  if (st->stackcnt == -1 || st->stack == NULL) {
     /* Initialize everything and push head of tree as first stack item */
     if (st->stack != NULL) free(st->stack);
-    st->reset = 0;
     st->stack = (struct sizetree **)malloc(sizeof(struct sizetree *) * SIZETREE_ALLOC_SLOTS);
     st->stackslots = SIZETREE_ALLOC_SLOTS;
     st->stackcnt = 1;

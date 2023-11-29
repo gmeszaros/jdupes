@@ -21,7 +21,6 @@ struct sizetree_state {
   struct sizetree **stack;
   int stackcnt;
   int stackslots;
-  int reset;
 };
 
 void sizetree_add(file_t *file);

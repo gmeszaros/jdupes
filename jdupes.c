@@ -697,7 +697,7 @@ skip_partialonly_noise:
 // FIXME: big time work in progress
   struct sizetree_state st_state;
   memset(&st_state, 0, sizeof(struct sizetree_state));
-  st_state.reset = 1;
+  st_state.stackcnt = -1;
   for(curfile = sizetree_next_list(&st_state); curfile != NULL; curfile = sizetree_next_list(&st_state)) {
     while (curfile != NULL) {
       LOUD(fprintf(stderr, "curfile = %p '%s'\n", curfile, curfile->d_name);)
@@ -797,7 +797,7 @@ skip_file_scan:
   }
   fprintf(stderr, "Dupe chains: %d, headed: %d\n", chains, headed);
 #endif  // 0
-  st_state.reset = 1;
+  st_state.stackcnt = -1;
   st_next = sizetree_next_list(&st_state);
   while (st_next != NULL) {
     for (int j = 0; st_next != NULL; j++, st_next = st_next->next) {
