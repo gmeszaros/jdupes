@@ -12,7 +12,7 @@
 #ifndef NO_USER_ORDER
 static int sort_pairs_by_param_order(file_t *f1, file_t *f2)
 {
-  if (unlikely(f1 == NULL || f2 == NULL)) jc_nullptr("sort_pairs_by_param_order()");
+  DBG(if (unlikely(f1 == NULL || f2 == NULL)) jc_nullptr("sort_pairs_by_param_order()");)
   if (f1->user_order < f2->user_order) return -sort_direction;
   if (f1->user_order > f2->user_order) return sort_direction;
   return 0;
@@ -23,7 +23,7 @@ static int sort_pairs_by_param_order(file_t *f1, file_t *f2)
 #ifndef NO_MTIME
 int sort_pairs_by_mtime(file_t *f1, file_t *f2)
 {
-  if (unlikely(f1 == NULL || f2 == NULL)) jc_nullptr("sort_pairs_by_mtime()");
+  DBG(if (unlikely(f1 == NULL || f2 == NULL)) jc_nullptr("sort_pairs_by_mtime()");)
 
 #ifndef NO_USER_ORDER
   if (ISFLAG(flags, F_USEPARAMORDER)) {
@@ -47,7 +47,7 @@ int sort_pairs_by_mtime(file_t *f1, file_t *f2)
 
 int sort_pairs_by_filename(file_t *f1, file_t *f2)
 {
-  if (unlikely(f1 == NULL || f2 == NULL)) jc_nullptr("sort_pairs_by_filename()");
+  DBG(if (unlikely(f1 == NULL || f2 == NULL)) jc_nullptr("sort_pairs_by_filename()");)
 
 #ifndef NO_USER_ORDER
   int po = sort_pairs_by_param_order(f1, f2);

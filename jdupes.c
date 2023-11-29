@@ -518,7 +518,7 @@ int main(int argc, char **argv)
       hdblen = strlen(optarg) + 1;
       if (hdblen < 24) hdblen = 24;
       hashdb_name = (char *)malloc(hdblen);
-      if (hashdb_name == NULL) jc_nullptr("hashdb");
+      if (hashdb_name == NULL) jc_oom("hashdb_name alloc");
       if (strcmp(optarg, ".") == 0) strcpy(hashdb_name, "jdupes_hashdb.txt");
       else strcpy(hashdb_name, optarg);
       break;

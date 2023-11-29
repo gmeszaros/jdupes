@@ -73,7 +73,7 @@ int traverse_check(const dev_t device, const jdupes_ino_t inode)
   } else {
     traverse = travcheck_head;
     while (1) {
-      if (traverse == NULL) jc_nullptr("traverse_check()");
+      DBG(if (traverse == NULL) jc_nullptr("traverse_check()");)
       /* Don't re-traverse directories we've already seen */
       if (inode == traverse->inode && device == traverse->device) {
         LOUD(fprintf(stderr, "traverse_check: already seen: %" PRIuMAX ":%" PRIuMAX "\n", (uintmax_t)device, (uintmax_t)inode);)

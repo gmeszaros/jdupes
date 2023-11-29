@@ -92,7 +92,7 @@ int loaddir(char * const restrict dir, int recurse)
   JC_DIR *cd;
   static int sf_warning = 0; /* single file warning should only appear once */
 
-  if (unlikely(dir == NULL)) jc_nullptr("loaddir()");
+  DBG(if (unlikely(dir == NULL)) jc_nullptr("loaddir()");)
   LOUD(fprintf(stderr, "loaddir: scanning '%s' (order %d, recurse %d)\n", dir, user_item_count, recurse));
 
   if (unlikely(interrupt != 0)) return -1;

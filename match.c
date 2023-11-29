@@ -84,7 +84,7 @@ void registerpair(file_t *file1, file_t *file2)
   (void)compare;
 
   /* NULL pointer sanity checks */
-  if (unlikely(file1 == NULL || file2 == NULL)) jc_nullptr("registerpair()");
+  DBG(if (unlikely(file1 == NULL || file2 == NULL)) jc_nullptr("registerpair()");)
   LOUD(fprintf(stderr, "registerpair: '%s', '%s'\n", file1->d_name, file2->d_name);)
 
 #ifndef NO_ERRORONDUPE
@@ -151,7 +151,7 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
   int dirty1 = 0, dirty2 = 0;
 #endif
 
-  if (unlikely(file1 == NULL || file2 == NULL || file1->d_name == NULL || file2->d_name == NULL)) jc_nullptr("checkmatch()");
+  DBG(if (unlikely(file1 == NULL || file2 == NULL || file1->d_name == NULL || file2->d_name == NULL)) jc_nullptr("checkmatch()");)
   LOUD(fprintf(stderr, "checkmatch('%s', '%s')\n", file1->d_name, file2->d_name));
 
   /* If device and inode fields are equal one of the files is a
@@ -311,7 +311,7 @@ int confirmmatch(const char * const restrict file1, const char * const restrict 
   off_t bytes = 0;
   int retval = 0;
 
-  if (unlikely(file1 == NULL || file2 == NULL)) jc_nullptr("confirmmatch()");
+  DBG(if (unlikely(file1 == NULL || file2 == NULL)) jc_nullptr("confirmmatch()");)
   LOUD(fprintf(stderr, "confirmmatch running\n"));
 
   if (unlikely(c1 == NULL || c2 == NULL)) {

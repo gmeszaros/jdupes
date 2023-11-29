@@ -31,7 +31,7 @@
  * -5 on exclusion due to permissions */
 int check_conditions(const file_t * const restrict file1, const file_t * const restrict file2)
 {
-  if (unlikely(file1 == NULL || file2 == NULL || file1->d_name == NULL || file2->d_name == NULL)) jc_nullptr("check_conditions()");
+  DBG(if (unlikely(file1 == NULL || file2 == NULL || file1->d_name == NULL || file2->d_name == NULL)) jc_nullptr("check_conditions()");)
 
   LOUD(fprintf(stderr, "check_conditions('%s', '%s')\n", file1->d_name, file2->d_name);)
 
@@ -91,7 +91,7 @@ int check_singlefile(file_t * const restrict newfile)
 {
   char * restrict tp = tempname;
 
-  if (unlikely(newfile == NULL)) jc_nullptr("check_singlefile()");
+  DBG(if (unlikely(newfile == NULL)) jc_nullptr("check_singlefile()");)
 
   LOUD(fprintf(stderr, "check_singlefile: checking '%s'\n", newfile->d_name));
 

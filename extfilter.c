@@ -112,7 +112,7 @@ static int match_extensions(char *path, const char *extlist)
   size_t len, extlen;
 
   LOUD(fprintf(stderr, "match_extensions('%s', '%s')\n", path, extlist);)
-  if (path == NULL || extlist == NULL) jc_nullptr("match_extensions");
+  DBG(if (path == NULL || extlist == NULL) jc_nullptr("match_extensions");)
 
   dot = NULL;
   /* Scan to end of path, save the last dot, reset on path separators */
@@ -170,7 +170,7 @@ void add_extfilter(const char *option)
   const struct extfilter_tags *tags = extfilter_tags;
   const struct jc_size_suffix *ss = jc_size_suffix;
 
-  if (option == NULL) jc_nullptr("add_extfilter()");
+  DBG(if (option == NULL) jc_nullptr("add_extfilter()");)
 
   LOUD(fprintf(stderr, "add_extfilter '%s'\n", option);)
 
