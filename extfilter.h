@@ -14,6 +14,7 @@ extern "C" {
 
 void add_extfilter(const char *option);
 int extfilter_exclude(file_t * const restrict newfile);
+int extfilter_path_exclude(char * const restrict path);
 
 #endif /* NO_EXTFILTER */
 

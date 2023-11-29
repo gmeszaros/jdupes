@@ -265,26 +265,39 @@ extf_help_and_exit:
 
 
 /* Exclude single files based on extended filter stack; return 0 = exclude */
-int extfilter_exclude(file_t * const restrict newfile)
+int extfilter_exclude(file_t * const restrict file)
 {
   for (struct extfilter *extf = extfilter_head; extf != NULL; extf = extf->next) {
     uint32_t sflag = extf->flags;
-    LOUD(fprintf(stderr, "check_singlefile: extfilter check: %08x %" PRIdMAX " %" PRIdMAX " %s\n", sflag, (intmax_t)newfile->size, (intmax_t)extf->size, newfile->d_name);)
+    LOUD(fprintf(stderr, "extfilter check: %08x %" PRIdMAX " %" PRIdMAX " %s\n", sflag, (intmax_t)file->size, (intmax_t)extf->size, file->d_name);)
     if (
          /* Any line that passes will result in file exclusion */
-            ((sflag == XF_SIZE_EQ)    && (newfile->size != extf->size))
-         || ((sflag == XF_SIZE_LTEQ)  && (newfile->size > extf->size))
-         || ((sflag == XF_SIZE_GTEQ)  && (newfile->size < extf->size))
-         || ((sflag == XF_SIZE_GT)    && (newfile->size <= extf->size))
-         || ((sflag == XF_SIZE_LT)    && (newfile->size >= extf->size))
-         || ((sflag == XF_EXCL_EXT)   && match_extensions(newfile->d_name, extf->param))
-         || ((sflag == XF_ONLY_EXT)   && !match_extensions(newfile->d_name, extf->param))
-         || ((sflag == XF_EXCL_STR)   && strstr(newfile->d_name, extf->param))
-         || ((sflag == XF_ONLY_STR)   && !strstr(newfile->d_name, extf->param))
+            ((sflag == XF_SIZE_EQ)    && (file->size != extf->size))
+         || ((sflag == XF_SIZE_LTEQ)  && (file->size > extf->size))
+         || ((sflag == XF_SIZE_GTEQ)  && (file->size < extf->size))
+         || ((sflag == XF_SIZE_GT)    && (file->size <= extf->size))
+         || ((sflag == XF_SIZE_LT)    && (file->size >= extf->size))
+         || ((sflag == XF_EXCL_EXT)   && match_extensions(file->d_name, extf->param))
+         || ((sflag == XF_ONLY_EXT)   && !match_extensions(file->d_name, extf->param))
+         || ((sflag == XF_EXCL_STR)   && strstr(file->d_name, extf->param))
+         || ((sflag == XF_ONLY_STR)   && !strstr(file->d_name, extf->param))
 #ifndef NO_MTIME
-         || ((sflag == XF_DATE_NEWER) && (newfile->mtime < extf->size))
-         || ((sflag == XF_DATE_OLDER) && (newfile->mtime >= extf->size))
+         || ((sflag == XF_DATE_NEWER) && (file->mtime < extf->size))
+         || ((sflag == XF_DATE_OLDER) && (file->mtime >= extf->size))
 #endif
+    ) return 1;
+  }
+  return 0;
+}
+
+
+int extfilter_path_exclude(char * const restrict path)
+{
+  for (struct extfilter *extf = extfilter_head; extf != NULL; extf = extf->next) {
+    uint32_t sflag = extf->flags;
+    LOUD(fprintf(stderr, "extfilter path check: %08x %s\n", sflag, path);)
+    if (    ((sflag == XF_EXCL_STR)   && strstr(path, extf->param))
+         || ((sflag == XF_ONLY_STR)   && !strstr(path, extf->param))
     ) return 1;
   }
   return 0;

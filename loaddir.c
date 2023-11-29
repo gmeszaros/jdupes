@@ -13,6 +13,7 @@
 #include "likely_unlikely.h"
 #include "jdupes.h"
 #include "checks.h"
+#include "extfilter.h"
 #include "filestat.h"
 #ifndef NO_HASHDB
  #include "hashdb.h"
@@ -98,6 +99,13 @@ int loaddir(char * const restrict dir, int recurse)
 
   /* Convert forward slashes to backslashes if on Windows */
   jc_slash_convert(dir);
+
+#ifndef NO_EXTFILTER
+  if (extfilter_path_exclude(dir)) {
+    LOUD(fprintf(stderr, "loaddir: excluding based on an extfilter string option\n"));
+    return 0;
+  }
+#endif /* NO_EXTFILTER */
 
   /* Get directory stats (or file stats if it's a file) */
   i = getdirstats(dir, &inode, &device, &mode);
