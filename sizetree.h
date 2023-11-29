@@ -11,10 +11,10 @@ extern "C" {
 #include "jdupes.h"
 
 struct sizetree {
+  off_t size;
   struct sizetree *left;
   struct sizetree *right;
   file_t *list;
-  off_t size;
 };
 
 typedef struct _sizetree_state {
