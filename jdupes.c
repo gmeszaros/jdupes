@@ -695,10 +695,8 @@ skip_partialonly_noise:
   if (!ISFLAG(flags, F_HIDEPROGRESS)) jc_alarm_ring = 1;
 
 // FIXME: big time work in progress
-  struct sizetree_state st_state;
-  memset(&st_state, 0, sizeof(struct sizetree_state));
-  st_state.stackcnt = -1;
-  for (curfile = sizetree_next_list(&st_state); curfile != NULL; curfile = sizetree_next_list(&st_state)) {
+  st_state_t *st_state = sizetree_state_alloc();
+  for (curfile = sizetree_next_list(st_state); curfile != NULL; curfile = sizetree_next_list(st_state)) {
     while (curfile != NULL) {
       LOUD(fprintf(stderr, "curfile = %p '%s'\n", curfile, curfile->d_name);)
       if (unlikely(interrupt != 0)) {
@@ -774,14 +772,24 @@ skip_file_scan:
 
 
 // FIXME: this is a testing thing
-  file_t *st_next;
+  st_state->stackcnt = -1;
+  for (file_t *st_next = sizetree_next_list(st_state); st_next != NULL; st_next = sizetree_next_list(st_state)) {
+    for (; st_next != NULL; st_next = st_next->next) {
+      if (ISFLAG(st_next->flags, FF_DUPE_CHAIN_HEAD)) {
+        for (file_t *cur = st_next; cur != NULL; cur = cur->duplicates) {
+          printf("%s\n", cur->d_name);
+	}
+	printf("\n");
+      }
+    }
 #if 0
+  file_t *st_next;
   int chains, headed;
   chains = 0;
   headed = 0;
   fprintf(stderr, "\n===== Dumping lists =====\n");
-  st_state.reset = 1;
-  st_next = sizetree_next_list(&st_state);
+  st_state->reset = 1;
+  st_next = sizetree_next_list(st_state);
   while (st_next != NULL) {
     int i = 0;
     fprintf(stderr, "\nList size %ld\n", st_next->size);
@@ -792,22 +800,13 @@ skip_file_scan:
       if (ISFLAG(st_next->flags, FF_DUPE_CHAIN_HEAD)) chains++;
       if (st_next->chain_head != NULL) headed++;
     }
-    st_next = sizetree_next_list(&st_state);
+    st_next = sizetree_next_list(st_state);
     i++;
   }
   fprintf(stderr, "Dupe chains: %d, headed: %d\n", chains, headed);
 #endif  // 0
-  st_state.stackcnt = -1;
-  for (st_next = sizetree_next_list(&st_state); st_next != NULL; st_next = sizetree_next_list(&st_state)) {
-    for (; st_next != NULL; st_next = st_next->next) {
-      if (ISFLAG(st_next->flags, FF_DUPE_CHAIN_HEAD)) {
-        for (file_t *cur = st_next; cur != NULL; cur = cur->duplicates) {
-          printf("%s\n", cur->d_name);
-	}
-	printf("\n");
-      }
-    }
   }
+  free(st_state);
 
 
   if (files == NULL) {

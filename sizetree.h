@@ -17,14 +17,15 @@ struct sizetree {
   off_t size;
 };
 
-struct sizetree_state {
+typedef struct _sizetree_state {
   struct sizetree **stack;
   int stackcnt;
   int stackslots;
-};
+} st_state_t;
 
+st_state_t *sizetree_state_alloc(void);
 void sizetree_add(file_t *file);
-file_t *sizetree_next_list(struct sizetree_state *st);
+file_t *sizetree_next_list(st_state_t *st);
 
 #ifdef __cplusplus
 }
