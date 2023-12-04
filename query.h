@@ -9,8 +9,8 @@ extern "C" {
 #endif
 
 struct querystate {
-  file_t *curfile;
-  // FIXME: finish this
+	file_t *curfile;
+	// FIXME: finish this
 };
 
 #ifdef __cplusplus

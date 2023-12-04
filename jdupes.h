@@ -184,8 +184,8 @@ extern uint64_t flags, a_flags, p_flags;
 #define PF_FULLHASH		(1U << 2)
 
 typedef enum {
-  ORDER_NAME = 0,
-  ORDER_TIME
+	ORDER_NAME = 0,
+	ORDER_TIME
 } ordertype_t;
 
 #ifndef PARTIAL_HASH_SIZE
@@ -194,36 +194,36 @@ typedef enum {
 
 /* Per-file information */
 typedef struct _file {
-  struct _file *chain_head;
-  struct _file *duplicates;
-  struct _file *next;
-  char *d_name;
-  uint64_t filehash_partial;
-  uint64_t filehash;
-  jdupes_ino_t inode;
-  off_t size;
+	struct _file *chain_head;
+	struct _file *duplicates;
+	struct _file *next;
+	char *d_name;
+	uint64_t filehash_partial;
+	uint64_t filehash;
+	jdupes_ino_t inode;
+	off_t size;
 #ifndef NO_MTIME
-  time_t mtime;
+	time_t mtime;
 #endif
-  dev_t device;
-  uint32_t flags;  /* Status flags */
-  jdupes_mode_t mode;
+	dev_t device;
+	uint32_t flags;  /* Status flags */
+	jdupes_mode_t mode;
 #ifndef NO_ATIME
-  time_t atime;
+	time_t atime;
 #endif
 #ifndef NO_USER_ORDER
-  unsigned int user_order; /* Order of the originating command-line parameter */
+		unsigned int user_order; /* Order of the originating command-line parameter */
 #endif
 #ifndef NO_HARDLINKS
  #ifdef ON_WINDOWS
-  uint32_t nlink;  /* link count on Windows is always a DWORD */
+	uint32_t nlink;  /* link count on Windows is always a DWORD */
  #else
-  nlink_t nlink;
+	nlink_t nlink;
  #endif /* ON_WINDOWS */
 #endif
 #ifndef NO_PERMS
-  uid_t uid;
-  gid_t gid;
+	uid_t uid;
+	gid_t gid;
 #endif
 } file_t;
 

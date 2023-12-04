@@ -53,7 +53,7 @@
 #endif
 #ifdef ENABLE_DEDUPE
  #ifdef __linux__
-  #include <sys/utsname.h>
+	#include <sys/utsname.h>
  #endif
 #endif
 
@@ -76,8 +76,8 @@
  #endif /* UNICODE */
 #else /* Not Windows */
  #ifdef UNICODE
-  #error Do not define UNICODE on non-Windows platforms.
-  #undef UNICODE
+	#error Do not define UNICODE on non-Windows platforms.
+	#undef UNICODE
  #endif
 #endif /* _WIN32 || __MINGW32__ */
 
@@ -106,9 +106,9 @@ unsigned int small_file = 0, partial_hash = 0, partial_elim = 0;
 unsigned int full_hash = 0, partial_to_full = 0, hash_fail = 0;
 uintmax_t comparisons = 0;
  #ifdef ON_WINDOWS
-  #ifndef NO_HARDLINKS
-  unsigned int hll_exclude = 0;
-  #endif
+	#ifndef NO_HARDLINKS
+	unsigned int hll_exclude = 0;
+	#endif
  #endif
 #endif /* DEBUG */
 
@@ -120,7 +120,7 @@ int hash_algo = HASH_ALGO_XXHASH2_64;
 #endif
 
 #ifndef NO_MTIME  /* Remove if new order types are added! */
-  ordertype_t ordertype = ORDER_NAME;
+	ordertype_t ordertype = ORDER_NAME;
 #endif
 
 /* Directory/file parameter position counter */
@@ -150,78 +150,78 @@ int wmain(int argc, wchar_t **wargv)
 int main(int argc, char **argv)
 #endif
 {
-  static file_t *files = NULL;
-  static file_t *curfile;
-  static char **oldargv;
-  static int firstrecurse;
-  static int opt;
-  static int pm = 1;
-  static int partialonly_spec = 0;
+	static file_t *files = NULL;
+	static file_t *curfile;
+	static char **oldargv;
+	static int firstrecurse;
+	static int opt;
+	static int pm = 1;
+	static int partialonly_spec = 0;
 #ifndef NO_CHUNKSIZE
-  static long manual_chunk_size = 0;
+	static long manual_chunk_size = 0;
  #ifdef __linux__
-  static struct jc_proc_cacheinfo pci;
+	static struct jc_proc_cacheinfo pci;
  #endif /* __linux__ */
 #endif /* NO_CHUNKSIZE */
 #ifdef ENABLE_DEDUPE
  #ifdef __linux__
-  static struct utsname utsname;
+	static struct utsname utsname;
  #endif /* __linux__ */
 #endif
 #ifndef NO_HASHDB
-  char *hashdb_name = NULL;
-  int hdblen;
-  int64_t hdbsize;
-  uint64_t hdbout;
+	char *hashdb_name = NULL;
+	int hdblen;
+	int64_t hdbsize;
+	uint64_t hdbout;
 #endif
 
 #ifndef NO_GETOPT_LONG
-  static const struct option long_options[] =
-  {
-    { "loud", 0, 0, '@' },
-    { "print-null", 0, 0, '0' },
-    { "one-file-system", 0, 0, '1' },
-    { "", 0, 0, '9' },
-    { "no-hidden", 0, 0, 'A' },
-    { "dedupe", 0, 0, 'B' },
-    { "chunk-size", 1, 0, 'C' },
-    { "debug", 0, 0, 'D' },
-    { "delete", 0, 0, 'd' },
-    { "error-on-dupe", 0, 0, 'e' },
-    { "ext-option", 0, 0, 'E' },
-    { "omit-first", 0, 0, 'f' },
-    { "hard-links", 0, 0, 'H' },
-    { "help", 0, 0, 'h' },
-    { "isolate", 0, 0, 'I' },
-    { "reverse", 0, 0, 'i' },
-    { "json", 0, 0, 'j' },
+	static const struct option long_options[] =
+	{
+		{ "loud", 0, 0, '@' },
+		{ "print-null", 0, 0, '0' },
+		{ "one-file-system", 0, 0, '1' },
+		{ "", 0, 0, '9' },
+		{ "no-hidden", 0, 0, 'A' },
+		{ "dedupe", 0, 0, 'B' },
+		{ "chunk-size", 1, 0, 'C' },
+		{ "debug", 0, 0, 'D' },
+		{ "delete", 0, 0, 'd' },
+		{ "error-on-dupe", 0, 0, 'e' },
+		{ "ext-option", 0, 0, 'E' },
+		{ "omit-first", 0, 0, 'f' },
+		{ "hard-links", 0, 0, 'H' },
+		{ "help", 0, 0, 'h' },
+		{ "isolate", 0, 0, 'I' },
+		{ "reverse", 0, 0, 'i' },
+		{ "json", 0, 0, 'j' },
 /*    { "skip-hash", 0, 0, 'K' }, */
-    { "link-hard", 0, 0, 'L' },
-    { "link-soft", 0, 0, 'l' },
-    { "print-summarize", 0, 0, 'M'},
-    { "summarize", 0, 0, 'm'},
-    { "no-prompt", 0, 0, 'N' },
-    { "param-order", 0, 0, 'O' },
-    { "order", 1, 0, 'o' },
-    { "print", 1, 0, 'P' },
-    { "permissions", 0, 0, 'p' },
-    { "quick", 0, 0, 'Q' },
-    { "quiet", 0, 0, 'q' },
-    { "recurse:", 0, 0, 'R' },
-    { "recurse", 0, 0, 'r' },
-    { "size", 0, 0, 'S' },
-    { "symlinks", 0, 0, 's' },
-    { "partial-only", 0, 0, 'T' },
-    { "no-change-check", 0, 0, 't' },
-    { "no-trav-check", 0, 0, 'U' },
-    { "print-unique", 0, 0, 'u' },
-    { "version", 0, 0, 'v' },
-    { "ext-filter", 1, 0, 'X' },
-    { "hash-db", 1, 0, 'y' },
-    { "soft-abort", 0, 0, 'Z' },
-    { "zero-match", 0, 0, 'z' },
-    { NULL, 0, 0, 0 }
-  };
+		{ "link-hard", 0, 0, 'L' },
+		{ "link-soft", 0, 0, 'l' },
+		{ "print-summarize", 0, 0, 'M'},
+		{ "summarize", 0, 0, 'm'},
+		{ "no-prompt", 0, 0, 'N' },
+		{ "param-order", 0, 0, 'O' },
+		{ "order", 1, 0, 'o' },
+		{ "print", 1, 0, 'P' },
+		{ "permissions", 0, 0, 'p' },
+		{ "quick", 0, 0, 'Q' },
+		{ "quiet", 0, 0, 'q' },
+		{ "recurse:", 0, 0, 'R' },
+		{ "recurse", 0, 0, 'r' },
+		{ "size", 0, 0, 'S' },
+		{ "symlinks", 0, 0, 's' },
+		{ "partial-only", 0, 0, 'T' },
+		{ "no-change-check", 0, 0, 't' },
+		{ "no-trav-check", 0, 0, 'U' },
+		{ "print-unique", 0, 0, 'u' },
+		{ "version", 0, 0, 'v' },
+		{ "ext-filter", 1, 0, 'X' },
+		{ "hash-db", 1, 0, 'y' },
+		{ "soft-abort", 0, 0, 'Z' },
+		{ "zero-match", 0, 0, 'z' },
+		{ NULL, 0, 0, 0 }
+	};
  #define GETOPT getopt_long
 #else
  #define GETOPT getopt
@@ -229,625 +229,625 @@ int main(int argc, char **argv)
 
 #define GETOPT_STRING "@019ABC:DdEefHhIijKLlMmNnOo:P:pQqRrSsTtUuVvX:y:Zz"
 
-  /* Verify libjodycode compatibility before going further */
-  if (libjodycode_version_check(1, 0) != 0) {
-    version_text(1);
-    exit(EXIT_FAILURE);
-  }
+	/* Verify libjodycode compatibility before going further */
+	if (libjodycode_version_check(1, 0) != 0) {
+		version_text(1);
+		exit(EXIT_FAILURE);
+	}
 
 /* Windows buffers our stderr output; don't let it do that */
 #ifdef ON_WINDOWS
-  if (setvbuf(stderr, NULL, _IONBF, 0) != 0)
-    fprintf(stderr, "warning: setvbuf() failed\n");
+	if (setvbuf(stderr, NULL, _IONBF, 0) != 0)
+		fprintf(stderr, "warning: setvbuf() failed\n");
 #endif
 
 #ifdef UNICODE
-  /* Create a UTF-8 **argv from the wide version */
-  static char **argv;
-  int wa_err;
-  argv = (char **)malloc(sizeof(char *) * (size_t)argc);
-  if (!argv) jc_oom("main() unicode argv");
-  wa_err = jc_widearg_to_argv(argc, wargv, argv);
-  if (wa_err != 0) {
-    jc_print_error(wa_err);
-    exit(EXIT_FAILURE);
-  }
-  /* fix up __argv so getopt etc. don't crash */
-  __argv = argv;
-  jc_set_output_modes(JC_MODE_UTF16_TTY, JC_MODE_UTF16_TTY);
+	/* Create a UTF-8 **argv from the wide version */
+	static char **argv;
+	int wa_err;
+	argv = (char **)malloc(sizeof(char *) * (size_t)argc);
+	if (!argv) jc_oom("main() unicode argv");
+	wa_err = jc_widearg_to_argv(argc, wargv, argv);
+	if (wa_err != 0) {
+		jc_print_error(wa_err);
+		exit(EXIT_FAILURE);
+	}
+	/* fix up __argv so getopt etc. don't crash */
+	__argv = argv;
+	jc_set_output_modes(JC_MODE_UTF16_TTY, JC_MODE_UTF16_TTY);
 #endif /* UNICODE */
 
 #ifndef NO_CHUNKSIZE
 #ifdef __linux__
-  /* Auto-tune chunk size to be half of L1 data cache if possible */
-  jc_get_proc_cacheinfo(&pci);
-  if (pci.l1 != 0) auto_chunk_size = (pci.l1 / 2);
-  else if (pci.l1d != 0) auto_chunk_size = (pci.l1d / 2);
-  /* Must be at least 4096 (4 KiB) and cannot exceed CHUNK_SIZE */
-  if (auto_chunk_size < MIN_CHUNK_SIZE || auto_chunk_size > MAX_CHUNK_SIZE) auto_chunk_size = CHUNK_SIZE;
-  /* Force to a multiple of 4096 if it isn't already */
-  if ((auto_chunk_size & 0x00000fffUL) != 0)
-    auto_chunk_size = (auto_chunk_size + 0x00000fffUL) & 0x000ff000;
+	/* Auto-tune chunk size to be half of L1 data cache if possible */
+	jc_get_proc_cacheinfo(&pci);
+	if (pci.l1 != 0) auto_chunk_size = (pci.l1 / 2);
+	else if (pci.l1d != 0) auto_chunk_size = (pci.l1d / 2);
+	/* Must be at least 4096 (4 KiB) and cannot exceed CHUNK_SIZE */
+	if (auto_chunk_size < MIN_CHUNK_SIZE || auto_chunk_size > MAX_CHUNK_SIZE) auto_chunk_size = CHUNK_SIZE;
+	/* Force to a multiple of 4096 if it isn't already */
+	if ((auto_chunk_size & 0x00000fffUL) != 0)
+		auto_chunk_size = (auto_chunk_size + 0x00000fffUL) & 0x000ff000;
 #endif /* __linux__ */
 #endif /* NO_CHUNKSIZE */
 
-  /* Is stderr a terminal? If not, we won't write progress to it */
+	/* Is stderr a terminal? If not, we won't write progress to it */
 #ifdef ON_WINDOWS
-  if (!_isatty(_fileno(stderr))) SETFLAG(flags, F_HIDEPROGRESS);
+	if (!_isatty(_fileno(stderr))) SETFLAG(flags, F_HIDEPROGRESS);
 #else
-  if (!isatty(fileno(stderr))) SETFLAG(flags, F_HIDEPROGRESS);
+	if (!isatty(fileno(stderr))) SETFLAG(flags, F_HIDEPROGRESS);
 #endif
 
-  program_name = argv[0];
-  oldargv = cloneargs(argc, argv);
+	program_name = argv[0];
+	oldargv = cloneargs(argc, argv);
 
-  while ((opt = GETOPT(argc, argv, GETOPT_STRING
+	while ((opt = GETOPT(argc, argv, GETOPT_STRING
 #ifndef NO_GETOPT_LONG
-          , long_options, NULL
+					, long_options, NULL
 #endif
-         )) != EOF) {
-    if ((uintptr_t)optarg == 0x20) goto error_optarg;
-    switch (opt) {
-    case '0':
-      SETFLAG(a_flags, FA_PRINTNULL);
-      LOUD(fprintf(stderr, "opt: print null instead of newline (--print-null)\n");)
-      break;
-    case '1':
-      SETFLAG(flags, F_ONEFS);
-      LOUD(fprintf(stderr, "opt: recursion across filesystems disabled (--one-file-system)\n");)
-      break;
+				 )) != EOF) {
+		if ((uintptr_t)optarg == 0x20) goto error_optarg;
+		switch (opt) {
+		case '0':
+			SETFLAG(a_flags, FA_PRINTNULL);
+			LOUD(fprintf(stderr, "opt: print null instead of newline (--print-null)\n");)
+			break;
+		case '1':
+			SETFLAG(flags, F_ONEFS);
+			LOUD(fprintf(stderr, "opt: recursion across filesystems disabled (--one-file-system)\n");)
+			break;
 #ifdef DEBUG
-    case '9':
-      SETFLAG(flags, F_BENCHMARKSTOP);
-      break;
+		case '9':
+			SETFLAG(flags, F_BENCHMARKSTOP);
+			break;
 #endif
-    case 'A':
-      SETFLAG(flags, F_EXCLUDEHIDDEN);
-      break;
+		case 'A':
+			SETFLAG(flags, F_EXCLUDEHIDDEN);
+			break;
 #ifdef ENABLE_DEDUPE
-    case 'B':
+		case 'B':
 #ifdef __linux__
-      /* Refuse to dedupe on 2.x kernels; they could damage user data */
-      if (uname(&utsname)) {
-        fprintf(stderr, "Failed to get kernel version! Aborting.\n");
-        exit(EXIT_FAILURE);
-      }
-      LOUD(fprintf(stderr, "dedupefiles: uname got release '%s'\n", utsname.release));
-      if (*(utsname.release) == '2' && *(utsname.release + 1) == '.') {
-        fprintf(stderr, "Refusing to dedupe on a 2.x kernel; data loss could occur. Aborting.\n");
-        exit(EXIT_FAILURE);
-      }
-      /* Kernel-level dedupe will do the byte-for-byte check itself */
-      if (!ISFLAG(flags, F_PARTIALONLY)) SETFLAG(flags, F_QUICKCOMPARE);
+			/* Refuse to dedupe on 2.x kernels; they could damage user data */
+			if (uname(&utsname)) {
+				fprintf(stderr, "Failed to get kernel version! Aborting.\n");
+				exit(EXIT_FAILURE);
+			}
+			LOUD(fprintf(stderr, "dedupefiles: uname got release '%s'\n", utsname.release));
+			if (*(utsname.release) == '2' && *(utsname.release + 1) == '.') {
+				fprintf(stderr, "Refusing to dedupe on a 2.x kernel; data loss could occur. Aborting.\n");
+				exit(EXIT_FAILURE);
+			}
+			/* Kernel-level dedupe will do the byte-for-byte check itself */
+			if (!ISFLAG(flags, F_PARTIALONLY)) SETFLAG(flags, F_QUICKCOMPARE);
 #endif /* __linux__ */
-      SETFLAG(a_flags, FA_DEDUPEFILES);
-      /* It is completely useless to dedupe zero-length extents */
-      CLEARFLAG(flags, F_INCLUDEEMPTY);
-      LOUD(fprintf(stderr, "opt: CoW/block-level deduplication enabled (--dedupe)\n");)
-      break;
+			SETFLAG(a_flags, FA_DEDUPEFILES);
+			/* It is completely useless to dedupe zero-length extents */
+			CLEARFLAG(flags, F_INCLUDEEMPTY);
+			LOUD(fprintf(stderr, "opt: CoW/block-level deduplication enabled (--dedupe)\n");)
+			break;
 #endif /* ENABLE_DEDUPE */
 #ifndef NO_CHUNKSIZE
-    case 'C':
-      manual_chunk_size = (strtol(optarg, NULL, 10) & 0x0ffffffcL) << 10;  /* Align to 4K sizes */
-      if (manual_chunk_size < MIN_CHUNK_SIZE || manual_chunk_size > MAX_CHUNK_SIZE) {
-        fprintf(stderr, "warning: invalid manual chunk size (must be %d - %d KiB); using defaults\n", MIN_CHUNK_SIZE / 1024, MAX_CHUNK_SIZE / 1024);
-        LOUD(fprintf(stderr, "Manual chunk size (failed) was apparently '%s' => %ld KiB\n", optarg, manual_chunk_size / 1024));
-        manual_chunk_size = 0;
-      } else auto_chunk_size = (size_t)manual_chunk_size;
-      LOUD(fprintf(stderr, "Manual chunk size is %ld\n", manual_chunk_size));
-      break;
+		case 'C':
+			manual_chunk_size = (strtol(optarg, NULL, 10) & 0x0ffffffcL) << 10;  /* Align to 4K sizes */
+			if (manual_chunk_size < MIN_CHUNK_SIZE || manual_chunk_size > MAX_CHUNK_SIZE) {
+				fprintf(stderr, "warning: invalid manual chunk size (must be %d - %d KiB); using defaults\n", MIN_CHUNK_SIZE / 1024, MAX_CHUNK_SIZE / 1024);
+				LOUD(fprintf(stderr, "Manual chunk size (failed) was apparently '%s' => %ld KiB\n", optarg, manual_chunk_size / 1024));
+				manual_chunk_size = 0;
+			} else auto_chunk_size = (size_t)manual_chunk_size;
+			LOUD(fprintf(stderr, "Manual chunk size is %ld\n", manual_chunk_size));
+			break;
 #endif /* NO_CHUNKSIZE */
 #ifndef NO_DELETE
-    case 'd':
-      SETFLAG(a_flags, FA_DELETEFILES);
-      LOUD(fprintf(stderr, "opt: delete files after matching (--delete)\n");)
-      break;
+		case 'd':
+			SETFLAG(a_flags, FA_DELETEFILES);
+			LOUD(fprintf(stderr, "opt: delete files after matching (--delete)\n");)
+			break;
 #endif /* NO_DELETE */
-    case 'D':
+		case 'D':
 #ifdef DEBUG
-      SETFLAG(flags, F_DEBUG);
-      LOUD(fprintf(stderr, "opt: debugging information (--debug)\n");)
+			SETFLAG(flags, F_DEBUG);
+			LOUD(fprintf(stderr, "opt: debugging information (--debug)\n");)
 #else
-      fprintf(stderr, "warning: -D debugging is not supported in this build, ignoring\n");
+			fprintf(stderr, "warning: -D debugging is not supported in this build, ignoring\n");
 #endif
-      break;
+			break;
 #ifndef NO_ERRORONDUPE
-    case 'E':
-      fprintf(stderr, "The -E option has been moved to -e as threatened in 1.26.1!\n");
-      fprintf(stderr, "Fix whatever used -E and try again. This is not a bug. Exiting.\n");
-      exit(EXIT_FAILURE);
-      break;
-    case 'e':
-      SETFLAG(a_flags, FA_ERRORONDUPE);
-      break;
+		case 'E':
+			fprintf(stderr, "The -E option has been moved to -e as threatened in 1.26.1!\n");
+			fprintf(stderr, "Fix whatever used -E and try again. This is not a bug. Exiting.\n");
+			exit(EXIT_FAILURE);
+			break;
+		case 'e':
+			SETFLAG(a_flags, FA_ERRORONDUPE);
+			break;
 #endif /* NO_ERRORONDUPE */
-    case 'f':
-      SETFLAG(a_flags, FA_OMITFIRST);
-      LOUD(fprintf(stderr, "opt: omit first match from each match set (--omit-first)\n");)
-      break;
-    case 'h':
-      help_text();
-      exit(EXIT_SUCCESS);
+		case 'f':
+			SETFLAG(a_flags, FA_OMITFIRST);
+			LOUD(fprintf(stderr, "opt: omit first match from each match set (--omit-first)\n");)
+			break;
+		case 'h':
+			help_text();
+			exit(EXIT_SUCCESS);
 #ifndef NO_HARDLINKS
-    case 'H':
-      SETFLAG(flags, F_CONSIDERHARDLINKS);
-      LOUD(fprintf(stderr, "opt: hard links count as matches (--hard-links)\n");)
-      break;
-    case 'L':
-      SETFLAG(a_flags, FA_HARDLINKFILES);
-      LOUD(fprintf(stderr, "opt: convert duplicates to hard links (--link-hard)\n");)
-      break;
+		case 'H':
+			SETFLAG(flags, F_CONSIDERHARDLINKS);
+			LOUD(fprintf(stderr, "opt: hard links count as matches (--hard-links)\n");)
+			break;
+		case 'L':
+			SETFLAG(a_flags, FA_HARDLINKFILES);
+			LOUD(fprintf(stderr, "opt: convert duplicates to hard links (--link-hard)\n");)
+			break;
 #endif
-    case 'i':
-      SETFLAG(flags, F_REVERSESORT);
-      LOUD(fprintf(stderr, "opt: sort order reversal enabled (--reverse)\n");)
-      break;
+		case 'i':
+			SETFLAG(flags, F_REVERSESORT);
+			LOUD(fprintf(stderr, "opt: sort order reversal enabled (--reverse)\n");)
+			break;
 #ifndef NO_USER_ORDER
-    case 'I':
-      SETFLAG(flags, F_ISOLATE);
-      LOUD(fprintf(stderr, "opt: intra-parameter match isolation enabled (--isolate)\n");)
-      break;
-    case 'O':
-      SETFLAG(flags, F_USEPARAMORDER);
-      LOUD(fprintf(stderr, "opt: parameter order takes precedence (--param-order)\n");)
-      break;
+		case 'I':
+			SETFLAG(flags, F_ISOLATE);
+			LOUD(fprintf(stderr, "opt: intra-parameter match isolation enabled (--isolate)\n");)
+			break;
+		case 'O':
+			SETFLAG(flags, F_USEPARAMORDER);
+			LOUD(fprintf(stderr, "opt: parameter order takes precedence (--param-order)\n");)
+			break;
 #else
-    case 'I':
-    case 'O':
-      fprintf(stderr, "warning: -I and -O are disabled and ignored in this build\n");
-      break;
+		case 'I':
+		case 'O':
+			fprintf(stderr, "warning: -I and -O are disabled and ignored in this build\n");
+			break;
 #endif
 #ifndef NO_JSON
-    case 'j':
-      SETFLAG(a_flags, FA_PRINTJSON);
-      LOUD(fprintf(stderr, "opt: print output in JSON format (--print-json)\n");)
-      break;
+		case 'j':
+			SETFLAG(a_flags, FA_PRINTJSON);
+			LOUD(fprintf(stderr, "opt: print output in JSON format (--print-json)\n");)
+			break;
 #endif /* NO_JSON */
-    case 'K':
-      SETFLAG(flags, F_SKIPHASH);
-      break;
-    case 'm':
-      SETFLAG(a_flags, FA_SUMMARIZEMATCHES);
-      LOUD(fprintf(stderr, "opt: print a summary of match stats (--summarize)\n");)
-      break;
-    case 'M':
-      SETFLAG(a_flags, FA_SUMMARIZEMATCHES);
-      SETFLAG(a_flags, FA_PRINTMATCHES);
-      LOUD(fprintf(stderr, "opt: print matches with a summary (--print-summarize)\n");)
-      break;
+		case 'K':
+			SETFLAG(flags, F_SKIPHASH);
+			break;
+		case 'm':
+			SETFLAG(a_flags, FA_SUMMARIZEMATCHES);
+			LOUD(fprintf(stderr, "opt: print a summary of match stats (--summarize)\n");)
+			break;
+		case 'M':
+			SETFLAG(a_flags, FA_SUMMARIZEMATCHES);
+			SETFLAG(a_flags, FA_PRINTMATCHES);
+			LOUD(fprintf(stderr, "opt: print matches with a summary (--print-summarize)\n");)
+			break;
 #ifndef NO_DELETE
-    case 'N':
-      SETFLAG(flags, F_NOPROMPT);
-      LOUD(fprintf(stderr, "opt: delete files without prompting (--noprompt)\n");)
-      break;
+		case 'N':
+			SETFLAG(flags, F_NOPROMPT);
+			LOUD(fprintf(stderr, "opt: delete files without prompting (--noprompt)\n");)
+			break;
 #endif /* NO_DELETE */
-    case 'o':
+		case 'o':
 #ifndef NO_MTIME  /* Remove if new order types are added! */
-      if (!jc_strncaseeq("name", optarg, 5)) {
-        ordertype = ORDER_NAME;
-      } else if (!jc_strncaseeq("time", optarg, 5)) {
-        ordertype = ORDER_TIME;
-      } else {
-        fprintf(stderr, "invalid value for --order: '%s'\n", optarg);
-        exit(EXIT_FAILURE);
-      }
+			if (!jc_strncaseeq("name", optarg, 5)) {
+				ordertype = ORDER_NAME;
+			} else if (!jc_strncaseeq("time", optarg, 5)) {
+				ordertype = ORDER_TIME;
+			} else {
+				fprintf(stderr, "invalid value for --order: '%s'\n", optarg);
+				exit(EXIT_FAILURE);
+			}
 #endif /* NO_MTIME */
-      break;
-    case 'p':
-      SETFLAG(flags, F_PERMISSIONS);
-      LOUD(fprintf(stderr, "opt: permissions must also match (--permissions)\n");)
-      break;
-    case 'P':
-      LOUD(fprintf(stderr, "opt: print early: '%s' (--print)\n", optarg);)
-      if (jc_streq(optarg, "partial") == 0) SETFLAG(p_flags, PF_PARTIAL);
-      else if (jc_streq(optarg, "early") == 0) SETFLAG(p_flags, PF_EARLYMATCH);
-      else if (jc_streq(optarg, "fullhash") == 0) SETFLAG(p_flags, PF_FULLHASH);
-      else {
-        fprintf(stderr, "Option '%s' is not valid for -P\n", optarg);
-        exit(EXIT_FAILURE);
-      }
-      break;
-    case 'q':
-      SETFLAG(flags, F_HIDEPROGRESS);
-      break;
-    case 'Q':
-      SETFLAG(flags, F_QUICKCOMPARE);
-      LOUD(fprintf(stderr, "opt: byte-for-byte safety check disabled (--quick)\n");)
-      break;
-    case 'r':
-      SETFLAG(flags, F_RECURSE);
-      LOUD(fprintf(stderr, "opt: global recursion enabled (--recurse)\n");)
-      break;
-    case 'R':
-      SETFLAG(flags, F_RECURSEAFTER);
-      LOUD(fprintf(stderr, "opt: partial recursion enabled (--recurse-after)\n");)
-      break;
-    case 't':
-      SETFLAG(flags, F_NOCHANGECHECK);
-      LOUD(fprintf(stderr, "opt: TOCTTOU safety check disabled (--no-change-check)\n");)
-      break;
-    case 'T':
-      partialonly_spec++;
-      if (partialonly_spec == 1) {
-      }
-      if (partialonly_spec == 2) {
-        SETFLAG(flags, F_PARTIALONLY);
-        CLEARFLAG(flags, F_QUICKCOMPARE);
-      }
-      break;
-    case 'u':
-      SETFLAG(a_flags, FA_PRINTUNIQUE);
-      LOUD(fprintf(stderr, "opt: print only non-matched (unique) files (--print-unique)\n");)
-      break;
-    case 'U':
-      SETFLAG(flags, F_NOTRAVCHECK);
-      LOUD(fprintf(stderr, "opt: double-traversal safety check disabled (--no-trav-check)\n");)
-      break;
-    case 'v':
-    case 'V':
-      version_text(0);
-      exit(EXIT_SUCCESS);
+			break;
+		case 'p':
+			SETFLAG(flags, F_PERMISSIONS);
+			LOUD(fprintf(stderr, "opt: permissions must also match (--permissions)\n");)
+			break;
+		case 'P':
+			LOUD(fprintf(stderr, "opt: print early: '%s' (--print)\n", optarg);)
+			if (jc_streq(optarg, "partial") == 0) SETFLAG(p_flags, PF_PARTIAL);
+			else if (jc_streq(optarg, "early") == 0) SETFLAG(p_flags, PF_EARLYMATCH);
+			else if (jc_streq(optarg, "fullhash") == 0) SETFLAG(p_flags, PF_FULLHASH);
+			else {
+				fprintf(stderr, "Option '%s' is not valid for -P\n", optarg);
+				exit(EXIT_FAILURE);
+			}
+			break;
+		case 'q':
+			SETFLAG(flags, F_HIDEPROGRESS);
+			break;
+		case 'Q':
+			SETFLAG(flags, F_QUICKCOMPARE);
+			LOUD(fprintf(stderr, "opt: byte-for-byte safety check disabled (--quick)\n");)
+			break;
+		case 'r':
+			SETFLAG(flags, F_RECURSE);
+			LOUD(fprintf(stderr, "opt: global recursion enabled (--recurse)\n");)
+			break;
+		case 'R':
+			SETFLAG(flags, F_RECURSEAFTER);
+			LOUD(fprintf(stderr, "opt: partial recursion enabled (--recurse-after)\n");)
+			break;
+		case 't':
+			SETFLAG(flags, F_NOCHANGECHECK);
+			LOUD(fprintf(stderr, "opt: TOCTTOU safety check disabled (--no-change-check)\n");)
+			break;
+		case 'T':
+			partialonly_spec++;
+			if (partialonly_spec == 1) {
+			}
+			if (partialonly_spec == 2) {
+				SETFLAG(flags, F_PARTIALONLY);
+				CLEARFLAG(flags, F_QUICKCOMPARE);
+			}
+			break;
+		case 'u':
+			SETFLAG(a_flags, FA_PRINTUNIQUE);
+			LOUD(fprintf(stderr, "opt: print only non-matched (unique) files (--print-unique)\n");)
+			break;
+		case 'U':
+			SETFLAG(flags, F_NOTRAVCHECK);
+			LOUD(fprintf(stderr, "opt: double-traversal safety check disabled (--no-trav-check)\n");)
+			break;
+		case 'v':
+		case 'V':
+			version_text(0);
+			exit(EXIT_SUCCESS);
 #ifndef NO_SYMLINKS
-    case 'l':
-      SETFLAG(a_flags, FA_MAKESYMLINKS);
-      LOUD(fprintf(stderr, "opt: convert duplicates to symbolic links (--link-soft)\n");)
-      break;
-    case 's':
-      SETFLAG(flags, F_FOLLOWLINKS);
-      LOUD(fprintf(stderr, "opt: follow symbolic links enabled (--symlinks)\n");)
-      break;
+		case 'l':
+			SETFLAG(a_flags, FA_MAKESYMLINKS);
+			LOUD(fprintf(stderr, "opt: convert duplicates to symbolic links (--link-soft)\n");)
+			break;
+		case 's':
+			SETFLAG(flags, F_FOLLOWLINKS);
+			LOUD(fprintf(stderr, "opt: follow symbolic links enabled (--symlinks)\n");)
+			break;
 #endif
-    case 'S':
-      SETFLAG(a_flags, FA_SHOWSIZE);
-      LOUD(fprintf(stderr, "opt: show size of files enabled (--size)\n");)
-      break;
+		case 'S':
+			SETFLAG(a_flags, FA_SHOWSIZE);
+			LOUD(fprintf(stderr, "opt: show size of files enabled (--size)\n");)
+			break;
 #ifndef NO_EXTFILTER
-    case 'X':
-      add_extfilter(optarg);
-      break;
+		case 'X':
+			add_extfilter(optarg);
+			break;
 #endif /* NO_EXTFILTER */
 #ifndef NO_HASHDB
-    case 'y':
-      SETFLAG(flags, F_HASHDB);
-      LOUD(fprintf(stderr, "opt: use a hash database (--hash-db)\n");)
-      fprintf(stderr, "\nWARNING: THE HASH DATABASE FEATURE IS UNDER HEAVY DEVELOPMENT! It functions\n");
-      fprintf(stderr,   "         but there are LOTS OF QUIRKS. The behavior is not fully documented\n");
-      fprintf(stderr,   "         yet and basic 'smarts' have not been implemented. USE THIS FEATURE\n");
-      fprintf(stderr,   "         AT YOUR OWN RISK. Report hashdb issues to jody@jodybruchon.com\n\n");
-      hdbsize = 0;
-      hdblen = strlen(optarg) + 1;
-      if (hdblen < 24) hdblen = 24;
-      hashdb_name = (char *)malloc(hdblen);
-      if (hashdb_name == NULL) jc_oom("hashdb_name alloc");
-      if (strcmp(optarg, ".") == 0) strcpy(hashdb_name, "jdupes_hashdb.txt");
-      else strcpy(hashdb_name, optarg);
-      break;
+		case 'y':
+			SETFLAG(flags, F_HASHDB);
+			LOUD(fprintf(stderr, "opt: use a hash database (--hash-db)\n");)
+			fprintf(stderr, "\nWARNING: THE HASH DATABASE FEATURE IS UNDER HEAVY DEVELOPMENT! It functions\n");
+			fprintf(stderr,   "         but there are LOTS OF QUIRKS. The behavior is not fully documented\n");
+			fprintf(stderr,   "         yet and basic 'smarts' have not been implemented. USE THIS FEATURE\n");
+			fprintf(stderr,   "         AT YOUR OWN RISK. Report hashdb issues to jody@jodybruchon.com\n\n");
+			hdbsize = 0;
+			hdblen = strlen(optarg) + 1;
+			if (hdblen < 24) hdblen = 24;
+			hashdb_name = (char *)malloc(hdblen);
+			if (hashdb_name == NULL) jc_oom("hashdb_name alloc");
+			if (strcmp(optarg, ".") == 0) strcpy(hashdb_name, "jdupes_hashdb.txt");
+			else strcpy(hashdb_name, optarg);
+			break;
 #endif /* NO_HASHDB */
-    case 'z':
-      SETFLAG(flags, F_INCLUDEEMPTY);
-      LOUD(fprintf(stderr, "opt: zero-length files count as matches (--zero-match)\n");)
-      break;
-    case 'Z':
-      SETFLAG(flags, F_SOFTABORT);
-      LOUD(fprintf(stderr, "opt: soft-abort mode enabled (--soft-abort)\n");)
-      break;
-    case '@':
+		case 'z':
+			SETFLAG(flags, F_INCLUDEEMPTY);
+			LOUD(fprintf(stderr, "opt: zero-length files count as matches (--zero-match)\n");)
+			break;
+		case 'Z':
+			SETFLAG(flags, F_SOFTABORT);
+			LOUD(fprintf(stderr, "opt: soft-abort mode enabled (--soft-abort)\n");)
+			break;
+		case '@':
 #ifdef LOUD_DEBUG
-      SETFLAG(flags, F_DEBUG | F_LOUD | F_HIDEPROGRESS);
+			SETFLAG(flags, F_DEBUG | F_LOUD | F_HIDEPROGRESS);
 #endif
-      LOUD(fprintf(stderr, "opt: loud debugging enabled, hope you can handle it (--loud)\n");)
-      break;
+			LOUD(fprintf(stderr, "opt: loud debugging enabled, hope you can handle it (--loud)\n");)
+			break;
 
-    default:
-      if (opt != '?') fprintf(stderr, "Sorry, using '-%c' is not supported in this build.\n", opt);
-      fprintf(stderr, "Try `jdupes --help' for more information.\n");
-      exit(EXIT_FAILURE);
-    }
-  }
+		default:
+			if (opt != '?') fprintf(stderr, "Sorry, using '-%c' is not supported in this build.\n", opt);
+			fprintf(stderr, "Try `jdupes --help' for more information.\n");
+			exit(EXIT_FAILURE);
+		}
+	}
 
-  if (optind >= argc) {
-    fprintf(stderr, "no files or directories specified (use -h option for help)\n");
-    exit(EXIT_FAILURE);
-  }
+	if (optind >= argc) {
+		fprintf(stderr, "no files or directories specified (use -h option for help)\n");
+		exit(EXIT_FAILURE);
+	}
 
-  /* Make noise if people try to use -T because it's super dangerous */
-  if (partialonly_spec > 0) {
-    if (partialonly_spec > 2) {
-      if (!ISFLAG(flags, F_HIDEPROGRESS)) fprintf(stderr, "Saying -T three or more times? You're a wizard. No reminders for you.\n");
-      goto skip_partialonly_noise;
-    }
-    fprintf(stderr, "\nBIG FAT WARNING: -T/--partial-only is EXTREMELY DANGEROUS! Read the manual!\n");
-    fprintf(stderr,   "                 If used with destructive actions YOU WILL LOSE DATA!\n");
-    fprintf(stderr,   "                 YOU ARE ON YOUR OWN. Use this power carefully.\n\n");
-    if (partialonly_spec == 1) {
-      fprintf(stderr, "-T is so dangerous that you must specify it twice to use it. By doing so,\n");
-      fprintf(stderr, "you agree that you're OK with LOSING ALL OF YOUR DATA BY USING -T.\n\n");
-      exit(EXIT_FAILURE);
-    }
-    if (partialonly_spec == 2) {
-      fprintf(stderr, "You passed -T twice. I hope you know what you're doing. Last chance!\n\n");
-      fprintf(stderr, "          HIT CTRL-C TO ABORT IF YOU AREN'T CERTAIN!\n          ");
-      for (int countdown = 10; countdown > 0; countdown--) {
-        fprintf(stderr, "%d, ", countdown);
-        sleep(1);
-      }
-      fprintf(stderr, "bye-bye, data, it was nice knowing you.\n");
-      fprintf(stderr, "For wizards: three tees is the way to be.\n\n");
-    }
-  }
+	/* Make noise if people try to use -T because it's super dangerous */
+	if (partialonly_spec > 0) {
+		if (partialonly_spec > 2) {
+			if (!ISFLAG(flags, F_HIDEPROGRESS)) fprintf(stderr, "Saying -T three or more times? You're a wizard. No reminders for you.\n");
+			goto skip_partialonly_noise;
+		}
+		fprintf(stderr, "\nBIG FAT WARNING: -T/--partial-only is EXTREMELY DANGEROUS! Read the manual!\n");
+		fprintf(stderr,   "                 If used with destructive actions YOU WILL LOSE DATA!\n");
+		fprintf(stderr,   "                 YOU ARE ON YOUR OWN. Use this power carefully.\n\n");
+		if (partialonly_spec == 1) {
+			fprintf(stderr, "-T is so dangerous that you must specify it twice to use it. By doing so,\n");
+			fprintf(stderr, "you agree that you're OK with LOSING ALL OF YOUR DATA BY USING -T.\n\n");
+			exit(EXIT_FAILURE);
+		}
+		if (partialonly_spec == 2) {
+			fprintf(stderr, "You passed -T twice. I hope you know what you're doing. Last chance!\n\n");
+			fprintf(stderr, "          HIT CTRL-C TO ABORT IF YOU AREN'T CERTAIN!\n          ");
+			for (int countdown = 10; countdown > 0; countdown--) {
+				fprintf(stderr, "%d, ", countdown);
+				sleep(1);
+			}
+			fprintf(stderr, "bye-bye, data, it was nice knowing you.\n");
+			fprintf(stderr, "For wizards: three tees is the way to be.\n\n");
+		}
+	}
 skip_partialonly_noise:
 
-  if (ISFLAG(flags, F_RECURSE) && ISFLAG(flags, F_RECURSEAFTER)) {
-    fprintf(stderr, "options --recurse and --recurse: are not compatible\n");
-    exit(EXIT_FAILURE);
-  }
+	if (ISFLAG(flags, F_RECURSE) && ISFLAG(flags, F_RECURSEAFTER)) {
+		fprintf(stderr, "options --recurse and --recurse: are not compatible\n");
+		exit(EXIT_FAILURE);
+	}
 
-  if (ISFLAG(a_flags, FA_SUMMARIZEMATCHES) && ISFLAG(a_flags, FA_DELETEFILES)) {
-    fprintf(stderr, "options --summarize and --delete are not compatible\n");
-    exit(EXIT_FAILURE);
-  }
+	if (ISFLAG(a_flags, FA_SUMMARIZEMATCHES) && ISFLAG(a_flags, FA_DELETEFILES)) {
+		fprintf(stderr, "options --summarize and --delete are not compatible\n");
+		exit(EXIT_FAILURE);
+	}
 
 #if defined ENABLE_DEDUPE && !defined NO_HARDLINKS
-  if (ISFLAG(flags, F_CONSIDERHARDLINKS) && ISFLAG(a_flags, FA_DEDUPEFILES))
-    fprintf(stderr, "warning: option --dedupe overrides the behavior of --hardlinks\n");
+	if (ISFLAG(flags, F_CONSIDERHARDLINKS) && ISFLAG(a_flags, FA_DEDUPEFILES))
+		fprintf(stderr, "warning: option --dedupe overrides the behavior of --hardlinks\n");
 #endif
 
-  /* Debugging mode: dump all set flags */
-  DBG(if (ISFLAG(flags, F_DEBUG)) dump_all_flags();)
+	/* Debugging mode: dump all set flags */
+	DBG(if (ISFLAG(flags, F_DEBUG)) dump_all_flags();)
 
-  /* If pm == 0, call printmatches() */
-  pm = !!ISFLAG(a_flags, FA_SUMMARIZEMATCHES) +
-      !!ISFLAG(a_flags, FA_DELETEFILES) +
-      !!ISFLAG(a_flags, FA_HARDLINKFILES) +
-      !!ISFLAG(a_flags, FA_MAKESYMLINKS) +
-      !!ISFLAG(a_flags, FA_PRINTJSON) +
-      !!ISFLAG(a_flags, FA_PRINTUNIQUE) +
-      !!ISFLAG(a_flags, FA_ERRORONDUPE) +
-      !!ISFLAG(a_flags, FA_DEDUPEFILES);
+	/* If pm == 0, call printmatches() */
+	pm = !!ISFLAG(a_flags, FA_SUMMARIZEMATCHES) +
+			!!ISFLAG(a_flags, FA_DELETEFILES) +
+			!!ISFLAG(a_flags, FA_HARDLINKFILES) +
+			!!ISFLAG(a_flags, FA_MAKESYMLINKS) +
+			!!ISFLAG(a_flags, FA_PRINTJSON) +
+			!!ISFLAG(a_flags, FA_PRINTUNIQUE) +
+			!!ISFLAG(a_flags, FA_ERRORONDUPE) +
+			!!ISFLAG(a_flags, FA_DEDUPEFILES);
 
-  if (pm > 1) {
-      fprintf(stderr, "Only one of --summarize, --print-summarize, --delete, --link-hard,\n--link-soft, --json, --error-on-dupe, or --dedupe may be used\n");
-      exit(EXIT_FAILURE);
-  }
-  if (pm == 0) SETFLAG(a_flags, FA_PRINTMATCHES);
+	if (pm > 1) {
+			fprintf(stderr, "Only one of --summarize, --print-summarize, --delete, --link-hard,\n--link-soft, --json, --error-on-dupe, or --dedupe may be used\n");
+			exit(EXIT_FAILURE);
+	}
+	if (pm == 0) SETFLAG(a_flags, FA_PRINTMATCHES);
 
 #ifndef ON_WINDOWS
-  /* Catch SIGUSR1 and use it to enable -Z */
-  signal(SIGUSR1, catch_sigusr1);
+	/* Catch SIGUSR1 and use it to enable -Z */
+	signal(SIGUSR1, catch_sigusr1);
 #endif
 
-  /* Catch CTRL-C */
-  signal(SIGINT, catch_interrupt);
+	/* Catch CTRL-C */
+	signal(SIGINT, catch_interrupt);
 
 #ifndef NO_HASHDB
-  if (ISFLAG(flags, F_HASHDB)) {
-    hdbsize = load_hash_database(hashdb_name);
-    if (hdbsize < 0) goto error_load_hashdb;
-    if (hdbsize > 0 && !ISFLAG(flags, F_HIDEPROGRESS)) fprintf(stderr, "%" PRId64 " entries loaded.\n", hdbsize);
-  }
+	if (ISFLAG(flags, F_HASHDB)) {
+		hdbsize = load_hash_database(hashdb_name);
+		if (hdbsize < 0) goto error_load_hashdb;
+		if (hdbsize > 0 && !ISFLAG(flags, F_HIDEPROGRESS)) fprintf(stderr, "%" PRId64 " entries loaded.\n", hdbsize);
+	}
 #endif /* NO_HASHDB */
 
-  /* Progress indicator every second */
-  if (!ISFLAG(flags, F_HIDEPROGRESS)) {
-    jc_start_alarm(1, 1);
-    /* Force an immediate progress update */
-    jc_alarm_ring = 1;
-  }
+	/* Progress indicator every second */
+	if (!ISFLAG(flags, F_HIDEPROGRESS)) {
+		jc_start_alarm(1, 1);
+		/* Force an immediate progress update */
+		jc_alarm_ring = 1;
+	}
 
-  if (ISFLAG(flags, F_RECURSEAFTER)) {
-    firstrecurse = nonoptafter("--recurse:", argc, oldargv, argv);
+	if (ISFLAG(flags, F_RECURSEAFTER)) {
+		firstrecurse = nonoptafter("--recurse:", argc, oldargv, argv);
 
-    if (firstrecurse == argc)
-      firstrecurse = nonoptafter("-R", argc, oldargv, argv);
+		if (firstrecurse == argc)
+			firstrecurse = nonoptafter("-R", argc, oldargv, argv);
 
-    if (firstrecurse == argc) {
-      fprintf(stderr, "-R option must be isolated from other options\n");
-      exit(EXIT_FAILURE);
-    }
+		if (firstrecurse == argc) {
+			fprintf(stderr, "-R option must be isolated from other options\n");
+			exit(EXIT_FAILURE);
+		}
 
-    /* F_RECURSE is not set for directories before --recurse: */
-    for (int x = optind; x < firstrecurse; x++) {
-      if (unlikely(interrupt)) goto interrupt_exit;
-      loaddir(argv[x], 0);
-      user_item_count++;
-    }
+		/* F_RECURSE is not set for directories before --recurse: */
+		for (int x = optind; x < firstrecurse; x++) {
+			if (unlikely(interrupt)) goto interrupt_exit;
+			loaddir(argv[x], 0);
+			user_item_count++;
+		}
 
-    /* Set F_RECURSE for directories after --recurse: */
-    SETFLAG(flags, F_RECURSE);
+		/* Set F_RECURSE for directories after --recurse: */
+		SETFLAG(flags, F_RECURSE);
 
-    for (int x = firstrecurse; x < argc; x++) {
-      if (unlikely(interrupt)) goto interrupt_exit;
-      loaddir(argv[x], 1);
-      user_item_count++;
-    }
-  } else {
-    for (int x = optind; x < argc; x++) {
-      if (unlikely(interrupt)) goto interrupt_exit;
-      loaddir(argv[x], ISFLAG(flags, F_RECURSE));
-      user_item_count++;
-    }
-  }
+		for (int x = firstrecurse; x < argc; x++) {
+			if (unlikely(interrupt)) goto interrupt_exit;
+			loaddir(argv[x], 1);
+			user_item_count++;
+		}
+	} else {
+		for (int x = optind; x < argc; x++) {
+			if (unlikely(interrupt)) goto interrupt_exit;
+			loaddir(argv[x], ISFLAG(flags, F_RECURSE));
+			user_item_count++;
+		}
+	}
 
-  /* Abort on CTRL-C (-Z doesn't matter yet) */
-  if (unlikely(interrupt)) goto interrupt_exit;
+	/* Abort on CTRL-C (-Z doesn't matter yet) */
+	if (unlikely(interrupt)) goto interrupt_exit;
 
-  /* Force a progress update */
-  if (!ISFLAG(flags, F_HIDEPROGRESS)) update_phase1_progress("items");
+	/* Force a progress update */
+	if (!ISFLAG(flags, F_HIDEPROGRESS)) update_phase1_progress("items");
 
 /* We don't need the double traversal check tree anymore */
 #ifndef NO_TRAVCHECK
-  travcheck_free(NULL);
+	travcheck_free(NULL);
 #endif /* NO_TRAVCHECK */
 
 #ifdef DEBUG
-  /* Pass -9 option to exit after traversal/loading code */
-  if (ISFLAG(flags, F_BENCHMARKSTOP)) {
-    fprintf(stderr, "\nBenchmarking stop requested; exiting.\n");
-    goto skip_all_scan_code;
-  }
+	/* Pass -9 option to exit after traversal/loading code */
+	if (ISFLAG(flags, F_BENCHMARKSTOP)) {
+		fprintf(stderr, "\nBenchmarking stop requested; exiting.\n");
+		goto skip_all_scan_code;
+	}
 #endif
 
-  if (ISFLAG(flags, F_REVERSESORT)) sort_direction = -1;
-  if (!ISFLAG(flags, F_HIDEPROGRESS)) fprintf(stderr, "\n");
+	if (ISFLAG(flags, F_REVERSESORT)) sort_direction = -1;
+	if (!ISFLAG(flags, F_HIDEPROGRESS)) fprintf(stderr, "\n");
 
-  /* Force an immediate progress update */
-  progress = 0;
-  if (!ISFLAG(flags, F_HIDEPROGRESS)) jc_alarm_ring = 1;
+	/* Force an immediate progress update */
+	progress = 0;
+	if (!ISFLAG(flags, F_HIDEPROGRESS)) jc_alarm_ring = 1;
 
 // FIXME: big time work in progress
-  st_state_t *st_state = sizetree_state_alloc();
-  for (curfile = sizetree_next_list(st_state); curfile != NULL; curfile = sizetree_next_list(st_state)) {
-    while (curfile != NULL) {
-      LOUD(fprintf(stderr, "curfile = %p '%s'\n", curfile, curfile->d_name);)
-      if (unlikely(interrupt != 0)) {
-        if (!ISFLAG(flags, F_SOFTABORT)) exit(EXIT_FAILURE);
-        interrupt = 0;  /* reset interrupt for re-use */
-        goto skip_file_scan;
-      }
+	st_state_t *st_state = sizetree_state_alloc();
+	for (curfile = sizetree_next_list(st_state); curfile != NULL; curfile = sizetree_next_list(st_state)) {
+		while (curfile != NULL) {
+			LOUD(fprintf(stderr, "curfile = %p '%s'\n", curfile, curfile->d_name);)
+			if (unlikely(interrupt != 0)) {
+				if (!ISFLAG(flags, F_SOFTABORT)) exit(EXIT_FAILURE);
+				interrupt = 0;  /* reset interrupt for re-use */
+				goto skip_file_scan;
+			}
 
-      for (file_t *scanfile = curfile->next; scanfile != NULL; scanfile = scanfile->next) {
-        int match;
+			for (file_t *scanfile = curfile->next; scanfile != NULL; scanfile = scanfile->next) {
+				int match;
 
-        LOUD(fprintf(stderr, "scanfile = %p '%s'\n", scanfile, scanfile->d_name);)
-        match = checkmatch(curfile, scanfile);
-        LOUD(fprintf(stderr, "checkmatch returned %d\n", match);)
-        if (match == 0) {
-          /* Quick or partial-only compare will never run confirmmatch()
-           * Also skip match confirmation for hard-linked files
-           * (This set of comparisons is ugly, but quite efficient) */
-          if (
-                 ISFLAG(flags, F_QUICKCOMPARE)
-              || ISFLAG(flags, F_PARTIALONLY)
-  #ifndef NO_HARDLINKS
-              || (ISFLAG(flags, F_CONSIDERHARDLINKS)
-              &&  (curfile->inode == scanfile->inode)
-              &&  (curfile->device == scanfile->device))
-  #endif
-              ) {
-            LOUD(fprintf(stderr, "MAIN: notice: hard linked, quick, or partial-only match (-H/-Q/-T)\n"));
-            goto register_pair;
-          }
+				LOUD(fprintf(stderr, "scanfile = %p '%s'\n", scanfile, scanfile->d_name);)
+				match = checkmatch(curfile, scanfile);
+				LOUD(fprintf(stderr, "checkmatch returned %d\n", match);)
+				if (match == 0) {
+					/* Quick or partial-only compare will never run confirmmatch()
+					 * Also skip match confirmation for hard-linked files
+					 * (This set of comparisons is ugly, but quite efficient) */
+					if (
+								 ISFLAG(flags, F_QUICKCOMPARE)
+							|| ISFLAG(flags, F_PARTIALONLY)
+	#ifndef NO_HARDLINKS
+							|| (ISFLAG(flags, F_CONSIDERHARDLINKS)
+							&&  (curfile->inode == scanfile->inode)
+							&&  (curfile->device == scanfile->device))
+	#endif
+							) {
+						LOUD(fprintf(stderr, "MAIN: notice: hard linked, quick, or partial-only match (-H/-Q/-T)\n"));
+						goto register_pair;
+					}
 
-          if (confirmmatch(curfile->d_name, scanfile->d_name, curfile->size) != 0) {
-            LOUD(fprintf(stderr, "MAIN: confirmation failed, not matching\n"));
-            DBG(hash_fail++;)
-            goto skip_register;
-          }
-        } else {
-          LOUD(fprintf(stderr, "MAIN: checkmatch failed, not matching\n"));
-          goto skip_register;
-        }
+					if (confirmmatch(curfile->d_name, scanfile->d_name, curfile->size) != 0) {
+						LOUD(fprintf(stderr, "MAIN: confirmation failed, not matching\n"));
+						DBG(hash_fail++;)
+						goto skip_register;
+					}
+				} else {
+					LOUD(fprintf(stderr, "MAIN: checkmatch failed, not matching\n"));
+					goto skip_register;
+				}
 
-  register_pair:
-        LOUD(fprintf(stderr, "MAIN: registering matched file pair\n"));
-        registerpair(curfile, scanfile);
-        dupecount++;
+	register_pair:
+				LOUD(fprintf(stderr, "MAIN: registering matched file pair\n"));
+				registerpair(curfile, scanfile);
+				dupecount++;
 
-  skip_register:
+	skip_register:
 #if 0
-        while (scanfile != NULL && ISFLAG(scanfile->flags, FF_HAS_DUPES) && scanfile->next != NULL) {
-          LOUD(fprintf(stderr, "Already has dupes: '%s'\n", scanfile->d_name);)
-          scanfile = scanfile->next;
-        }
+				while (scanfile != NULL && ISFLAG(scanfile->flags, FF_HAS_DUPES) && scanfile->next != NULL) {
+					LOUD(fprintf(stderr, "Already has dupes: '%s'\n", scanfile->d_name);)
+					scanfile = scanfile->next;
+				}
 #endif
-      } /* Scan loop end */
+			} /* Scan loop end */
 
-      check_sigusr1();
-      if (jc_alarm_ring != 0) {
-        jc_alarm_ring = 0;
-        update_phase2_progress(NULL, -1);
-      }
-      progress++;
+			check_sigusr1();
+			if (jc_alarm_ring != 0) {
+				jc_alarm_ring = 0;
+				update_phase2_progress(NULL, -1);
+			}
+			progress++;
 
-      curfile = curfile->next;
-    }
-  }
+			curfile = curfile->next;
+		}
+	}
 
-  if (!ISFLAG(flags, F_HIDEPROGRESS)) fprintf(stderr, "\r%60s\r", " ");
+	if (!ISFLAG(flags, F_HIDEPROGRESS)) fprintf(stderr, "\r%60s\r", " ");
 
 skip_file_scan:
-  /* Stop catching CTRL+C and firing alarms */
-  signal(SIGINT, SIG_DFL);
-  if (!ISFLAG(flags, F_HIDEPROGRESS)) jc_stop_alarm();
+	/* Stop catching CTRL+C and firing alarms */
+	signal(SIGINT, SIG_DFL);
+	if (!ISFLAG(flags, F_HIDEPROGRESS)) jc_stop_alarm();
 
 
 // FIXME: this is a testing thing
-  st_state->stackcnt = -1;
-  for (file_t *st_next = sizetree_next_list(st_state); st_next != NULL; st_next = sizetree_next_list(st_state)) {
-    for (; st_next != NULL; st_next = st_next->next) {
-      if (ISFLAG(st_next->flags, FF_DUPE_CHAIN_HEAD)) {
-        for (file_t *cur = st_next; cur != NULL; cur = cur->duplicates) {
-          printf("%s\n", cur->d_name);
+	st_state->stackcnt = -1;
+	for (file_t *st_next = sizetree_next_list(st_state); st_next != NULL; st_next = sizetree_next_list(st_state)) {
+		for (; st_next != NULL; st_next = st_next->next) {
+			if (ISFLAG(st_next->flags, FF_DUPE_CHAIN_HEAD)) {
+				for (file_t *cur = st_next; cur != NULL; cur = cur->duplicates) {
+					printf("%s\n", cur->d_name);
 	}
 	printf("\n");
-      }
-    }
+			}
+		}
 #if 0
-  file_t *st_next;
-  int chains, headed;
-  chains = 0;
-  headed = 0;
-  fprintf(stderr, "\n===== Dumping lists =====\n");
-  st_state->reset = 1;
-  st_next = sizetree_next_list(st_state);
-  while (st_next != NULL) {
-    int i = 0;
-    fprintf(stderr, "\nList size %ld\n", st_next->size);
-    for (int j = 0; st_next != NULL; j++, st_next = st_next->next) {
-      fprintf(stderr, "st [cur %p, nxt %p, dup %p] [%d,%d] size[%ld] file '%s' %s\n",
-          st_next, st_next->next, st_next->duplicates, i, j, st_next->size, st_next->d_name,
-          ISFLAG(st_next->flags, FF_DUPE_CHAIN_HEAD) ? "CHAIN HEAD" : "");
-      if (ISFLAG(st_next->flags, FF_DUPE_CHAIN_HEAD)) chains++;
-      if (st_next->chain_head != NULL) headed++;
-    }
-    st_next = sizetree_next_list(st_state);
-    i++;
-  }
-  fprintf(stderr, "Dupe chains: %d, headed: %d\n", chains, headed);
+	file_t *st_next;
+	int chains, headed;
+	chains = 0;
+	headed = 0;
+	fprintf(stderr, "\n===== Dumping lists =====\n");
+	st_state->reset = 1;
+	st_next = sizetree_next_list(st_state);
+	while (st_next != NULL) {
+		int i = 0;
+		fprintf(stderr, "\nList size %ld\n", st_next->size);
+		for (int j = 0; st_next != NULL; j++, st_next = st_next->next) {
+			fprintf(stderr, "st [cur %p, nxt %p, dup %p] [%d,%d] size[%ld] file '%s' %s\n",
+					st_next, st_next->next, st_next->duplicates, i, j, st_next->size, st_next->d_name,
+					ISFLAG(st_next->flags, FF_DUPE_CHAIN_HEAD) ? "CHAIN HEAD" : "");
+			if (ISFLAG(st_next->flags, FF_DUPE_CHAIN_HEAD)) chains++;
+			if (st_next->chain_head != NULL) headed++;
+		}
+		st_next = sizetree_next_list(st_state);
+		i++;
+	}
+	fprintf(stderr, "Dupe chains: %d, headed: %d\n", chains, headed);
 #endif  // 0
-  }
-  free(st_state);
+	}
+	free(st_state);
 
 
-  if (files == NULL) {
+	if (files == NULL) {
 //    printf("%s", s_no_dupes);
-    exit(exit_status);
-  }
+		exit(exit_status);
+	}
 
 #ifndef NO_DELETE
-  if (ISFLAG(a_flags, FA_DELETEFILES)) {
-    if (ISFLAG(flags, F_NOPROMPT)) deletefiles(files, 0, 0);
-    else deletefiles(files, 1, stdin);
-  }
+	if (ISFLAG(a_flags, FA_DELETEFILES)) {
+		if (ISFLAG(flags, F_NOPROMPT)) deletefiles(files, 0, 0);
+		else deletefiles(files, 1, stdin);
+	}
 #endif /* NO_DELETE */
 #ifndef NO_SYMLINKS
-  if (ISFLAG(a_flags, FA_MAKESYMLINKS)) linkfiles(files, 0, 0);
+	if (ISFLAG(a_flags, FA_MAKESYMLINKS)) linkfiles(files, 0, 0);
 #endif /* NO_SYMLINKS */
 #ifndef NO_HARDLINKS
-  if (ISFLAG(a_flags, FA_HARDLINKFILES)) linkfiles(files, 1, 0);
+	if (ISFLAG(a_flags, FA_HARDLINKFILES)) linkfiles(files, 1, 0);
 #endif /* NO_HARDLINKS */
 #ifdef ENABLE_DEDUPE
-  if (ISFLAG(a_flags, FA_DEDUPEFILES)) dedupefiles(files);
+	if (ISFLAG(a_flags, FA_DEDUPEFILES)) dedupefiles(files);
 #endif /* ENABLE_DEDUPE */
-  if (ISFLAG(a_flags, FA_PRINTMATCHES)) printmatches(files);
-  if (ISFLAG(a_flags, FA_PRINTUNIQUE)) printunique(files);
+	if (ISFLAG(a_flags, FA_PRINTMATCHES)) printmatches(files);
+	if (ISFLAG(a_flags, FA_PRINTUNIQUE)) printunique(files);
 #ifndef NO_JSON
-  if (ISFLAG(a_flags, FA_PRINTJSON)) printjson(files, argc, argv);
+	if (ISFLAG(a_flags, FA_PRINTJSON)) printjson(files, argc, argv);
 #endif /* NO_JSON */
-  if (ISFLAG(a_flags, FA_SUMMARIZEMATCHES)) {
-    if (ISFLAG(a_flags, FA_PRINTMATCHES)) printf("\n\n");
-    summarizematches(files);
-  }
+	if (ISFLAG(a_flags, FA_SUMMARIZEMATCHES)) {
+		if (ISFLAG(a_flags, FA_PRINTMATCHES)) printf("\n\n");
+		summarizematches(files);
+	}
 
 #ifndef NO_HASHDB
-  if (ISFLAG(flags, F_HASHDB)) {
-    hdbout = save_hash_database(hashdb_name, 1);
-    if (!ISFLAG(flags, F_HIDEPROGRESS)) {
-      if (hdbout > 0) fprintf(stderr, "Wrote %" PRIu64 " entries to the hash database\n", hdbout);
-      else fprintf(stderr, "Hash database is OK (no changes)\n");
-    }
-  }
-  if (hashdb_name != NULL) free(hashdb_name);
+	if (ISFLAG(flags, F_HASHDB)) {
+		hdbout = save_hash_database(hashdb_name, 1);
+		if (!ISFLAG(flags, F_HIDEPROGRESS)) {
+			if (hdbout > 0) fprintf(stderr, "Wrote %" PRIu64 " entries to the hash database\n", hdbout);
+			else fprintf(stderr, "Hash database is OK (no changes)\n");
+		}
+	}
+	if (hashdb_name != NULL) free(hashdb_name);
 #endif
 
 #ifdef DEBUG
@@ -855,41 +855,41 @@ skip_all_scan_code:
 #endif
 
 #ifdef DEBUG
-  if (ISFLAG(flags, F_DEBUG)) {
-    fprintf(stderr, "\n%d partial(%uKiB) (+%d small) -> %d full hash -> %d full (%d partial elim) (%d hash%u fail)\n",
-        partial_hash, PARTIAL_HASH_SIZE >> 10, small_file, full_hash, partial_to_full,
-        partial_elim, hash_fail, (unsigned int)sizeof(uint64_t)*8);
-    fprintf(stderr, "%" PRIuMAX " total files, %" PRIuMAX " comparisons\n", filecount, comparisons);
+	if (ISFLAG(flags, F_DEBUG)) {
+		fprintf(stderr, "\n%d partial(%uKiB) (+%d small) -> %d full hash -> %d full (%d partial elim) (%d hash%u fail)\n",
+				partial_hash, PARTIAL_HASH_SIZE >> 10, small_file, full_hash, partial_to_full,
+				partial_elim, hash_fail, (unsigned int)sizeof(uint64_t)*8);
+		fprintf(stderr, "%" PRIuMAX " total files, %" PRIuMAX " comparisons\n", filecount, comparisons);
  #ifndef NO_CHUNKSIZE
-    if (manual_chunk_size > 0) fprintf(stderr, "I/O chunk size: %ld KiB (manually set)\n", manual_chunk_size >> 10);
-    else {
-  #ifdef __linux__
-      fprintf(stderr, "I/O chunk size: %" PRIuMAX " KiB (%s)\n", (uintmax_t)(auto_chunk_size >> 10), (pci.l1 + pci.l1d) != 0 ? "dynamically sized" : "default size");
-  #else
-      fprintf(stderr, "I/O chunk size: %" PRIuMAX " KiB (default size)\n", (uintmax_t)(auto_chunk_size >> 10));
-  #endif /* __linux__ */
-    }
+		if (manual_chunk_size > 0) fprintf(stderr, "I/O chunk size: %ld KiB (manually set)\n", manual_chunk_size >> 10);
+		else {
+	#ifdef __linux__
+			fprintf(stderr, "I/O chunk size: %" PRIuMAX " KiB (%s)\n", (uintmax_t)(auto_chunk_size >> 10), (pci.l1 + pci.l1d) != 0 ? "dynamically sized" : "default size");
+	#else
+			fprintf(stderr, "I/O chunk size: %" PRIuMAX " KiB (default size)\n", (uintmax_t)(auto_chunk_size >> 10));
+	#endif /* __linux__ */
+		}
  #endif /* NO_CHUNKSIZE */
  #ifdef ON_WINDOWS
-  #ifndef NO_HARDLINKS
-    if (ISFLAG(a_flags, FA_HARDLINKFILES))
-      fprintf(stderr, "Exclusions based on Windows hard link limit: %u\n", hll_exclude);
-  #endif
+	#ifndef NO_HARDLINKS
+		if (ISFLAG(a_flags, FA_HARDLINKFILES))
+			fprintf(stderr, "Exclusions based on Windows hard link limit: %u\n", hll_exclude);
+	#endif
  #endif
-  }
+	}
 #endif /* DEBUG */
 
-  exit(exit_status);
+	exit(exit_status);
 
 error_optarg:
-  fprintf(stderr, "error: option '%c' requires an argument\n", opt);
-  exit(EXIT_FAILURE);
+	fprintf(stderr, "error: option '%c' requires an argument\n", opt);
+	exit(EXIT_FAILURE);
 #ifndef NO_HASHDB
 error_load_hashdb:
-  free(hashdb_name);
-  exit(EXIT_FAILURE);
+	free(hashdb_name);
+	exit(EXIT_FAILURE);
 #endif
 interrupt_exit:
-  fprintf(stderr, "%s", s_interrupt);
-  exit(EXIT_FAILURE);
+	fprintf(stderr, "%s", s_interrupt);
+	exit(EXIT_FAILURE);
 }

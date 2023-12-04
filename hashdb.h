@@ -12,16 +12,16 @@ extern "C" {
 #include "jdupes.h"
 
 typedef struct _hashdb {
-  struct _hashdb *left;
-  struct _hashdb *right;
-  uint64_t path_hash;
-  char *path;
-  uint64_t partialhash;
-  uint64_t fullhash;
-  jdupes_ino_t inode;
-  off_t size;
-  time_t mtime;
-  uint_fast8_t hashcount;
+	struct _hashdb *left;
+	struct _hashdb *right;
+	uint64_t path_hash;
+	char *path;
+	uint64_t partialhash;
+	uint64_t fullhash;
+	jdupes_ino_t inode;
+	off_t size;
+	time_t mtime;
+	uint_fast8_t hashcount;
 } hashdb_t;
 
 extern int save_hash_database(const char * const restrict dbname, const int destroy);

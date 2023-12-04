@@ -12,11 +12,11 @@ extern "C" {
 
 /* Tree to track each directory traversed */
 struct travcheck {
-  struct travcheck *left;
-  struct travcheck *right;
-  uintmax_t hash;
-  jdupes_ino_t inode;
-  dev_t device;
+	struct travcheck *left;
+	struct travcheck *right;
+	uintmax_t hash;
+	jdupes_ino_t inode;
+	dev_t device;
 };
 
 /* De-allocate the travcheck tree */
