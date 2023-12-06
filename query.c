@@ -2,6 +2,7 @@
  * This file is part of jdupes; see jdupes.c for license information */
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include <libjodycode.h>
 #include "jdupes.h"
@@ -9,7 +10,12 @@
 #include "query.h"
 
 
-file_t *query_next_match(int reset)
+qstate_t *query_new_state(uint32_t options)
 {
-	return NULL;
+	qstate_t *qs = (qstate_t *)malloc(sizeof(qstate_t));
+	if (qs == NULL) jc_oom("qstate_init_set");
+
+	// Populate chains with sorting
+
+	return qs;
 }

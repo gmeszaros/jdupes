@@ -93,7 +93,6 @@ void sizetree_add(file_t *file)
 	LOUD(fprintf(stderr, "sizetree_add([%p] '%s')\n", file, file->d_name);)
 
 	if (sizetree_head == NULL) {
-//    LOUD(fprintf(stderr, "sizetree_add: new sizetree_head size %ld\n", file->size);)
 		sizetree_head = sizetree_alloc(file);
 		return;
 	}
@@ -101,7 +100,6 @@ void sizetree_add(file_t *file)
 	cur = sizetree_head;
 	while (1) {
 		if (file->size == cur->size) {
-//      LOUD(fprintf(stderr, "sizetree_add: attaching to list [%p] size %ld\n", cur, cur->size);)
 			file->next = cur->list;
 			cur->list = file;
 			return;
@@ -110,10 +108,8 @@ void sizetree_add(file_t *file)
 		if (file->size < cur->size) {
 			if (cur->left == NULL) {
 				cur->left = sizetree_alloc(file);
-//        LOUD(fprintf(stderr, "sizetree_add: creating new list L [%p] size %ld\n", cur->left, file->size);)
-	return;
+				return;
 			}
-//      LOUD(fprintf(stderr, "sizetree_add: going left (%ld < %ld)\n", file->size, cur->size);)
 			cur = cur->left;
 			continue;
 		}
@@ -121,10 +117,8 @@ void sizetree_add(file_t *file)
 		if (file->size > cur->size) {
 			if (cur->right == NULL) {
 				cur->right = sizetree_alloc(file);
-//        LOUD(fprintf(stderr, "sizetree_add: creating new list R [%p] size %ld\n", cur->right, file->size);)
-	return;
+				return;
 			}
-//      LOUD(fprintf(stderr, "sizetree_add: going right (%ld > %ld)\n", file->size, cur->size);)
 			cur = cur->right;
 			continue;
 		}
