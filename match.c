@@ -364,7 +364,7 @@ file_t **checkmatch(filetree_t * restrict tree, file_t * const restrict file)
 int confirmmatch(const char * const restrict file1, const char * const restrict file2, const off_t size)
 {
   static char *c1 = NULL, *c2 = NULL;
-  FILE *fp1, *fp2;
+  FILE *fp1 = NULL, *fp2 = NULL;
   size_t r1, r2;
   off_t bytes = 0;
   int retval = 0;
@@ -379,14 +379,13 @@ int confirmmatch(const char * const restrict file1, const char * const restrict 
   if (unlikely(c1 == NULL || c2 == NULL)) jc_oom("confirmmatch() buffers");
 
   fp1 = jc_fopen(file1, JC_FILE_MODE_RDONLY_SEQ);
-  fp2 = jc_fopen(file2, JC_FILE_MODE_RDONLY_SEQ);
   if (fp1 == NULL) {
-    if (fp2 != NULL) fclose(fp2);
     LOUD(fprintf(stderr, "confirmmatch: warning: file open failed ('%s')\n", file1);)
     goto different;
   }
+
+  fp2 = jc_fopen(file2, JC_FILE_MODE_RDONLY_SEQ);
   if (fp2 == NULL) {
-    if (fp1 != NULL) fclose(fp1);
     LOUD(fprintf(stderr, "confirmmatch: warning: file open failed ('%s')\n", file2);)
     goto different;
   }
@@ -394,7 +393,7 @@ int confirmmatch(const char * const restrict file1, const char * const restrict 
   fseek(fp1, 0, SEEK_SET);
   fseek(fp2, 0, SEEK_SET);
 #ifdef __linux__
-  /* Tell Linux we will accees sequentially and soon */
+  /* Tell Linux we will access sequentially and soon */
   posix_fadvise(fileno(fp1), 0, size, POSIX_FADV_SEQUENTIAL);
   posix_fadvise(fileno(fp1), 0, size, POSIX_FADV_WILLNEED);
   posix_fadvise(fileno(fp2), 0, size, POSIX_FADV_SEQUENTIAL);
@@ -424,6 +423,8 @@ different:
 
 finish_confirm:
 //  free(c1); free(c2);
-  fclose(fp1); fclose(fp2);
+  if (likely(fp1 != NULL)) fclose(fp1);
+  if (likely(fp2 != NULL)) fclose(fp2);
+
   return retval;
 }
