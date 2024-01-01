@@ -367,7 +367,7 @@ int confirmmatch(const char * const restrict file1, const char * const restrict 
   FILE *fp1 = NULL, *fp2 = NULL;
   size_t r1, r2;
   off_t bytes = 0;
-  int retval = 0;
+  int retval = 1;
 
   if (unlikely(file1 == NULL || file2 == NULL)) jc_nullptr("confirmmatch()");
   LOUD(fprintf(stderr, "confirmmatch running\n"));
@@ -381,13 +381,14 @@ int confirmmatch(const char * const restrict file1, const char * const restrict 
   fp1 = jc_fopen(file1, JC_FILE_MODE_RDONLY_SEQ);
   if (fp1 == NULL) {
     LOUD(fprintf(stderr, "confirmmatch: warning: file open failed ('%s')\n", file1);)
-    goto different;
+    return 1;
   }
 
   fp2 = jc_fopen(file2, JC_FILE_MODE_RDONLY_SEQ);
   if (fp2 == NULL) {
+    fclose(fp1);
     LOUD(fprintf(stderr, "confirmmatch: warning: file open failed ('%s')\n", file2);)
-    goto different;
+    return 1;
   }
 
   fseek(fp1, 0, SEEK_SET);
@@ -401,30 +402,30 @@ int confirmmatch(const char * const restrict file1, const char * const restrict 
 #endif /* __linux__ */
 
   do {
-    if (interrupt) goto different;
+    if (interrupt) break;
     r1 = fread(c1, sizeof(char), auto_chunk_size, fp1);
     r2 = fread(c2, sizeof(char), auto_chunk_size, fp2);
 
-    if (r1 != r2) goto different; /* file lengths are different */
-    if (memcmp (c1, c2, r1)) goto different; /* file contents are different */
+    if (r1 != r2) break; /* file lengths are different */
+
+    if (memcmp(c1, c2, r1)) break; /* file contents are different */
 
     bytes += (off_t)r1;
     if (jc_alarm_ring != 0) {
       jc_alarm_ring = 0;
       update_phase2_progress("confirm", (int)((bytes * 100) / size));
     }
-  } while (r2);
 
-  /* Success: return 0 */
-  goto finish_confirm;
+    if (r1 == 0) {
+      /* files are exhausted. Success: return 0 */
+      retval = 0;
+      break;
+    }
+  } while (1);
 
-different:
-  retval = 1;
-
-finish_confirm:
 //  free(c1); free(c2);
-  if (likely(fp1 != NULL)) fclose(fp1);
-  if (likely(fp2 != NULL)) fclose(fp2);
+  fclose(fp1);
+  fclose(fp2);
 
   return retval;
 }
