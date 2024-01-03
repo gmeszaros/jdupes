@@ -64,6 +64,8 @@ void dedupefiles(file_t * restrict files)
   fdr = (struct file_dedupe_range *)calloc(1,
         sizeof(struct file_dedupe_range)
       + sizeof(struct file_dedupe_range_info) + 1);
+  if (fdr == NULL) jc_oom("dedupefiles() fdr");
+
   fdr->dest_count = 1;
   fdri = &fdr->info[0];
   for (curfile = files; curfile; curfile = curfile->next) {
