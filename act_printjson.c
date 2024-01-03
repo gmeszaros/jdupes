@@ -105,9 +105,14 @@ void printjson(file_t * restrict files, const int argc, char **argv)
 {
   file_t * restrict tmpfile;
   int arg = 0, comma = 0, len = 0;
-  char *temp = (char *)malloc(PATHBUF_SIZE * 2);
-  char *temp2 = (char *)malloc(PATHBUF_SIZE * 2);
-  char *temp_insert = temp;
+  char *temp, *temp2, *temp_insert;
+
+  temp = (char *)malloc(PATHBUF_SIZE * 2);
+  if (temp == NULL) jc_oom("print_json() temp");
+  temp_insert = temp;
+
+  temp2 = (char *)malloc(PATHBUF_SIZE * 2);
+  if (temp2 == NULL) jc_oom("print_json() temp2");
 
   LOUD(fprintf(stderr, "printjson: %p\n", files));
 
