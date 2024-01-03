@@ -120,12 +120,18 @@ void printjson(file_t * restrict files, const int argc, char **argv)
   printf("{\n  \"jdupesVersion\": \"%s\",\n  \"jdupesVersionDate\": \"%s\",\n", VER, VERDATE);
 
   printf("  \"commandLine\": \"");
-  while (arg < argc) {
+
+  /* Confirm argc is a positive value */
+  assert(argc > 0);
+
+  /* Concatenate argv values */
+  do {
     len = sprintf(temp_insert, " %s", argv[arg]);
     assert(len >= 0);
     temp_insert += len;
     arg++;
-  }
+  } while (arg < argc);
+
   json_escape(temp + 1, temp2); /* Skip the starting space */
   printf("%s\",\n", temp2);
   printf("  \"extensionFlags\": \"");
