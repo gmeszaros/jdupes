@@ -180,10 +180,11 @@ error_reading_file:
   fclose(file);
   return NULL;
 error_bad_hash_algo:
-  if ((hash_algo > HASH_ALGO_COUNT) || (hash_algo < 0))
+  if ((hash_algo > HASH_ALGO_COUNT) || (hash_algo < 0)) {
     fprintf(stderr, "\nerror: requested hash algorithm %d is not available", hash_algo);
-  else
+  } else {
     fprintf(stderr, "\nerror: requested hash algorithm %s [%d] is not available", hash_algo_list[hash_algo], hash_algo);
-  fclose(file);
+  }
+  if (file != NULL) fclose(file);
   return NULL;
 }
