@@ -95,7 +95,7 @@ void help_text(void)
 #ifdef NO_GETOPT_LONG
   printf("\nWARNING: getopt_long disabled in this build! Long options will not work.\n\n");
 #endif
-#ifdef LOUD
+#ifdef LOUD_DEBUG
   printf(" -@ --loud        \toutput annoying low-level debug info while running\n");
 #endif
   printf(" -0 --print-null  \toutput nulls instead of CR/LF (like 'find -print0')\n");
