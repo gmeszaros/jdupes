@@ -14,8 +14,8 @@ int file_has_changed(file_t * const restrict file);
 int getfilestats(file_t * const restrict file);
 /* Returns -1 if stat() fails, 0 if it's a directory, 1 if it's not */
 int getdirstats(const char * const restrict name,
-		jdupes_ino_t * const restrict inode, dev_t * const restrict dev,
-		jdupes_mode_t * const restrict mode);
+                jdupes_ino_t * const restrict inode, dev_t * const restrict dev,
+                jdupes_mode_t * const restrict mode);
 
 #ifdef __cplusplus
 }

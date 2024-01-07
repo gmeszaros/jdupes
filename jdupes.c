@@ -745,7 +745,7 @@ skip_partialonly_noise:
 #endif
         dupecount++;
       } else {
-	goto skip_full_check;
+        goto skip_full_check;
         DBG(hash_fail++;)
       }
     }

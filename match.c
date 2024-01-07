@@ -255,7 +255,7 @@ file_t **checkmatch(filetree_t * restrict tree, file_t * const restrict file)
         file->filehash = file->filehash_partial;
         SETFLAG(file->flags, FF_HASH_FULL);
 #ifndef NO_HASHDB
-	dirtyfile = 1;
+        dirtyfile = 1;
 #endif
         DBG(small_file++;)
       }
@@ -263,7 +263,7 @@ file_t **checkmatch(filetree_t * restrict tree, file_t * const restrict file)
         tree->file->filehash = tree->file->filehash_partial;
         SETFLAG(tree->file->flags, FF_HASH_FULL);
 #ifndef NO_HASHDB
-	dirtytree = 1;
+        dirtytree = 1;
 #endif
         DBG(small_file++;)
       }
@@ -279,7 +279,7 @@ file_t **checkmatch(filetree_t * restrict tree, file_t * const restrict file)
           tree->file->filehash = *filehash;
           SETFLAG(tree->file->flags, FF_HASH_FULL);
 #ifndef NO_HASHDB
-	  dirtytree = 1;
+          dirtytree = 1;
 #endif
         }
 
@@ -290,7 +290,7 @@ file_t **checkmatch(filetree_t * restrict tree, file_t * const restrict file)
           file->filehash = *filehash;
           SETFLAG(file->flags, FF_HASH_FULL);
 #ifndef NO_HASHDB
-	  dirtyfile = 1;
+          dirtyfile = 1;
 #endif
         }
 
