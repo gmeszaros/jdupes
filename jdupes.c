@@ -291,11 +291,11 @@ int main(int argc, char **argv)
     switch (opt) {
     case '0':
       SETFLAG(a_flags, FA_PRINTNULL);
-      LOUD(fprintf(stderr, "opt: print null instead of newline (--print-null)\n");)
+      LOUD(fprintf(stderr, "opt: print null instead of newline (--print-null)\n"));
       break;
     case '1':
       SETFLAG(flags, F_ONEFS);
-      LOUD(fprintf(stderr, "opt: recursion across filesystems disabled (--one-file-system)\n");)
+      LOUD(fprintf(stderr, "opt: recursion across filesystems disabled (--one-file-system)\n"));
       break;
 #ifdef DEBUG
     case '9':
@@ -324,7 +324,7 @@ int main(int argc, char **argv)
       SETFLAG(a_flags, FA_DEDUPEFILES);
       /* It is completely useless to dedupe zero-length extents */
       CLEARFLAG(flags, F_INCLUDEEMPTY);
-      LOUD(fprintf(stderr, "opt: CoW/block-level deduplication enabled (--dedupe)\n");)
+      LOUD(fprintf(stderr, "opt: CoW/block-level deduplication enabled (--dedupe)\n"));
       break;
 #endif /* ENABLE_DEDUPE */
 #ifndef NO_CHUNKSIZE
@@ -341,13 +341,13 @@ int main(int argc, char **argv)
 #ifndef NO_DELETE
     case 'd':
       SETFLAG(a_flags, FA_DELETEFILES);
-      LOUD(fprintf(stderr, "opt: delete files after matching (--delete)\n");)
+      LOUD(fprintf(stderr, "opt: delete files after matching (--delete)\n"));
       break;
 #endif /* NO_DELETE */
     case 'D':
 #ifdef DEBUG
       SETFLAG(flags, F_DEBUG);
-      LOUD(fprintf(stderr, "opt: debugging information (--debug)\n");)
+      LOUD(fprintf(stderr, "opt: debugging information (--debug)\n"));
 #else
       fprintf(stderr, "warning: -D debugging is not supported in this build, ignoring\n");
 #endif
@@ -364,7 +364,7 @@ int main(int argc, char **argv)
 #endif /* NO_ERRORONDUPE */
     case 'f':
       SETFLAG(a_flags, FA_OMITFIRST);
-      LOUD(fprintf(stderr, "opt: omit first match from each match set (--omit-first)\n");)
+      LOUD(fprintf(stderr, "opt: omit first match from each match set (--omit-first)\n"));
       break;
     case 'h':
       help_text();
@@ -372,25 +372,25 @@ int main(int argc, char **argv)
 #ifndef NO_HARDLINKS
     case 'H':
       SETFLAG(flags, F_CONSIDERHARDLINKS);
-      LOUD(fprintf(stderr, "opt: hard links count as matches (--hard-links)\n");)
+      LOUD(fprintf(stderr, "opt: hard links count as matches (--hard-links)\n"));
       break;
     case 'L':
       SETFLAG(a_flags, FA_HARDLINKFILES);
-      LOUD(fprintf(stderr, "opt: convert duplicates to hard links (--link-hard)\n");)
+      LOUD(fprintf(stderr, "opt: convert duplicates to hard links (--link-hard)\n"));
       break;
 #endif
     case 'i':
       SETFLAG(flags, F_REVERSESORT);
-      LOUD(fprintf(stderr, "opt: sort order reversal enabled (--reverse)\n");)
+      LOUD(fprintf(stderr, "opt: sort order reversal enabled (--reverse)\n"));
       break;
 #ifndef NO_USER_ORDER
     case 'I':
       SETFLAG(flags, F_ISOLATE);
-      LOUD(fprintf(stderr, "opt: intra-parameter match isolation enabled (--isolate)\n");)
+      LOUD(fprintf(stderr, "opt: intra-parameter match isolation enabled (--isolate)\n"));
       break;
     case 'O':
       SETFLAG(flags, F_USEPARAMORDER);
-      LOUD(fprintf(stderr, "opt: parameter order takes precedence (--param-order)\n");)
+      LOUD(fprintf(stderr, "opt: parameter order takes precedence (--param-order)\n"));
       break;
 #else
     case 'I':
@@ -401,7 +401,7 @@ int main(int argc, char **argv)
 #ifndef NO_JSON
     case 'j':
       SETFLAG(a_flags, FA_PRINTJSON);
-      LOUD(fprintf(stderr, "opt: print output in JSON format (--print-json)\n");)
+      LOUD(fprintf(stderr, "opt: print output in JSON format (--print-json)\n"));
       break;
 #endif /* NO_JSON */
     case 'K':
@@ -409,17 +409,17 @@ int main(int argc, char **argv)
       break;
     case 'm':
       SETFLAG(a_flags, FA_SUMMARIZEMATCHES);
-      LOUD(fprintf(stderr, "opt: print a summary of match stats (--summarize)\n");)
+      LOUD(fprintf(stderr, "opt: print a summary of match stats (--summarize)\n"));
       break;
     case 'M':
       SETFLAG(a_flags, FA_SUMMARIZEMATCHES);
       SETFLAG(a_flags, FA_PRINTMATCHES);
-      LOUD(fprintf(stderr, "opt: print matches with a summary (--print-summarize)\n");)
+      LOUD(fprintf(stderr, "opt: print matches with a summary (--print-summarize)\n"));
       break;
 #ifndef NO_DELETE
     case 'N':
       SETFLAG(flags, F_NOPROMPT);
-      LOUD(fprintf(stderr, "opt: delete files without prompting (--noprompt)\n");)
+      LOUD(fprintf(stderr, "opt: delete files without prompting (--noprompt)\n"));
       break;
 #endif /* NO_DELETE */
     case 'o':
@@ -436,10 +436,10 @@ int main(int argc, char **argv)
       break;
     case 'p':
       SETFLAG(flags, F_PERMISSIONS);
-      LOUD(fprintf(stderr, "opt: permissions must also match (--permissions)\n");)
+      LOUD(fprintf(stderr, "opt: permissions must also match (--permissions)\n"));
       break;
     case 'P':
-      LOUD(fprintf(stderr, "opt: print early: '%s' (--print)\n", optarg);)
+      LOUD(fprintf(stderr, "opt: print early: '%s' (--print)\n", optarg));
       if (jc_streq(optarg, "partial") == 0) SETFLAG(p_flags, PF_PARTIAL);
       else if (jc_streq(optarg, "early") == 0) SETFLAG(p_flags, PF_EARLYMATCH);
       else if (jc_streq(optarg, "fullhash") == 0) SETFLAG(p_flags, PF_FULLHASH);
@@ -453,19 +453,19 @@ int main(int argc, char **argv)
       break;
     case 'Q':
       SETFLAG(flags, F_QUICKCOMPARE);
-      LOUD(fprintf(stderr, "opt: byte-for-byte safety check disabled (--quick)\n");)
+      LOUD(fprintf(stderr, "opt: byte-for-byte safety check disabled (--quick)\n"));
       break;
     case 'r':
       SETFLAG(flags, F_RECURSE);
-      LOUD(fprintf(stderr, "opt: global recursion enabled (--recurse)\n");)
+      LOUD(fprintf(stderr, "opt: global recursion enabled (--recurse)\n"));
       break;
     case 'R':
       SETFLAG(flags, F_RECURSEAFTER);
-      LOUD(fprintf(stderr, "opt: partial recursion enabled (--recurse-after)\n");)
+      LOUD(fprintf(stderr, "opt: partial recursion enabled (--recurse-after)\n"));
       break;
     case 't':
       SETFLAG(flags, F_NOCHANGECHECK);
-      LOUD(fprintf(stderr, "opt: TOCTTOU safety check disabled (--no-change-check)\n");)
+      LOUD(fprintf(stderr, "opt: TOCTTOU safety check disabled (--no-change-check)\n"));
       break;
     case 'T':
       partialonly_spec++;
@@ -478,11 +478,11 @@ int main(int argc, char **argv)
       break;
     case 'u':
       SETFLAG(a_flags, FA_PRINTUNIQUE);
-      LOUD(fprintf(stderr, "opt: print only non-matched (unique) files (--print-unique)\n");)
+      LOUD(fprintf(stderr, "opt: print only non-matched (unique) files (--print-unique)\n"));
       break;
     case 'U':
       SETFLAG(flags, F_NOTRAVCHECK);
-      LOUD(fprintf(stderr, "opt: double-traversal safety check disabled (--no-trav-check)\n");)
+      LOUD(fprintf(stderr, "opt: double-traversal safety check disabled (--no-trav-check)\n"));
       break;
     case 'v':
     case 'V':
@@ -491,16 +491,16 @@ int main(int argc, char **argv)
 #ifndef NO_SYMLINKS
     case 'l':
       SETFLAG(a_flags, FA_MAKESYMLINKS);
-      LOUD(fprintf(stderr, "opt: convert duplicates to symbolic links (--link-soft)\n");)
+      LOUD(fprintf(stderr, "opt: convert duplicates to symbolic links (--link-soft)\n"));
       break;
     case 's':
       SETFLAG(flags, F_FOLLOWLINKS);
-      LOUD(fprintf(stderr, "opt: follow symbolic links enabled (--symlinks)\n");)
+      LOUD(fprintf(stderr, "opt: follow symbolic links enabled (--symlinks)\n"));
       break;
 #endif
     case 'S':
       SETFLAG(a_flags, FA_SHOWSIZE);
-      LOUD(fprintf(stderr, "opt: show size of files enabled (--size)\n");)
+      LOUD(fprintf(stderr, "opt: show size of files enabled (--size)\n"));
       break;
 #ifndef NO_EXTFILTER
     case 'X':
@@ -510,7 +510,7 @@ int main(int argc, char **argv)
 #ifndef NO_HASHDB
     case 'y':
       SETFLAG(flags, F_HASHDB);
-      LOUD(fprintf(stderr, "opt: use a hash database (--hash-db)\n");)
+      LOUD(fprintf(stderr, "opt: use a hash database (--hash-db)\n"));
       fprintf(stderr, "\nWARNING: THE HASH DATABASE FEATURE IS UNDER HEAVY DEVELOPMENT! It functions\n");
       fprintf(stderr,   "         but there are LOTS OF QUIRKS. The behavior is not fully documented\n");
       fprintf(stderr,   "         yet and basic 'smarts' have not been implemented. USE THIS FEATURE\n");
@@ -526,19 +526,18 @@ int main(int argc, char **argv)
 #endif /* NO_HASHDB */
     case 'z':
       SETFLAG(flags, F_INCLUDEEMPTY);
-      LOUD(fprintf(stderr, "opt: zero-length files count as matches (--zero-match)\n");)
+      LOUD(fprintf(stderr, "opt: zero-length files count as matches (--zero-match)\n"));
       break;
     case 'Z':
       SETFLAG(flags, F_SOFTABORT);
-      LOUD(fprintf(stderr, "opt: soft-abort mode enabled (--soft-abort)\n");)
+      LOUD(fprintf(stderr, "opt: soft-abort mode enabled (--soft-abort)\n"));
       break;
     case '@':
 #ifdef LOUD_DEBUG
       SETFLAG(flags, F_DEBUG | F_LOUD | F_HIDEPROGRESS);
 #endif
-      LOUD(fprintf(stderr, "opt: loud debugging enabled, hope you can handle it (--loud)\n");)
+      LOUD(fprintf(stderr, "opt: loud debugging enabled, hope you can handle it (--loud)\n"));
       break;
-
     default:
       if (opt != '?') fprintf(stderr, "Sorry, using '-%c' is not supported in this build.\n", opt);
       fprintf(stderr, "Try `jdupes --help' for more information.\n");
@@ -594,7 +593,7 @@ skip_partialonly_noise:
 #endif
 
   /* Debugging mode: dump all set flags */
-  DBG(if (ISFLAG(flags, F_DEBUG)) dump_all_flags();)
+  DBG(if (ISFLAG(flags, F_DEBUG)) dump_all_flags());
 
   /* If pm == 0, call printmatches() */
   pm = !!ISFLAG(a_flags, FA_SUMMARIZEMATCHES) +
@@ -746,7 +745,7 @@ skip_partialonly_noise:
         dupecount++;
       } else {
         goto skip_full_check;
-        DBG(hash_fail++;)
+        DBG(hash_fail++);
       }
     }
 

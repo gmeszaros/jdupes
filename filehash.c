@@ -54,7 +54,7 @@ uint64_t *get_filehash(const file_t * const restrict checkfile, const size_t max
 
   if (unlikely(checkfile == NULL || checkfile->d_name == NULL)) jc_nullptr("get_filehash()");
   if (unlikely((algo > HASH_ALGO_COUNT - 1) || (algo < 0))) goto error_bad_hash_algo;
-  LOUD(fprintf(stderr, "get_filehash('%s', %" PRIdMAX ")\n", checkfile->d_name, (intmax_t)max_read);)
+  LOUD(fprintf(stderr, "get_filehash('%s', %" PRIdMAX ")\n", checkfile->d_name, (intmax_t)max_read));
 
   /* Allocate on first use */
   if (unlikely(chunk == NULL)) {
@@ -85,7 +85,7 @@ uint64_t *get_filehash(const file_t * const restrict checkfile, const size_t max
     *hash = checkfile->filehash_partial;
     /* Don't bother going further if max_read is already fulfilled */
     if (max_read != 0 && max_read <= PARTIAL_HASH_SIZE) {
-      LOUD(fprintf(stderr, "Partial hash size (%d) >= max_read (%" PRIuMAX "), not hashing anymore\n", PARTIAL_HASH_SIZE, (uintmax_t)max_read);)
+      LOUD(fprintf(stderr, "Partial hash size (%d) >= max_read (%" PRIuMAX "), not hashing anymore\n", PARTIAL_HASH_SIZE, (uintmax_t)max_read));
       return hash;
     }
   }

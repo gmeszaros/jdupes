@@ -110,14 +110,14 @@ extern uintmax_t comparisons;
  #endif
  #define LOUD(...) if ISFLAG(flags, F_LOUD) __VA_ARGS__
 #else
- #define LOUD(a)
+ #define LOUD(a) do {} while(0)
 #endif
 
 /* Compile out debugging stat counters unless requested */
 #ifdef DEBUG
  #define DBG(a) a
 #else
- #define DBG(a)
+ #define DBG(a) do {} while(0)
 #endif
 
 

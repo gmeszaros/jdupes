@@ -14,7 +14,7 @@
 #ifdef JC_TEST
  #define JC_TEST_ONLY(a) a
 #else
- #define JC_TEST_ONLY(a)
+ #define JC_TEST_ONLY(a) do {} while (0)
 #endif
 
 const char *jc_build_version = LIBJODYCODE_VER;
@@ -25,8 +25,8 @@ const int jc_build_min_featurelevel = MY_FEATURELEVEL_REQ;
 
 int libjodycode_version_check(int verbose, int bail)
 {
-  JC_TEST_ONLY(if (verbose > 1) fprintf(stderr, "libjodycode version check test code\n\n");)
-  JC_TEST_ONLY(if (verbose > 1) goto incompatible_version;)
+  JC_TEST_ONLY(if (verbose > 1) fprintf(stderr, "libjodycode version check test code\n\n"));
+  JC_TEST_ONLY(if (verbose > 1) goto incompatible_version);
   if (jc_build_api_version != jc_api_version) goto incompatible_version;
   if (jc_build_min_featurelevel > jc_api_featurelevel) goto incompatible_version;
   if (jc_build_windows_unicode != jc_windows_unicode) goto incompatible_version;

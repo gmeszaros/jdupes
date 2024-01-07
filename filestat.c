@@ -34,7 +34,7 @@ int file_has_changed(file_t * const restrict file)
   if (ISFLAG(flags, F_NOCHANGECHECK)) return 0;
 
   if (unlikely(file == NULL || file->d_name == NULL)) jc_nullptr("file_has_changed()");
-  LOUD(fprintf(stderr, "file_has_changed('%s')\n", file->d_name);)
+  LOUD(fprintf(stderr, "file_has_changed('%s')\n", file->d_name));
 
   if (!ISFLAG(file->flags, FF_VALID_STAT)) return -66;
 
@@ -64,7 +64,7 @@ int getfilestats(file_t * const restrict file)
   struct JC_STAT s;
 
   if (unlikely(file == NULL || file->d_name == NULL)) jc_nullptr("getfilestats()");
-  LOUD(fprintf(stderr, "getfilestats('%s')\n", file->d_name);)
+  LOUD(fprintf(stderr, "getfilestats('%s')\n", file->d_name));
 
   /* Don't stat the same file more than once */
   if (ISFLAG(file->flags, FF_VALID_STAT)) return 0;
@@ -104,7 +104,7 @@ int getdirstats(const char * const restrict name,
   struct JC_STAT s;
 
   if (unlikely(name == NULL || inode == NULL || dev == NULL)) jc_nullptr("getdirstats");
-  LOUD(fprintf(stderr, "getdirstats('%s', %p, %p)\n", name, (void *)inode, (void *)dev);)
+  LOUD(fprintf(stderr, "getdirstats('%s', %p, %p)\n", name, (void *)inode, (void *)dev));
 
   if (jc_stat(name, &s) != 0) return -1;
   *inode = s.st_ino;

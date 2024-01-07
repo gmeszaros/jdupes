@@ -20,11 +20,11 @@ static struct travcheck *travcheck_alloc(const dev_t device, const jdupes_ino_t 
 {
   struct travcheck *trav;
 
-  LOUD(fprintf(stderr, "travcheck_alloc(dev %" PRIdMAX ", ino %" PRIdMAX ", hash %" PRIuMAX ")\n", (intmax_t)device, (intmax_t)inode, hash);)
+  LOUD(fprintf(stderr, "travcheck_alloc(dev %" PRIdMAX ", ino %" PRIdMAX ", hash %" PRIuMAX ")\n", (intmax_t)device, (intmax_t)inode, hash));
 
   trav = (struct travcheck *)malloc(sizeof(struct travcheck));
   if (trav == NULL) {
-    LOUD(fprintf(stderr, "travcheck_alloc: malloc failed\n");)
+    LOUD(fprintf(stderr, "travcheck_alloc: malloc failed\n"));
     return NULL;
   }
   trav->left = NULL;
@@ -32,7 +32,7 @@ static struct travcheck *travcheck_alloc(const dev_t device, const jdupes_ino_t 
   trav->hash = hash;
   trav->device = device;
   trav->inode = inode;
-  LOUD(fprintf(stderr, "travcheck_alloc returned %p\n", (void *)trav);)
+  LOUD(fprintf(stderr, "travcheck_alloc returned %p\n", (void *)trav));
   return trav;
 }
 
@@ -40,7 +40,7 @@ static struct travcheck *travcheck_alloc(const dev_t device, const jdupes_ino_t 
 /* De-allocate the travcheck tree */
 void travcheck_free(struct travcheck *cur)
 {
-  LOUD(fprintf(stderr, "travcheck_free(%p)\n", cur);)
+  LOUD(fprintf(stderr, "travcheck_free(%p)\n", cur));
 
   if (cur == NULL) {
     if (travcheck_head == NULL) return;
@@ -65,7 +65,7 @@ int traverse_check(const dev_t device, const jdupes_ino_t inode)
   struct travcheck *traverse = travcheck_head;
   uintmax_t travhash;
 
-  LOUD(fprintf(stderr, "traverse_check(dev %" PRIuMAX ", ino %" PRIuMAX "\n", (uintmax_t)device, (uintmax_t)inode);)
+  LOUD(fprintf(stderr, "traverse_check(dev %" PRIuMAX ", ino %" PRIuMAX "\n", (uintmax_t)device, (uintmax_t)inode));
   travhash = TRAVHASH(device, inode);
   if (travcheck_head == NULL) {
     travcheck_head = travcheck_alloc(device, inode, TRAVHASH(device, inode));
@@ -76,13 +76,13 @@ int traverse_check(const dev_t device, const jdupes_ino_t inode)
       if (traverse == NULL) jc_nullptr("traverse_check()");
       /* Don't re-traverse directories we've already seen */
       if (inode == traverse->inode && device == traverse->device) {
-        LOUD(fprintf(stderr, "traverse_check: already seen: %" PRIuMAX ":%" PRIuMAX "\n", (uintmax_t)device, (uintmax_t)inode);)
+        LOUD(fprintf(stderr, "traverse_check: already seen: %" PRIuMAX ":%" PRIuMAX "\n", (uintmax_t)device, (uintmax_t)inode));
         return 1;
       } else {
         if (travhash > traverse->hash) {
           /* Traverse right */
           if (traverse->right == NULL) {
-            LOUD(fprintf(stderr, "traverse_check add right: %" PRIuMAX ", %" PRIuMAX"\n", (uintmax_t)device, (uintmax_t)inode);)
+            LOUD(fprintf(stderr, "traverse_check add right: %" PRIuMAX ", %" PRIuMAX"\n", (uintmax_t)device, (uintmax_t)inode));
             traverse->right = travcheck_alloc(device, inode, travhash);
             if (traverse->right == NULL) return 2;
             break;
@@ -92,7 +92,7 @@ int traverse_check(const dev_t device, const jdupes_ino_t inode)
         } else {
           /* Traverse left */
           if (traverse->left == NULL) {
-            LOUD(fprintf(stderr, "traverse_check add left: %" PRIuMAX ", %" PRIuMAX "\n", (uintmax_t)device, (uintmax_t)inode);)
+            LOUD(fprintf(stderr, "traverse_check add left: %" PRIuMAX ", %" PRIuMAX "\n", (uintmax_t)device, (uintmax_t)inode));
             traverse->left = travcheck_alloc(device, inode, travhash);
             if (traverse->left == NULL) return 2;
             break;

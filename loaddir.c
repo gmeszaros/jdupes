@@ -233,7 +233,7 @@ void loaddir(char * const restrict dir,
         progress++;
 
       } else {
-        LOUD(fprintf(stderr, "loaddir: not a regular file: %s\n", newfile->d_name);)
+        LOUD(fprintf(stderr, "loaddir: not a regular file: %s\n", newfile->d_name));
         free(newfile->d_name);
         free(newfile);
 //    if (single == 1) return;

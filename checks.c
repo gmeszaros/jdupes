@@ -33,7 +33,7 @@ int check_conditions(const file_t * const restrict file1, const file_t * const r
 {
   if (unlikely(file1 == NULL || file2 == NULL || file1->d_name == NULL || file2->d_name == NULL)) jc_nullptr("check_conditions()");
 
-  LOUD(fprintf(stderr, "check_conditions('%s', '%s')\n", file1->d_name, file2->d_name);)
+  LOUD(fprintf(stderr, "check_conditions('%s', '%s')\n", file1->d_name, file2->d_name));
 
   /* Exclude files that are not the same size */
   if (file1->size > file2->size) {

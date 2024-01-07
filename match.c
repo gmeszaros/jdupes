@@ -83,7 +83,7 @@ void registerpair(file_t **matchlist, file_t *newmatch, int (*comparef)(file_t *
 
   /* NULL pointer sanity checks */
   if (unlikely(matchlist == NULL || newmatch == NULL || comparef == NULL)) jc_nullptr("registerpair()");
-  LOUD(fprintf(stderr, "registerpair: '%s', '%s'\n", (*matchlist)->d_name, newmatch->d_name);)
+  LOUD(fprintf(stderr, "registerpair: '%s', '%s'\n", (*matchlist)->d_name, newmatch->d_name));
 
 #ifndef NO_ERRORONDUPE
   if (ISFLAG(a_flags, FA_ERRORONDUPE)) {
@@ -185,7 +185,7 @@ file_t **checkmatch(filetree_t * restrict tree, file_t * const restrict file)
    * duplicates unless the user specifies otherwise. */
 
   /* Count the total number of comparisons requested */
-  DBG(comparisons++;)
+  DBG(comparisons++);
 
 /* If considering hard linked files as duplicates, they are
  * automatically duplicates without being read further since
@@ -241,7 +241,7 @@ file_t **checkmatch(filetree_t * restrict tree, file_t * const restrict file)
     cmpresult = HASH_COMPARE(file->filehash_partial, tree->file->filehash_partial);
     LOUD(if (!cmpresult) fprintf(stderr, "checkmatch: partial hashes match\n"));
     LOUD(if (cmpresult) fprintf(stderr, "checkmatch: partial hashes do not match\n"));
-    DBG(partial_hash++;)
+    DBG(partial_hash++);
 
     /* Print partial hash matching pairs if requested */
     if (cmpresult == 0 && ISFLAG(p_flags, PF_PARTIAL))
@@ -257,7 +257,7 @@ file_t **checkmatch(filetree_t * restrict tree, file_t * const restrict file)
 #ifndef NO_HASHDB
         dirtyfile = 1;
 #endif
-        DBG(small_file++;)
+        DBG(small_file++);
       }
       if (!ISFLAG(tree->file->flags, FF_HASH_FULL)) {
         tree->file->filehash = tree->file->filehash_partial;
@@ -265,7 +265,7 @@ file_t **checkmatch(filetree_t * restrict tree, file_t * const restrict file)
 #ifndef NO_HASHDB
         dirtytree = 1;
 #endif
-        DBG(small_file++;)
+        DBG(small_file++);
       }
     } else if (cmpresult == 0) {
 //      if (ISFLAG(flags, F_SKIPHASH)) {
@@ -351,7 +351,7 @@ file_t **checkmatch(filetree_t * restrict tree, file_t * const restrict file)
     }
   } else {
     /* All compares matched */
-    DBG(partial_to_full++;)
+    DBG(partial_to_full++);
     LOUD(fprintf(stderr, "checkmatch: files appear to match based on hashes\n"));
     if (ISFLAG(p_flags, PF_FULLHASH)) printf("Full hashes match:\n   %s\n   %s\n\n", file->d_name, tree->file->d_name);
     return &tree->file;
@@ -380,14 +380,14 @@ int confirmmatch(const char * const restrict file1, const char * const restrict 
 
   fp1 = jc_fopen(file1, JC_FILE_MODE_RDONLY_SEQ);
   if (fp1 == NULL) {
-    LOUD(fprintf(stderr, "confirmmatch: warning: file open failed ('%s')\n", file1);)
+    LOUD(fprintf(stderr, "confirmmatch: warning: file open failed ('%s')\n", file1));
     return 1;
   }
 
   fp2 = jc_fopen(file2, JC_FILE_MODE_RDONLY_SEQ);
   if (fp2 == NULL) {
     fclose(fp1);
-    LOUD(fprintf(stderr, "confirmmatch: warning: file open failed ('%s')\n", file2);)
+    LOUD(fprintf(stderr, "confirmmatch: warning: file open failed ('%s')\n", file2));
     return 1;
   }
 

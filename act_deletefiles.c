@@ -30,7 +30,7 @@ static unsigned int get_max_dupes(const file_t *files, unsigned int * const rest
   unsigned int groups = 0;
 
   if (unlikely(files == NULL || max == NULL)) jc_nullptr("get_max_dupes()");
-  LOUD(fprintf(stderr, "get_max_dupes(%p, %p)\n", (const void *)files, (void *)max);)
+  LOUD(fprintf(stderr, "get_max_dupes(%p, %p)\n", (const void *)files, (void *)max));
 
   *max = 0;
 

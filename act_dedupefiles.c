@@ -59,7 +59,7 @@ void dedupefiles(file_t * restrict files)
   int err_twentytwo = 0, err_ninetyfive = 0;
   uint64_t total_files = 0;
 
-  LOUD(fprintf(stderr, "\ndedupefiles: %p\n", files);)
+  LOUD(fprintf(stderr, "\ndedupefiles: %p\n", files));
 
   fdr = (struct file_dedupe_range *)calloc(1,
         sizeof(struct file_dedupe_range)

@@ -111,7 +111,7 @@ static int match_extensions(char *path, const char *extlist)
   const char *ext;
   size_t len, extlen;
 
-  LOUD(fprintf(stderr, "match_extensions('%s', '%s')\n", path, extlist);)
+  LOUD(fprintf(stderr, "match_extensions('%s', '%s')\n", path, extlist));
   if (path == NULL || extlist == NULL) jc_nullptr("match_extensions");
 
   dot = NULL;
@@ -129,7 +129,7 @@ static int match_extensions(char *path, const char *extlist)
 
   /* Get the length of the file's extension for later checking */
   extlen = strlen(dot);
-  LOUD(fprintf(stderr, "match_extensions: file has extension '%s' with length %" PRIdMAX "\n", dot, (intmax_t)extlen);)
+  LOUD(fprintf(stderr, "match_extensions: file has extension '%s' with length %" PRIdMAX "\n", dot, (intmax_t)extlen));
 
   /* dot is now at the location of the last file extension; check the list */
   /* Skip any commas at the start of the list */
@@ -145,17 +145,17 @@ static int match_extensions(char *path, const char *extlist)
       while (*extlist == ',') extlist++;
       if (extlist == ext)  goto skip_empty;
       if (jc_strncaseeq(dot, ext, len) == 0 && extlen == len) {
-        LOUD(fprintf(stderr, "match_extensions: matched on extension '%s' (len %" PRIdMAX ")\n", dot, (intmax_t)len);)
+        LOUD(fprintf(stderr, "match_extensions: matched on extension '%s' (len %" PRIdMAX ")\n", dot, (intmax_t)len));
         return 1;
       }
-      LOUD(fprintf(stderr, "match_extensions: no match: '%s' (%" PRIdMAX "), '%s' (%" PRIdMAX ")\n", dot, (intmax_t)len, ext, (intmax_t)extlen);)
+      LOUD(fprintf(stderr, "match_extensions: no match: '%s' (%" PRIdMAX "), '%s' (%" PRIdMAX ")\n", dot, (intmax_t)len, ext, (intmax_t)extlen));
 skip_empty:
       ext = extlist;
       len = 0;
       continue;
     }
     extlist++; len++;
-    /* LOUD(fprintf(stderr, "match_extensions: DEBUG: '%s' : '%s' (%ld), '%s' (%ld)\n", extlist, dot, len, ext, extlen);) */
+    /* LOUD(fprintf(stderr, "match_extensions: DEBUG: '%s' : '%s' (%ld), '%s' (%ld)\n", extlist, dot, len, ext, extlen)); */
   }
   return 0;
 }
@@ -172,7 +172,7 @@ void add_extfilter(const char *option)
 
   if (option == NULL) jc_nullptr("add_extfilter()");
 
-  LOUD(fprintf(stderr, "add_extfilter '%s'\n", option);)
+  LOUD(fprintf(stderr, "add_extfilter '%s'\n", option));
 
   /* Invoke help text if requested */
   if (jc_strcaseeq(option, "help") == 0) { help_text_extfilter(); exit(EXIT_SUCCESS); }
@@ -232,7 +232,7 @@ void add_extfilter(const char *option)
     /* Exclude uses a date; convert it to seconds since the epoch */
     *(extf->param) = '\0';
     tt = jc_strtoepoch(p);
-    LOUD(fprintf(stderr, "extfilter: jody_strtoepoch: '%s' -> %" PRIdMAX "\n", p, (intmax_t)tt);)
+    LOUD(fprintf(stderr, "extfilter: jody_strtoepoch: '%s' -> %" PRIdMAX "\n", p, (intmax_t)tt));
     if (tt == -1) goto error_bad_time;
     extf->size = tt;
   } else {
@@ -242,7 +242,7 @@ void add_extfilter(const char *option)
     else *(extf->param) = '\0';
   }
 
-  LOUD(fprintf(stderr, "Added extfilter: tag '%s', data '%s', size %lld, flags %d\n", opt, extf->param, (long long)extf->size, extf->flags);)
+  LOUD(fprintf(stderr, "Added extfilter: tag '%s', data '%s', size %lld, flags %d\n", opt, extf->param, (long long)extf->size, extf->flags));
   free(opt);
   return;
 
@@ -269,7 +269,7 @@ int extfilter_exclude(file_t * const restrict newfile)
 {
   for (struct extfilter *extf = extfilter_head; extf != NULL; extf = extf->next) {
     uint32_t sflag = extf->flags;
-    LOUD(fprintf(stderr, "check_singlefile: extfilter check: %08x %" PRIdMAX " %" PRIdMAX " %s\n", sflag, (intmax_t)newfile->size, (intmax_t)extf->size, newfile->d_name);)
+    LOUD(fprintf(stderr, "check_singlefile: extfilter check: %08x %" PRIdMAX " %" PRIdMAX " %s\n", sflag, (intmax_t)newfile->size, (intmax_t)extf->size, newfile->d_name));
     if (
          /* Any line that passes will result in file exclusion */
             ((sflag == XF_SIZE_EQ)    && (newfile->size != extf->size))
