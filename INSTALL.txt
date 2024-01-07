@@ -84,7 +84,7 @@ STATIC_DEDUPE_H        Build dedupe support with included minimal header file
 LOW_MEMORY             Build for extremely low-RAM environments (CAUTION!)
 BARE_BONES             Build LOW_MEMORY with very aggressive code removal
 USE_JODY_HASH          Use jody_hash instead of xxHash64 (smaller, slower)
-EXTENRAL_HASH_LIB      Force hash code to be linked in externally (no build)
+EXTERNAL_HASH_LIB      Force hash code to be linked in externally (no build)
 FORCE_JC_DLL           Windows only: force linking to nearby libjodycode.dll
 IGNORE_NEARBY_JC       Do NOT use libjodycode at ../libjodycode if it exists
 GC_SECTIONS            Use gcc/ld section garbage collection to reduce size
