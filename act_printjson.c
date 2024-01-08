@@ -27,50 +27,56 @@
 /** Decodes a single UTF-8 codepoint, consuming bytes. */
 static inline uint32_t decode_utf8(const char * restrict * const string) {
   uint32_t ret = 0;
-  /** Eat problems up silently. */
-  assert(!IS_CONT(**string));
-  while (unlikely(IS_CONT(**string)))
-    (*string)++;
 
   /** ASCII. */
   if (likely(!(**string & 0x80)))
     return (uint32_t)*(*string)++;
 
-  /** Multibyte 2, 3, 4. */
+  /** UTF-8 2 Byte Sequence */
   if ((**string & 0xe0) == 0xc0) {
-    ret = *(*string)++ & 0x1f;
-    ret = (ret << 6) | GET_CONT(*(*string)++);
-    return ret;
+    if (likely(IS_CONT((*string)[1]))) {
+      ret = *(*string)++ & 0x1f;
+      ret = (ret << 6) | GET_CONT(*(*string)++);
+      return ret;
+    }
   }
 
+  /** UTF-8 3 Byte Sequence */
   if ((**string & 0xf0) == 0xe0) {
-    ret = *(*string)++ & 0x0f;
-    ret = (ret << 6) | GET_CONT(*(*string)++);
-    ret = (ret << 6) | GET_CONT(*(*string)++);
-    return ret;
+    if (likely(IS_CONT((*string)[1]) && IS_CONT((*string)[2]))) {
+      ret = *(*string)++ & 0x0f;
+      ret = (ret << 6) | GET_CONT(*(*string)++);
+      ret = (ret << 6) | GET_CONT(*(*string)++);
+      return ret;
+    }
   }
 
+  /** UTF-8 4 Byte Sequence */
   if ((**string & 0xf8) == 0xf0) {
-    ret = *(*string)++ & 0x07;
-    ret = (ret << 6) | GET_CONT(*(*string)++);
-    ret = (ret << 6) | GET_CONT(*(*string)++);
-    ret = (ret << 6) | GET_CONT(*(*string)++);
-    return ret;
+    if (likely(IS_CONT((*string)[1]) && IS_CONT((*string)[2]) && IS_CONT((*string)[3]))) {
+      ret = *(*string)++ & 0x07;
+      ret = (ret << 6) | GET_CONT(*(*string)++);
+      ret = (ret << 6) | GET_CONT(*(*string)++);
+      ret = (ret << 6) | GET_CONT(*(*string)++);
+      return ret;
+    }
   }
 
-  /** We shouldn't be here... Because 5 and 6 bytes are impossible... */
-  assert(0);
-  return 0xffffffff;
+  /** Encoding error. There is no 5 and 6 multi-bytes.
+   * Possibly continuation byte with no preceding multi-byte.
+   * Treat as invalid unicode character that needs substitution. */
+  ret = (unsigned char) *(*string)++;
+  return ret;
 }
 
 /** Escapes a single UTF-16 code unit for JSON. */
-static inline void escape_uni16(uint16_t u16, char ** const json) {
-  *(*json)++ = '\\';
-  *(*json)++ = 'u';
-  *(*json)++ = TO_HEX(u16 >> 12);
-  *(*json)++ = TO_HEX(u16 >> 8);
-  *(*json)++ = TO_HEX(u16 >> 4);
-  *(*json)++ = TO_HEX(u16);
+static inline void escape_uni16(uint16_t u16, char **target) {
+  *(*target)++ = '\\';
+  *(*target)++ = 'u';
+  *(*target)++ = TO_HEX(u16 >> 12);
+  *(*target)++ = TO_HEX(u16 >> 8);
+  *(*target)++ = TO_HEX(u16 >> 4);
+  *(*target)++ = TO_HEX(u16);
 }
 
 /** Escapes a UTF-8 string to ASCII JSON format. */
