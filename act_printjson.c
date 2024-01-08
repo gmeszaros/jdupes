@@ -16,9 +16,13 @@
 #include "version.h"
 #include "act_printjson.h"
 
-#define IS_CONT(a)  ((a & 0xc0) == 0x80)
-#define GET_CONT(a) (a & 0x3f)
-#define TO_HEX(a) (char)(((a) & 0x0f) <= 0x09 ? ((a) & 0x0f) + 0x30 : ((a) & 0x0f) + 0x57)
+/* UTF-8 continuation-bytes are formatted 0b10xx_xxxx */
+#define IS_CONT(a)  (((a) & 0xc0) == 0x80)
+#define GET_CONT(a) ((a) & 0x3f)
+#define TO_HEX(a)   (char)(((a) & 0x0f) <= 0x09 ? ((a) & 0x0f) + 0x30 : ((a) & 0x0f) + 0x57)
+
+/* Amount of space to allocate to be sure escaping is safe. "\v" -> "\u000b" > */
+#define JSON_ESCAPE_SIZE(x) ((x) * 6 + 1)
 
 /** Decodes a single UTF-8 codepoint, consuming bytes. */
 static inline uint32_t decode_utf8(const char * restrict * const string) {
@@ -70,49 +74,53 @@ static inline void escape_uni16(uint16_t u16, char ** const json) {
 }
 
 /** Escapes a UTF-8 string to ASCII JSON format. */
-static void json_escape(const char * restrict string, char * restrict const target)
+static void json_escape(const char * restrict string, char * restrict target)
 {
-  uint32_t curr = 0;
+  uint32_t curr;
   char *escaped = target;
-  while (*string != '\0' && (escaped - target) < (PATHBUF_SIZE * 2 - 1)) {
+
+  while (*string != '\0') {
+    /* Escape Sequences */
     switch (*string) {
-      case '\"':
-      case '\\':
-        *escaped++ = '\\';
-        *escaped++ = *string++;
-        break;
-      default:
-        curr = decode_utf8(&string);
-	if (curr == 0xffffffff) break;
-        if (likely(curr < 0xffff)) {
-          if (likely(curr < 0x20 || curr > 0x7f))
-            escape_uni16((uint16_t)curr, &escaped);
-          else
-            *escaped++ = (char)curr;
-        } else {
-          curr -= 0x10000;
-          escape_uni16((uint16_t)(0xD800 + ((curr >> 10) & 0x03ff)), &escaped);
-          escape_uni16((uint16_t)(0xDC00 + (curr & 0x03ff)), &escaped);
-        }
-        break;
+      case  '"': curr =  '"'; break; /* Quotation Mark */
+      case '\\': curr = '\\'; break; /* Reverse Slash */
+      case '\b': curr =  'b'; break; /* Backspace */
+      case '\f': curr =  'f'; break; /* Form Feed */
+      case '\n': curr =  'n'; break; /* Line Feed */
+      case '\r': curr =  'r'; break; /* Carriage Return */
+      case '\t': curr =  't'; break; /* Tab */
+      default  : curr = '\0';        /* Other */
+    }
+
+    if (curr != '\0') {
+      *escaped++ = '\\';
+      *escaped++ = (char)curr;
+      string++;
+    } else {
+      curr = decode_utf8(&string);
+
+      if (likely(0x20 <= curr && curr < 0x7f)) {
+        /* ASCII Non-Control */
+        *escaped++ = (char)curr;
+      } else if (curr < 0xffff) {
+        /* UTF 16-bit Codepoint */
+        escape_uni16((uint16_t)curr, &escaped);
+      } else {
+        /* UTF 32-bit Codepoint */
+        curr -= 0x10000;
+        escape_uni16((uint16_t)(0xD800 + ((curr >> 10) & 0x03ff)), &escaped);
+        escape_uni16((uint16_t)(0xDC00 + (curr & 0x03ff)), &escaped);
+      }
     }
   }
   *escaped = '\0';
-  return;
 }
 
 void printjson(file_t * restrict files, const int argc, char **argv)
 {
   file_t * restrict tmpfile;
-  int arg = 0, comma = 0, len = 0;
-  char *temp, *temp2, *temp_insert;
-
-  temp = (char *)malloc(PATHBUF_SIZE * 2);
-  if (temp == NULL) jc_oom("print_json() temp");
-  temp_insert = temp;
-
-  temp2 = (char *)malloc(PATHBUF_SIZE * 2);
-  if (temp2 == NULL) jc_oom("print_json() temp2");
+  int arg = 0, comma = 0;
+  char *temp = NULL;
 
   LOUD(fprintf(stderr, "printjson: %p\n", files));
 
@@ -124,16 +132,24 @@ void printjson(file_t * restrict files, const int argc, char **argv)
   /* Confirm argc is a positive value */
   assert(argc > 0);
 
-  /* Concatenate argv values */
-  do {
-    len = sprintf(temp_insert, " %s", argv[arg]);
-    assert(len >= 0);
-    temp_insert += len;
-    arg++;
-  } while (arg < argc);
+  /* Escape argv values */
+  while (1) {
+    temp = realloc(temp, JSON_ESCAPE_SIZE(strlen(argv[arg])));
+    if (temp == NULL) jc_oom("print_json() temp");
 
-  json_escape(temp + 1, temp2); /* Skip the starting space */
-  printf("%s\",\n", temp2);
+    json_escape(argv[arg], temp);
+    printf("%s", temp);
+
+    if (++arg < argc) {
+      /* Add space as separator */
+      printf(" ");
+    } else {
+      /* End of list */
+      printf("\",\n");
+      break;
+    }
+  }
+
   printf("  \"extensionFlags\": \"");
 #ifndef NO_HELPTEXT
   if (feature_flags[0] == NULL) printf("none\",\n");
@@ -143,21 +159,21 @@ void printjson(file_t * restrict files, const int argc, char **argv)
   printf("unavailable\",\n");
 #endif
 
+  temp = realloc(temp, JSON_ESCAPE_SIZE(PATHBUF_SIZE));
+
   printf("  \"matchSets\": [\n");
   while (files != NULL) {
     if (ISFLAG(files->flags, FF_HAS_DUPES)) {
       if (comma) printf(",\n");
       printf("    {\n      \"fileSize\": %" PRIdMAX ",\n      \"fileList\": [\n        { \"filePath\": \"", (intmax_t)files->size);
-      sprintf(temp, "%s", files->d_name);
-      json_escape(temp, temp2);
-      jc_fwprint(stdout, temp2, 0);
+      json_escape(files->d_name, temp);
+      jc_fwprint(stdout, temp, 0);
       printf("\"");
       tmpfile = files->duplicates;
       while (tmpfile != NULL) {
         printf(" },\n        { \"filePath\": \"");
-        sprintf(temp, "%s", tmpfile->d_name);
-        json_escape(temp, temp2);
-        jc_fwprint(stdout, temp2, 0);
+        json_escape(tmpfile->d_name, temp);
+        jc_fwprint(stdout, temp, 0);
         printf("\"");
         tmpfile = tmpfile->duplicates;
       }
@@ -169,7 +185,7 @@ void printjson(file_t * restrict files, const int argc, char **argv)
 
   printf("\n  ]\n}\n");
 
-  free(temp); free(temp2);
+  free(temp);
   return;
 }
 
