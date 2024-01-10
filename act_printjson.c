@@ -167,15 +167,25 @@ void printjson(file_t * restrict files, const int argc, char **argv)
 
   temp = realloc(temp, JSON_ESCAPE_SIZE(PATHBUF_SIZE));
 
-  printf("  \"matchSets\": [\n");
+  printf("  \"matchSets\": [");
+
   while (files != NULL) {
     if (ISFLAG(files->flags, FF_HAS_DUPES)) {
-      if (comma) printf(",\n");
-      printf("    {\n      \"fileSize\": %" PRIdMAX ",\n      \"fileList\": [\n        { \"filePath\": \"", (intmax_t)files->size);
+      if (comma) printf(",");
+
+      printf(
+        "\n"
+        "    {\n"
+        "      \"fileSize\": %" PRIdMAX ",\n"
+        "      \"fileList\": [\n"
+        "        { \"filePath\": \"",
+        (intmax_t)files->size);
+
       json_escape(files->d_name, temp);
       jc_fwprint(stdout, temp, 0);
       printf("\"");
       tmpfile = files->duplicates;
+
       while (tmpfile != NULL) {
         printf(" },\n        { \"filePath\": \"");
         json_escape(tmpfile->d_name, temp);
@@ -183,13 +193,18 @@ void printjson(file_t * restrict files, const int argc, char **argv)
         printf("\"");
         tmpfile = tmpfile->duplicates;
       }
+
       printf(" }\n      ]\n    }");
       comma = 1;
     }
     files = files->next;
   }
 
-  printf("\n  ]\n}\n");
+  if (comma) {
+    printf("\n   ");
+  }
+
+  printf("]\n}\n");
 
   free(temp);
   return;
