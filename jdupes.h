@@ -108,9 +108,9 @@ extern uintmax_t comparisons;
  #ifndef DEBUG
   #define DEBUG
  #endif
- #define LOUD(...) if ISFLAG(flags, F_LOUD) __VA_ARGS__
+ #define LOUD(...) if (debuglevel == 2) __VA_ARGS__
 #else
- #define LOUD(a)
+ #define LOUD(a) { }
 #endif
 
 /* Compile out debugging stat counters unless requested */
@@ -128,7 +128,8 @@ extern uintmax_t comparisons;
 #define EXTEND64(a) ((a & 0x7) > 0 ? ((a & (~0x7)) + 8) : a)
 
 /* Behavior modification flags */
-extern uint64_t flags;
+extern int debuglevel;
+extern uint32_t flags;
 extern uint32_t a_flags;
 #define F_RECURSE		(1ULL << 0)
 #define F_HIDEPROGRESS		(1ULL << 1)
@@ -152,9 +153,6 @@ extern uint32_t a_flags;
 #define F_SKIPHASH		(1ULL << 19)
 #define F_BENCHMARKSTOP		(1ULL << 29)
 #define F_HASHDB		(1ULL << 30)
-
-#define F_LOUD			(1ULL << 62)
-#define F_DEBUG			(1ULL << 63)
 
 /* Action-related flags */
 #define FA_PRINTMATCHES		(1U << 0)
@@ -180,7 +178,7 @@ extern uint32_t a_flags;
 #define FF_NOT_UNIQUE		(1U << 6)
 
 /* Extra print flags */
-extern enum e_printflags { PF_PARTIAL, PF_EARLYMATCH, PF_FULLHASH } printflags;
+extern enum e_printflags { PF_NONE, PF_PARTIAL, PF_EARLYMATCH, PF_FULLHASH } printflags;
 
 typedef enum {
 	ORDER_NAME = 0,

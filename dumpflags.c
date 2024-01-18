@@ -32,8 +32,11 @@ void dump_all_flags(void)
 	if (ISFLAG(flags, F_BENCHMARKSTOP)) fprintf(stderr, " F_BENCHMARKSTOP");
 	if (ISFLAG(flags, F_HASHDB)) fprintf(stderr, " F_HASHDB");
 
-	if (ISFLAG(flags, F_LOUD)) fprintf(stderr, " F_LOUD");
-	if (ISFLAG(flags, F_DEBUG)) fprintf(stderr, " F_DEBUG");
+	switch (debuglevel) {
+		case 1: fprintf(stderr, " F_DEBUG"); break;
+		case 2: fprintf(stderr, " F_LOUD"); break;
+		case 0: default: break;
+	}
 
 	/* Action-related flags */
 	if (ISFLAG(a_flags, FA_PRINTMATCHES)) fprintf(stderr, " FA_PRINTMATCHES");
@@ -50,9 +53,9 @@ void dump_all_flags(void)
 	if (ISFLAG(a_flags, FA_ERRORONDUPE)) fprintf(stderr, " FA_ERRORONDUPE");
 
 	/* Extra print flags */
-	if (ISFLAG(p_flags, PF_PARTIAL)) fprintf(stderr, " PF_PARTIAL");
-	if (ISFLAG(p_flags, PF_EARLYMATCH)) fprintf(stderr, " PF_EARLYMATCH");
-	if (ISFLAG(p_flags, PF_FULLHASH)) fprintf(stderr, " PF_FULLHASH");
+	if (printflags == PF_PARTIAL) fprintf(stderr, " PF_PARTIAL");
+	if (printflags == PF_EARLYMATCH) fprintf(stderr, " PF_EARLYMATCH");
+	if (printflags == PF_FULLHASH) fprintf(stderr, " PF_FULLHASH");
 	fprintf(stderr, " [end of list]\n\n");
 	fflush(stderr);
 	return;

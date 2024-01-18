@@ -82,9 +82,10 @@
 #endif /* _WIN32 || __MINGW32__ */
 
 /* Behavior modification flags (a=action, p=-P) */
-uint64_t flags = 0;
+uint32_t flags = 0;
 uint32_t a_flags = 0;
-enum e_printflags printflags;
+int debuglevel = 0;
+enum e_printflags printflags = PF_NONE;
 
 static const char *program_name;
 
@@ -347,7 +348,7 @@ int main(int argc, char **argv)
 #endif /* NO_DELETE */
 		case 'D':
 #ifdef DEBUG
-			SETFLAG(flags, F_DEBUG);
+			if (debuglevel == 0) debuglevel = 1;
 			LOUD(fprintf(stderr, "opt: debugging information (--debug)\n");)
 #else
 			fprintf(stderr, "warning: -D debugging is not supported in this build, ignoring\n");
@@ -535,7 +536,8 @@ int main(int argc, char **argv)
 			break;
 		case '@':
 #ifdef LOUD_DEBUG
-			SETFLAG(flags, F_DEBUG | F_LOUD | F_HIDEPROGRESS);
+			debuglevel = 2;
+			SETFLAG(flags, F_HIDEPROGRESS);
 #endif
 			LOUD(fprintf(stderr, "opt: loud debugging enabled, hope you can handle it (--loud)\n");)
 			break;
@@ -595,7 +597,7 @@ skip_partialonly_noise:
 #endif
 
 	/* Debugging mode: dump all set flags */
-	DBG(if (ISFLAG(flags, F_DEBUG)) dump_all_flags();)
+	DBG(if (debuglevel > 0) dump_all_flags();)
 
 	/* If pm == 0, call printmatches() */
 	pm = !!ISFLAG(a_flags, FA_SUMMARIZEMATCHES) +
@@ -857,7 +859,7 @@ skip_all_scan_code:
 #endif
 
 #ifdef DEBUG
-	if (ISFLAG(flags, F_DEBUG)) {
+	if (debuglevel > 0) {
 		fprintf(stderr, "\n%d partial(%uKiB) (+%d small) -> %d full hash -> %d full (%d partial elim) (%d hash%u fail)\n",
 				partial_hash, PARTIAL_HASH_SIZE >> 10, small_file, full_hash, partial_to_full,
 				partial_elim, hash_fail, (unsigned int)sizeof(uint64_t)*8);
