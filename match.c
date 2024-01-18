@@ -188,7 +188,7 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
 	/* If preliminary matching succeeded, do main file data checks */
 	if (cmpresult == 0) {
 		/* Print pre-check (early) match candidates if requested */
-		if (ISFLAG(p_flags, PF_EARLYMATCH)) printf("Early match check passed:\n   %s\n   %s\n\n", file1->d_name, file2->d_name);
+		if (printflags == PF_EARLYMATCH) printf("Early match check passed:\n   %s\n   %s\n\n", file1->d_name, file2->d_name);
 
 		LOUD(fprintf(stderr, "checkmatch: starting file data comparisons\n"));
 		/* Attempt to exclude files quickly with partial file hashing */
@@ -220,7 +220,7 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
 		DBG(partial_hash++;)
 
 		/* Print partial hash matching pairs if requested */
-		if (cmpresult == 0 && ISFLAG(p_flags, PF_PARTIAL))
+		if (cmpresult == 0 && printflags == PF_PARTIAL)
 			printf("\nPartial hashes match:\n   %s\n   %s\n\n", file1->d_name, file2->d_name);
 
 		if (file1->size <= PARTIAL_HASH_SIZE || ISFLAG(flags, F_PARTIALONLY)) {
@@ -295,7 +295,7 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
 		/* All compares matched */
 		DBG(partial_to_full++;)
 		LOUD(fprintf(stderr, "checkmatch: files appear to match based on hashes\n"));
-		if (ISFLAG(p_flags, PF_FULLHASH)) printf("Full hashes match:\n   %s\n   %s\n\n", file1->d_name, file2->d_name);
+		if (printflags == PF_FULLHASH) printf("Full hashes match:\n   %s\n   %s\n\n", file1->d_name, file2->d_name);
 		return 0;
 	}
 }

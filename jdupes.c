@@ -82,7 +82,9 @@
 #endif /* _WIN32 || __MINGW32__ */
 
 /* Behavior modification flags (a=action, p=-P) */
-uint_fast64_t flags = 0, a_flags = 0, p_flags = 0;
+uint64_t flags = 0;
+uint32_t a_flags = 0;
+enum e_printflags printflags;
 
 static const char *program_name;
 
@@ -439,9 +441,9 @@ int main(int argc, char **argv)
 			break;
 		case 'P':
 			LOUD(fprintf(stderr, "opt: print early: '%s' (--print)\n", optarg);)
-			if (jc_streq(optarg, "partial") == 0) SETFLAG(p_flags, PF_PARTIAL);
-			else if (jc_streq(optarg, "early") == 0) SETFLAG(p_flags, PF_EARLYMATCH);
-			else if (jc_streq(optarg, "fullhash") == 0) SETFLAG(p_flags, PF_FULLHASH);
+			if (jc_streq(optarg, "partial") == 0) printflags = PF_PARTIAL;
+			else if (jc_streq(optarg, "early") == 0) printflags = PF_EARLYMATCH;
+			else if (jc_streq(optarg, "fullhash") == 0) printflags = PF_FULLHASH;
 			else {
 				fprintf(stderr, "Option '%s' is not valid for -P\n", optarg);
 				exit(EXIT_FAILURE);
@@ -778,7 +780,7 @@ skip_file_scan:
 			if (ISFLAG(st_next->flags, FF_DUPE_CHAIN_HEAD)) {
 				for (file_t *cur = st_next; cur != NULL; cur = cur->duplicates) {
 					printf("%s\n", cur->d_name);
-	}
+				}
 	printf("\n");
 			}
 		}

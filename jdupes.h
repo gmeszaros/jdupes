@@ -128,7 +128,8 @@ extern uintmax_t comparisons;
 #define EXTEND64(a) ((a & 0x7) > 0 ? ((a & (~0x7)) + 8) : a)
 
 /* Behavior modification flags */
-extern uint64_t flags, a_flags, p_flags;
+extern uint64_t flags;
+extern uint32_t a_flags;
 #define F_RECURSE		(1ULL << 0)
 #define F_HIDEPROGRESS		(1ULL << 1)
 #define F_SOFTABORT		(1ULL << 2)
@@ -179,9 +180,7 @@ extern uint64_t flags, a_flags, p_flags;
 #define FF_NOT_UNIQUE		(1U << 6)
 
 /* Extra print flags */
-#define PF_PARTIAL		(1U << 0)
-#define PF_EARLYMATCH		(1U << 1)
-#define PF_FULLHASH		(1U << 2)
+extern enum e_printflags { PF_PARTIAL, PF_EARLYMATCH, PF_FULLHASH } printflags;
 
 typedef enum {
 	ORDER_NAME = 0,
@@ -212,7 +211,7 @@ typedef struct _file {
 	time_t atime;
 #endif
 #ifndef NO_USER_ORDER
-		unsigned int user_order; /* Order of the originating command-line parameter */
+	unsigned int user_order; /* Order of the originating command-line parameter */
 #endif
 #ifndef NO_HARDLINKS
  #ifdef ON_WINDOWS
