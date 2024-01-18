@@ -16,15 +16,14 @@
 #define XF_EXCL_EXT		0x00000001U
 #define XF_SIZE_EQ		0x00000002U
 #define XF_SIZE_GT		0x00000004U
+#define XF_SIZE_GTEQ		0x00000006U
 #define XF_SIZE_LT		0x00000008U
+#define XF_SIZE_LTEQ		0x0000000aU
 #define XF_ONLY_EXT		0x00000010U
 #define XF_EXCL_STR		0x00000020U
 #define XF_ONLY_STR		0x00000040U
 #define XF_DATE_NEWER		0x00000080U
 #define XF_DATE_OLDER		0x00000100U
-/* The X-than-or-equal are combination flags */
-#define XF_SIZE_GTEQ		0x00000006U
-#define XF_SIZE_LTEQ		0x0000000aU
 
 /* Flags that use a numeric size with optional suffix */
 #define XF_REQ_NUMBER		0x0000000eU
@@ -272,7 +271,7 @@ int extfilter_exclude(file_t * const restrict file)
 		LOUD(fprintf(stderr, "extfilter check: %08x %" PRIdMAX " %" PRIdMAX " %s\n", sflag, (intmax_t)file->size, (intmax_t)extf->size, file->d_name);)
 		if (
 				 /* Any line that passes will result in file exclusion */
-						((sflag == XF_SIZE_EQ)    && (file->size != extf->size))
+				    ((sflag == XF_SIZE_EQ)    && (file->size != extf->size))
 				 || ((sflag == XF_SIZE_LTEQ)  && (file->size > extf->size))
 				 || ((sflag == XF_SIZE_GTEQ)  && (file->size < extf->size))
 				 || ((sflag == XF_SIZE_GT)    && (file->size <= extf->size))
