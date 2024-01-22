@@ -46,6 +46,7 @@
 #ifndef NO_TRAVCHECK
  #include "travcheck.h"
 #endif
+#include "query.h"
 #include "version.h"
 
 #ifndef USE_JODY_HASH
@@ -776,6 +777,7 @@ skip_file_scan:
 
 
 // FIXME: this is a testing thing
+/*
 	st_state->stackcnt = -1;
 	for (file_t *st_next = sizetree_next_list(st_state); st_next != NULL; st_next = sizetree_next_list(st_state)) {
 		for (; st_next != NULL; st_next = st_next->next) {
@@ -786,6 +788,8 @@ skip_file_scan:
 	printf("\n");
 			}
 		}
+
+
 #if 0
 	file_t *st_next;
 	int chains, headed;
@@ -811,6 +815,20 @@ skip_file_scan:
 #endif  // 0
 	}
 	free(st_state);
+*/
+
+	// FIXME: this is a much better testing thing
+	qstate_t *qstate = query_new_state();
+	qstate_sort_lists(qstate, QS_NAME);
+	qstate_sort_sets(&qstate, QS_NAME);
+
+	for (qstate_t *qs = qstate; qs != NULL; qs = qs->next) {
+		if (qs->count == 0) continue;
+		for (int i = 0; i < qs->count; i++) {
+			printf("%s\n", qs->list[i]->d_name);
+		}
+		printf("\n");
+	}
 
 
 	if (files == NULL) {

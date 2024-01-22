@@ -10,25 +10,29 @@ extern "C" {
 
 typedef struct _querystate {
 	struct _querystate *next;
-	struct _querychain *chain;
+	int count;
+	int alloc;
+	file_t *list[];
 } qstate_t;
 
-typedef struct _querychain {
-	struct _querychain *next;
-	file_t *head[];
-} qchain_t;
+#define QS_NONE       0x00
+#define QS_NAME       0x01
+#define QS_SIZE       0x02
+#define QS_MTIME      0x03
+#define QS_CTIME      0x04
+#define QS_ATIME      0x05
+#define QS_PARAMORDER 0x06
+#define QS_DEVICE     0x07
+#define QS_INODE      0x08
+#define QS_LINKS      0x09
 
-#define QF_SORT_NAME       (1U << 0)
-#define QF_SORT_SIZE       (1U << 1)
-#define QF_SORT_MTIME      (1U << 2)
-#define QF_SORT_CTIME      (1U << 3)
-#define QF_SORT_ATIME      (1U << 4)
-#define QF_SORT_PARAMORDER (1U << 5)
-#define QF_SORT_DEVICE     (1U << 6)
-#define QF_SORT_INODE      (1U << 7)
-#define QF_SORT_LINKS      (1U << 8)
+#define QS_NOFLAGS    0x0f
+#define QS_FLAGS      0xf0
+#define QS_INVERTED   0x80
 
-qstate_t *query_new_state(uint32_t options);
+void qstate_sort_sets(qstate_t **qstate_ptr, int sort_type);
+void qstate_sort_lists(qstate_t *qstate, int sort_type);
+qstate_t *query_new_state(void);
 
 #ifdef __cplusplus
 }
