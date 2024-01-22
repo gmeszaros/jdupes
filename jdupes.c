@@ -776,63 +776,8 @@ skip_file_scan:
 	if (!ISFLAG(flags, F_HIDEPROGRESS)) jc_stop_alarm();
 
 
-// FIXME: this is a testing thing
-/*
-	st_state->stackcnt = -1;
-	for (file_t *st_next = sizetree_next_list(st_state); st_next != NULL; st_next = sizetree_next_list(st_state)) {
-		for (; st_next != NULL; st_next = st_next->next) {
-			if (ISFLAG(st_next->flags, FF_DUPE_CHAIN_HEAD)) {
-				for (file_t *cur = st_next; cur != NULL; cur = cur->duplicates) {
-					printf("%s\n", cur->d_name);
-				}
-	printf("\n");
-			}
-		}
-
-
-#if 0
-	file_t *st_next;
-	int chains, headed;
-	chains = 0;
-	headed = 0;
-	fprintf(stderr, "\n===== Dumping lists =====\n");
-	st_state->reset = 1;
-	st_next = sizetree_next_list(st_state);
-	while (st_next != NULL) {
-		int i = 0;
-		fprintf(stderr, "\nList size %ld\n", st_next->size);
-		for (int j = 0; st_next != NULL; j++, st_next = st_next->next) {
-			fprintf(stderr, "st [cur %p, nxt %p, dup %p] [%d,%d] size[%ld] file '%s' %s\n",
-					st_next, st_next->next, st_next->duplicates, i, j, st_next->size, st_next->d_name,
-					ISFLAG(st_next->flags, FF_DUPE_CHAIN_HEAD) ? "CHAIN HEAD" : "");
-			if (ISFLAG(st_next->flags, FF_DUPE_CHAIN_HEAD)) chains++;
-			if (st_next->chain_head != NULL) headed++;
-		}
-		st_next = sizetree_next_list(st_state);
-		i++;
-	}
-	fprintf(stderr, "Dupe chains: %d, headed: %d\n", chains, headed);
-#endif  // 0
-	}
-	free(st_state);
-*/
-
-	// FIXME: this is a much better testing thing
-	qstate_t *qstate = query_new_state();
-	qstate_sort_lists(qstate, QS_NAME);
-	qstate_sort_sets(&qstate, QS_NAME);
-
-	for (qstate_t *qs = qstate; qs != NULL; qs = qs->next) {
-		if (qs->count == 0) continue;
-		for (int i = 0; i < qs->count; i++) {
-			printf("%s\n", qs->list[i]->d_name);
-		}
-		printf("\n");
-	}
-
-
-	if (files == NULL) {
-//    printf("%s", s_no_dupes);
+	if (dupecount == 0) {
+		printf("%s", s_no_dupes);
 		exit(exit_status);
 	}
 
@@ -851,8 +796,8 @@ skip_file_scan:
 #ifdef ENABLE_DEDUPE
 	if (ISFLAG(a_flags, FA_DEDUPEFILES)) dedupefiles(files);
 #endif /* ENABLE_DEDUPE */
-	if (ISFLAG(a_flags, FA_PRINTMATCHES)) printmatches(files);
-	if (ISFLAG(a_flags, FA_PRINTUNIQUE)) printunique(files);
+	if (ISFLAG(a_flags, FA_PRINTMATCHES)) printmatches();
+	if (ISFLAG(a_flags, FA_PRINTUNIQUE)) printunique();
 #ifndef NO_JSON
 	if (ISFLAG(a_flags, FA_PRINTJSON)) printjson(files, argc, argv);
 #endif /* NO_JSON */

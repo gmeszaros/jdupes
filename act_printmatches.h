@@ -9,8 +9,8 @@ extern "C" {
 #endif
 
 #include "jdupes.h"
-void printmatches(file_t * restrict files);
-void printunique(file_t *files);
+void printmatches(void);
+void printunique(void);
 
 #ifdef __cplusplus
 }

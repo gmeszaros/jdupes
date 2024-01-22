@@ -17,17 +17,15 @@ static void qstate_file_swap(file_t **file1, file_t **file2);
 
 static void qstate_file_swap(file_t **file1, file_t **file2)
 {
-	if (jc_numeric_strcmp((*file1)->d_name, (*file2)->d_name, 0) > 0) {
-		file_t *temp = *file1;
-		*file1 = *file2;
-		*file2 = temp;
-	}
+	file_t * const temp = *file1;
+	*file1 = *file2;
+	*file2 = temp;
 	return;
 }
 
 
 /* Sort the match sets by their list heads */
-void qstate_sort_sets(qstate_t **qstate_ptr, int sort_type)
+void qstate_sort_sets(qstate_t **qstate_ptr, const int sort_type)
 {
 	int sort, done;
 
@@ -62,7 +60,7 @@ void qstate_sort_sets(qstate_t **qstate_ptr, int sort_type)
 
 
 /* Sort each match list */
-void qstate_sort_lists(qstate_t *qs, int sort_type)
+void qstate_sort_lists(qstate_t * restrict qs, const int sort_type)
 {
 	int sort, done;
 
@@ -142,6 +140,9 @@ qstate_t *query_new_state(void)
 			}
 		}
 	}
+
+	qstate_sort_lists(head, QS_NAME);
+	qstate_sort_sets(&head, QS_NAME);
 
 	return head;
 }

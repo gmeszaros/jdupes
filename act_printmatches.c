@@ -7,10 +7,11 @@
 #include "jdupes.h"
 #include <libjodycode.h>
 #include "act_printmatches.h"
+#include "query.h"
 
-void printmatches(file_t * restrict files)
+void printmatches(void)
 {
-	file_t * restrict tmpfile;
+	qstate_t *qstate;
 	int printed = 0;
 	int cr = 1;
 
@@ -18,6 +19,24 @@ void printmatches(file_t * restrict files)
 
 	if (ISFLAG(a_flags, FA_PRINTNULL)) cr = 2;
 
+// New way
+	qstate = query_new_state();
+	for (qstate_t *qs = qstate; qs != NULL; qs = qs->next) {
+		if (qs->count == 0) continue;
+		for (int i = 0, first = 0; i < qs->count; i++) {
+			printed = 1;
+			if (first == 0) {
+				first = 1;
+				if (ISFLAG(a_flags, FA_SHOWSIZE)) printf("%" PRIdMAX " byte%s each:\n", (intmax_t)qs->list[i]->size,
+						(qs->list[i]->size != 1) ? "s" : "");
+				if (!ISFLAG(a_flags, FA_OMITFIRST)) jc_fwprint(stdout, qs->list[i]->d_name, cr);
+			} else jc_fwprint(stdout, qs->list[i]->d_name, cr);
+		}
+		if (qs->next != NULL) jc_fwprint(stdout, "", cr);
+	}
+
+// Old way
+#if 0
 	while (files != NULL) {
 		if (ISFLAG(files->flags, FF_DUPE_CHAIN_HEAD)) {
 			printed = 1;
@@ -37,6 +56,7 @@ void printmatches(file_t * restrict files)
 
 		files = files->next;
 	}
+#endif // 0
 
 	if (printed == 0) printf("%s", s_no_dupes);
 
@@ -45,8 +65,9 @@ void printmatches(file_t * restrict files)
 
 
 /* Print files that have no duplicates (unique files) */
-void printunique(file_t *files)
+void printunique(void)
 {
+	file_t *files = NULL;
 	file_t *chain, *scan;
 	int printed = 0;
 	int cr = 1;
@@ -70,8 +91,8 @@ void printunique(file_t *files)
 	while (files != NULL) {
 		if (!ISFLAG(files->flags, FF_NOT_UNIQUE)) {
 			printed = 1;
-			if (ISFLAG(a_flags, FA_SHOWSIZE)) printf("%" PRIdMAX " byte%c each:\n", (intmax_t)files->size,
-					(files->size != 1) ? 's' : ' ');
+			if (ISFLAG(a_flags, FA_SHOWSIZE)) printf("%" PRIdMAX " byte%s each:\n", (intmax_t)files->size,
+					(files->size != 1) ? "s" : "");
 			jc_fwprint(stdout, files->d_name, cr);
 		}
 		files = files->next;

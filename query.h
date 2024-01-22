@@ -30,8 +30,8 @@ typedef struct _querystate {
 #define QS_FLAGS      0xf0
 #define QS_INVERTED   0x80
 
-void qstate_sort_sets(qstate_t **qstate_ptr, int sort_type);
-void qstate_sort_lists(qstate_t *qstate, int sort_type);
+void qstate_sort_sets(qstate_t **qstate_ptr, const int sort_type);
+void qstate_sort_lists(qstate_t * restrict qs, const int sort_type);
 qstate_t *query_new_state(void);
 
 #ifdef __cplusplus
