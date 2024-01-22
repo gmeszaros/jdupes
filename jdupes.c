@@ -136,6 +136,10 @@ int sort_direction = 1;
 /* For path name mangling */
 char tempname[PATHBUF_SIZE * 2];
 
+/* Parameter prefix string length */
+int *paramprefix;
+int paramprefixcnt = 0;
+
 /* Strings used in multiple places */
 const char *s_interrupt = "\nStopping file scan due to user abort\n";
 const char *s_no_dupes = "No duplicates found.\n";
@@ -146,6 +150,25 @@ int exit_status = EXIT_SUCCESS;
 /***** End definitions, begin code *****/
 
 /***** Add new functions here *****/
+
+
+#ifndef NO_USER_ORDER
+void add_param_prefix(char *param) {
+	const char *func_name = "paramprefix";
+
+	if (param == NULL) jc_nullptr(func_name);
+//fprintf(stderr, "\nadd_param_prefix: '%s' [%ld]\n", param, strlen(param));
+	paramprefix = realloc(paramprefix, sizeof(int) * (paramprefixcnt + 1));
+	if (paramprefix == NULL) jc_oom(func_name);
+	paramprefix[paramprefixcnt] = strlen(param);
+	paramprefixcnt++;
+
+//	for (int x = 0; x < paramprefixcnt; x++) {
+//		fprintf(stderr, "prefix %d: %d\n", x, paramprefix[x]);
+//	}
+	return;
+}
+#endif /* NO_USER_ORDER */
 
 
 #ifdef UNICODE
@@ -650,10 +673,15 @@ skip_partialonly_noise:
 			exit(EXIT_FAILURE);
 		}
 
+		paramprefix = malloc(sizeof(int));
+
 		/* F_RECURSE is not set for directories before --recurse: */
 		for (int x = optind; x < firstrecurse; x++) {
 			if (unlikely(interrupt)) goto interrupt_exit;
 			loaddir(argv[x], 0);
+#ifndef NO_USER_ORDER
+			add_param_prefix(argv[x]);
+#endif /* NO_USER_ORDER */
 			user_item_count++;
 		}
 
@@ -663,12 +691,18 @@ skip_partialonly_noise:
 		for (int x = firstrecurse; x < argc; x++) {
 			if (unlikely(interrupt)) goto interrupt_exit;
 			loaddir(argv[x], 1);
+#ifndef NO_USER_ORDER
+			add_param_prefix(argv[x]);
+#endif /* NO_USER_ORDER */
 			user_item_count++;
 		}
 	} else {
 		for (int x = optind; x < argc; x++) {
 			if (unlikely(interrupt)) goto interrupt_exit;
 			loaddir(argv[x], ISFLAG(flags, F_RECURSE));
+#ifndef NO_USER_ORDER
+			add_param_prefix(argv[x]);
+#endif /* NO_USER_ORDER */
 			user_item_count++;
 		}
 	}

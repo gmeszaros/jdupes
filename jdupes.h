@@ -232,6 +232,10 @@ extern int hash_algo;
 extern unsigned int user_item_count;
 extern int sort_direction;
 extern char tempname[];
+#ifndef NO_USER_ORDER
+extern int *paramprefix;
+extern int paramprefixcnt;
+#endif
 extern const char *feature_flags[];
 extern const char *s_no_dupes;
 extern int exit_status;
