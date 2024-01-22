@@ -31,7 +31,7 @@ void qstate_sort_sets(qstate_t **qstate_ptr, int sort_type)
 {
 	int sort, done;
 
-	if (qstate_ptr == NULL) return;
+	if (qstate_ptr == NULL || *qstate_ptr == NULL) return;
 
 	sort = sort_type & QS_NOFLAGS;
 	if (sort == QS_NONE) return;
@@ -41,9 +41,9 @@ void qstate_sort_sets(qstate_t **qstate_ptr, int sort_type)
 			done = 1;
 			qstate_t *prev = NULL;
 			qstate_t *cur = *qstate_ptr;
-			for (; cur->next != NULL; prev = cur, cur = cur->next) {
+			for (; cur != NULL && cur->next != NULL; prev = cur, cur = cur->next) {
 				if (jc_numeric_strcmp(cur->list[0]->d_name, cur->next->list[0]->d_name, 0) > 0) {
-fprintf(stderr, "swap: '%s', '%s'\n", cur->list[0]->d_name, cur->next->list[0]->d_name);
+//fprintf(stderr, "swap: '%s', '%s'\n", cur->list[0]->d_name, cur->next->list[0]->d_name);
 					/* Swap the list items */
 					qstate_t *temp = cur->next;
 					if (prev == NULL) *qstate_ptr = temp;
@@ -135,12 +135,10 @@ qstate_t *query_new_state(void)
 				qs = (qstate_t *)calloc(1, sizeof(qstate_t) + (sizeof(file_t *) * QSALLOC_CHUNK_SIZE));
 				if (qs == NULL) jc_oom("query_new_state");
 				qs->alloc = QSALLOC_CHUNK_SIZE;
+				for (file_t *cur = st_next; cur != NULL; cur = cur->duplicates) qstate_add_to_list(&qs, cur);
 				if (head == NULL) head = qs;
 				else if (prev != NULL) prev->next = qs;
 				prev = qs;
-				for (file_t *cur = st_next; cur != NULL; cur = cur->duplicates) {
-					qstate_add_to_list(&qs, cur);
-				}
 			}
 		}
 	}
