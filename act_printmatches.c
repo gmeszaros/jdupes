@@ -15,8 +15,6 @@ void printmatches(void)
 	int printed = 0;
 	int cr = 1;
 
-	LOUD(fprintf(stderr, "printmatches: %p\n", files));
-
 	if (ISFLAG(a_flags, FA_PRINTNULL)) cr = 2;
 
 // New way
@@ -58,7 +56,7 @@ void printmatches(void)
 	}
 #endif // 0
 
-	if (printed == 0) printf("%s", s_no_dupes);
+	if (printed == 0) fprintf(stderr, "%s", s_no_dupes);
 
 	return;
 }
@@ -72,8 +70,6 @@ void printunique(void)
 	int printed = 0;
 	int cr = 1;
 
-	LOUD(fprintf(stderr, "print_uniques: %p\n", files));
-
 	if (ISFLAG(a_flags, FA_PRINTNULL)) cr = 2;
 
 	scan = files;
@@ -82,7 +78,7 @@ void printunique(void)
 			chain = scan;
 			while (chain != NULL) {
 				SETFLAG(chain->flags, FF_NOT_UNIQUE);
-	chain = chain->duplicates;
+				chain = chain->duplicates;
 			}
 		}
 		scan = scan->next;

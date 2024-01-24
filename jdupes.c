@@ -810,11 +810,6 @@ skip_file_scan:
 	if (!ISFLAG(flags, F_HIDEPROGRESS)) jc_stop_alarm();
 
 
-	if (dupecount == 0) {
-		printf("%s", s_no_dupes);
-		exit(exit_status);
-	}
-
 #ifndef NO_DELETE
 	if (ISFLAG(a_flags, FA_DELETEFILES)) {
 		if (ISFLAG(flags, F_NOPROMPT)) deletefiles(files, 0, 0);
