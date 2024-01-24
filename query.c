@@ -48,7 +48,6 @@ void qstate_sort_sets(qstate_t **qstate_ptr, const int sort_type)
 #endif
 					res = jc_numeric_strcmp(cur->list[0]->d_name, cur->next->list[0]->d_name, 0);
 				if (res > 0) {
-//fprintf(stderr, "swap: '%s', '%s'\n", cur->list[0]->d_name, cur->next->list[0]->d_name);
 					/* Swap the list items */
 					qstate_t *temp = cur->next;
 					if (prev == NULL) *qstate_ptr = temp;
@@ -84,9 +83,6 @@ void qstate_sort_lists(qstate_t * restrict qs, const int sort_type)
 				done = 1;
 				for (int i = 0; (i + 1) < qs->count; i++) {
 					for (int j = i + 1; j < qs->count; j++) {
-//int c = jc_numeric_strcmp(qs->list[i]->d_name, qs->list[j]->d_name, 0);
-//if (c == 0) c = '='; else if (c > 0) c = '>'; else c = '<';
-//fprintf(stderr, "qstate_sort[%d,%d]: '%s' %c '%s'\n", i, j, qs->list[i]->d_name, c, qs->list[j]->d_name);
 						if (jc_numeric_strcmp(qs->list[i]->d_name, qs->list[j]->d_name, 0) > 0) {
 							qstate_file_swap(&(qs->list[i]), &(qs->list[j]));
 							done = 0;
@@ -116,7 +112,6 @@ static void qstate_add_to_list(qstate_t **qstate, file_t *cur)
 	}
 
 	qs->list[qs->count] = cur;
-//fprintf(stderr, "qstate_add_to_list [%p, %d]: %s\n", qs, qs->count, qs->list[qs->count]->d_name);
 	qs->count++;
 
 	*qstate = qs;

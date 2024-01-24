@@ -157,15 +157,10 @@ void add_param_prefix(char *param) {
 	const char *func_name = "paramprefix";
 
 	if (param == NULL) jc_nullptr(func_name);
-//fprintf(stderr, "\nadd_param_prefix: '%s' [%ld]\n", param, strlen(param));
 	paramprefix = realloc(paramprefix, sizeof(int) * (paramprefixcnt + 1));
 	if (paramprefix == NULL) jc_oom(func_name);
 	paramprefix[paramprefixcnt] = strlen(param);
 	paramprefixcnt++;
-
-//	for (int x = 0; x < paramprefixcnt; x++) {
-//		fprintf(stderr, "prefix %d: %d\n", x, paramprefix[x]);
-//	}
 	return;
 }
 #endif /* NO_USER_ORDER */
