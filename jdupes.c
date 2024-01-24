@@ -205,7 +205,6 @@ int main(int argc, char **argv)
 #ifndef NO_GETOPT_LONG
 	static const struct option long_options[] =
 	{
-		{ "loud", 0, 0, '@' },
 		{ "print-null", 0, 0, '0' },
 		{ "one-file-system", 0, 0, '1' },
 		{ "", 0, 0, '9' },
@@ -254,7 +253,7 @@ int main(int argc, char **argv)
  #define GETOPT getopt
 #endif
 
-#define GETOPT_STRING "@019ABC:DdEefHhIijKLlMmNnOo:P:pQqRrSsTtUuVvX:y:Zz"
+#define GETOPT_STRING "019ABC:DdEefHhIijKLlMmNnOo:P:pQqRrSsTtUuVvX:y:Zz"
 
 	/* Verify libjodycode compatibility before going further */
 	if (libjodycode_version_check(1, 0) != 0) {
@@ -317,11 +316,9 @@ int main(int argc, char **argv)
 		switch (opt) {
 		case '0':
 			SETFLAG(a_flags, FA_PRINTNULL);
-			LOUD(fprintf(stderr, "opt: print null instead of newline (--print-null)\n");)
 			break;
 		case '1':
 			SETFLAG(flags, F_ONEFS);
-			LOUD(fprintf(stderr, "opt: recursion across filesystems disabled (--one-file-system)\n");)
 			break;
 #ifdef DEBUG
 		case '9':
@@ -339,7 +336,6 @@ int main(int argc, char **argv)
 				fprintf(stderr, "Failed to get kernel version! Aborting.\n");
 				exit(EXIT_FAILURE);
 			}
-			LOUD(fprintf(stderr, "dedupefiles: uname got release '%s'\n", utsname.release));
 			if (*(utsname.release) == '2' && *(utsname.release + 1) == '.') {
 				fprintf(stderr, "Refusing to dedupe on a 2.x kernel; data loss could occur. Aborting.\n");
 				exit(EXIT_FAILURE);
@@ -350,7 +346,6 @@ int main(int argc, char **argv)
 			SETFLAG(a_flags, FA_DEDUPEFILES);
 			/* It is completely useless to dedupe zero-length extents */
 			CLEARFLAG(flags, F_INCLUDEEMPTY);
-			LOUD(fprintf(stderr, "opt: CoW/block-level deduplication enabled (--dedupe)\n");)
 			break;
 #endif /* ENABLE_DEDUPE */
 #ifndef NO_CHUNKSIZE
@@ -358,22 +353,18 @@ int main(int argc, char **argv)
 			manual_chunk_size = (strtol(optarg, NULL, 10) & 0x0ffffffcL) << 10;  /* Align to 4K sizes */
 			if (manual_chunk_size < MIN_CHUNK_SIZE || manual_chunk_size > MAX_CHUNK_SIZE) {
 				fprintf(stderr, "warning: invalid manual chunk size (must be %d - %d KiB); using defaults\n", MIN_CHUNK_SIZE / 1024, MAX_CHUNK_SIZE / 1024);
-				LOUD(fprintf(stderr, "Manual chunk size (failed) was apparently '%s' => %ld KiB\n", optarg, manual_chunk_size / 1024));
 				manual_chunk_size = 0;
 			} else auto_chunk_size = (size_t)manual_chunk_size;
-			LOUD(fprintf(stderr, "Manual chunk size is %ld\n", manual_chunk_size));
 			break;
 #endif /* NO_CHUNKSIZE */
 #ifndef NO_DELETE
 		case 'd':
 			SETFLAG(a_flags, FA_DELETEFILES);
-			LOUD(fprintf(stderr, "opt: delete files after matching (--delete)\n");)
 			break;
 #endif /* NO_DELETE */
 		case 'D':
 #ifdef DEBUG
 			if (debuglevel == 0) debuglevel = 1;
-			LOUD(fprintf(stderr, "opt: debugging information (--debug)\n");)
 #else
 			fprintf(stderr, "warning: -D debugging is not supported in this build, ignoring\n");
 #endif
@@ -390,7 +381,6 @@ int main(int argc, char **argv)
 #endif /* NO_ERRORONDUPE */
 		case 'f':
 			SETFLAG(a_flags, FA_OMITFIRST);
-			LOUD(fprintf(stderr, "opt: omit first match from each match set (--omit-first)\n");)
 			break;
 		case 'h':
 			help_text();
@@ -398,25 +388,20 @@ int main(int argc, char **argv)
 #ifndef NO_HARDLINKS
 		case 'H':
 			SETFLAG(flags, F_CONSIDERHARDLINKS);
-			LOUD(fprintf(stderr, "opt: hard links count as matches (--hard-links)\n");)
 			break;
 		case 'L':
 			SETFLAG(a_flags, FA_HARDLINKFILES);
-			LOUD(fprintf(stderr, "opt: convert duplicates to hard links (--link-hard)\n");)
 			break;
 #endif
 		case 'i':
 			SETFLAG(flags, F_REVERSESORT);
-			LOUD(fprintf(stderr, "opt: sort order reversal enabled (--reverse)\n");)
 			break;
 #ifndef NO_USER_ORDER
 		case 'I':
 			SETFLAG(flags, F_ISOLATE);
-			LOUD(fprintf(stderr, "opt: intra-parameter match isolation enabled (--isolate)\n");)
 			break;
 		case 'O':
 			SETFLAG(flags, F_USEPARAMORDER);
-			LOUD(fprintf(stderr, "opt: parameter order takes precedence (--param-order)\n");)
 			break;
 #else
 		case 'I':
@@ -427,7 +412,6 @@ int main(int argc, char **argv)
 #ifndef NO_JSON
 		case 'j':
 			SETFLAG(a_flags, FA_PRINTJSON);
-			LOUD(fprintf(stderr, "opt: print output in JSON format (--print-json)\n");)
 			break;
 #endif /* NO_JSON */
 		case 'K':
@@ -435,17 +419,14 @@ int main(int argc, char **argv)
 			break;
 		case 'm':
 			SETFLAG(a_flags, FA_SUMMARIZEMATCHES);
-			LOUD(fprintf(stderr, "opt: print a summary of match stats (--summarize)\n");)
 			break;
 		case 'M':
 			SETFLAG(a_flags, FA_SUMMARIZEMATCHES);
 			SETFLAG(a_flags, FA_PRINTMATCHES);
-			LOUD(fprintf(stderr, "opt: print matches with a summary (--print-summarize)\n");)
 			break;
 #ifndef NO_DELETE
 		case 'N':
 			SETFLAG(flags, F_NOPROMPT);
-			LOUD(fprintf(stderr, "opt: delete files without prompting (--noprompt)\n");)
 			break;
 #endif /* NO_DELETE */
 		case 'o':
@@ -462,10 +443,8 @@ int main(int argc, char **argv)
 			break;
 		case 'p':
 			SETFLAG(flags, F_PERMISSIONS);
-			LOUD(fprintf(stderr, "opt: permissions must also match (--permissions)\n");)
 			break;
 		case 'P':
-			LOUD(fprintf(stderr, "opt: print early: '%s' (--print)\n", optarg);)
 			if (jc_streq(optarg, "partial") == 0) printflags = PF_PARTIAL;
 			else if (jc_streq(optarg, "early") == 0) printflags = PF_EARLYMATCH;
 			else if (jc_streq(optarg, "fullhash") == 0) printflags = PF_FULLHASH;
@@ -479,19 +458,15 @@ int main(int argc, char **argv)
 			break;
 		case 'Q':
 			SETFLAG(flags, F_QUICKCOMPARE);
-			LOUD(fprintf(stderr, "opt: byte-for-byte safety check disabled (--quick)\n");)
 			break;
 		case 'r':
 			SETFLAG(flags, F_RECURSE);
-			LOUD(fprintf(stderr, "opt: global recursion enabled (--recurse)\n");)
 			break;
 		case 'R':
 			SETFLAG(flags, F_RECURSEAFTER);
-			LOUD(fprintf(stderr, "opt: partial recursion enabled (--recurse-after)\n");)
 			break;
 		case 't':
 			SETFLAG(flags, F_NOCHANGECHECK);
-			LOUD(fprintf(stderr, "opt: TOCTTOU safety check disabled (--no-change-check)\n");)
 			break;
 		case 'T':
 			partialonly_spec++;
@@ -504,11 +479,9 @@ int main(int argc, char **argv)
 			break;
 		case 'u':
 			SETFLAG(a_flags, FA_PRINTUNIQUE);
-			LOUD(fprintf(stderr, "opt: print only non-matched (unique) files (--print-unique)\n");)
 			break;
 		case 'U':
 			SETFLAG(flags, F_NOTRAVCHECK);
-			LOUD(fprintf(stderr, "opt: double-traversal safety check disabled (--no-trav-check)\n");)
 			break;
 		case 'v':
 		case 'V':
@@ -517,16 +490,13 @@ int main(int argc, char **argv)
 #ifndef NO_SYMLINKS
 		case 'l':
 			SETFLAG(a_flags, FA_MAKESYMLINKS);
-			LOUD(fprintf(stderr, "opt: convert duplicates to symbolic links (--link-soft)\n");)
 			break;
 		case 's':
 			SETFLAG(flags, F_FOLLOWLINKS);
-			LOUD(fprintf(stderr, "opt: follow symbolic links enabled (--symlinks)\n");)
 			break;
 #endif
 		case 'S':
 			SETFLAG(a_flags, FA_SHOWSIZE);
-			LOUD(fprintf(stderr, "opt: show size of files enabled (--size)\n");)
 			break;
 #ifndef NO_EXTFILTER
 		case 'X':
@@ -536,7 +506,6 @@ int main(int argc, char **argv)
 #ifndef NO_HASHDB
 		case 'y':
 			SETFLAG(flags, F_HASHDB);
-			LOUD(fprintf(stderr, "opt: use a hash database (--hash-db)\n");)
 			fprintf(stderr, "\nWARNING: THE HASH DATABASE FEATURE IS UNDER HEAVY DEVELOPMENT! It functions\n");
 			fprintf(stderr,   "         but there are LOTS OF QUIRKS. The behavior is not fully documented\n");
 			fprintf(stderr,   "         yet and basic 'smarts' have not been implemented. USE THIS FEATURE\n");
@@ -552,18 +521,9 @@ int main(int argc, char **argv)
 #endif /* NO_HASHDB */
 		case 'z':
 			SETFLAG(flags, F_INCLUDEEMPTY);
-			LOUD(fprintf(stderr, "opt: zero-length files count as matches (--zero-match)\n");)
 			break;
 		case 'Z':
 			SETFLAG(flags, F_SOFTABORT);
-			LOUD(fprintf(stderr, "opt: soft-abort mode enabled (--soft-abort)\n");)
-			break;
-		case '@':
-#ifdef LOUD_DEBUG
-			debuglevel = 2;
-			SETFLAG(flags, F_HIDEPROGRESS);
-#endif
-			LOUD(fprintf(stderr, "opt: loud debugging enabled, hope you can handle it (--loud)\n");)
 			break;
 
 		default:
@@ -737,7 +697,6 @@ skip_partialonly_noise:
 	st_state_t *st_state = sizetree_state_alloc();
 	for (curfile = sizetree_next_list(st_state); curfile != NULL; curfile = sizetree_next_list(st_state)) {
 		while (curfile != NULL) {
-			LOUD(fprintf(stderr, "curfile = %p '%s'\n", curfile, curfile->d_name);)
 			if (unlikely(interrupt != 0)) {
 				if (!ISFLAG(flags, F_SOFTABORT)) exit(EXIT_FAILURE);
 				interrupt = 0;  /* reset interrupt for re-use */
@@ -747,9 +706,7 @@ skip_partialonly_noise:
 			for (file_t *scanfile = curfile->next; scanfile != NULL; scanfile = scanfile->next) {
 				int match;
 
-				LOUD(fprintf(stderr, "scanfile = %p '%s'\n", scanfile, scanfile->d_name);)
 				match = checkmatch(curfile, scanfile);
-				LOUD(fprintf(stderr, "checkmatch returned %d\n", match);)
 				if (match == 0) {
 					/* Quick or partial-only compare will never run confirmmatch()
 					 * Also skip match confirmation for hard-linked files
@@ -763,29 +720,22 @@ skip_partialonly_noise:
 							&&  (curfile->device == scanfile->device))
 	#endif
 							) {
-						LOUD(fprintf(stderr, "MAIN: notice: hard linked, quick, or partial-only match (-H/-Q/-T)\n"));
 						goto register_pair;
 					}
 
 					if (confirmmatch(curfile->d_name, scanfile->d_name, curfile->size) != 0) {
-						LOUD(fprintf(stderr, "MAIN: confirmation failed, not matching\n"));
 						DBG(hash_fail++;)
 						goto skip_register;
 					}
-				} else {
-					LOUD(fprintf(stderr, "MAIN: checkmatch failed, not matching\n"));
-					goto skip_register;
-				}
+				} else goto skip_register;
 
-	register_pair:
-				LOUD(fprintf(stderr, "MAIN: registering matched file pair\n"));
+register_pair:
 				registerpair(curfile, scanfile);
 				dupecount++;
 
-	skip_register:
+skip_register:
 #if 0
 				while (scanfile != NULL && ISFLAG(scanfile->flags, FF_HAS_DUPES) && scanfile->next != NULL) {
-					LOUD(fprintf(stderr, "Already has dupes: '%s'\n", scanfile->d_name);)
 					scanfile = scanfile->next;
 				}
 #endif

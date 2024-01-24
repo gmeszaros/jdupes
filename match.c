@@ -85,7 +85,6 @@ void registerpair(file_t *file1, file_t *file2)
 
 	/* NULL pointer sanity checks */
 	DBG(if (unlikely(file1 == NULL || file2 == NULL)) jc_nullptr("registerpair()");)
-	LOUD(fprintf(stderr, "registerpair: '%s', '%s'\n", file1->d_name, file2->d_name);)
 
 #ifndef NO_ERRORONDUPE
 	if (ISFLAG(a_flags, FA_ERRORONDUPE)) {
@@ -152,7 +151,6 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
 #endif
 
 	DBG(if (unlikely(file1 == NULL || file2 == NULL || file1->d_name == NULL || file2->d_name == NULL)) jc_nullptr("checkmatch()");)
-	LOUD(fprintf(stderr, "checkmatch('%s', '%s')\n", file1->d_name, file2->d_name));
 
 	/* If device and inode fields are equal one of the files is a
 	 * hard link to the other or the files have been listed twice
@@ -190,7 +188,6 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
 		/* Print pre-check (early) match candidates if requested */
 		if (printflags == PF_EARLYMATCH) printf("Early match check passed:\n   %s\n   %s\n\n", file1->d_name, file2->d_name);
 
-		LOUD(fprintf(stderr, "checkmatch: starting file data comparisons\n"));
 		/* Attempt to exclude files quickly with partial file hashing */
 		if (!ISFLAG(file1->flags, FF_HASH_PARTIAL)) {
 			filehash = get_filehash(file1, PARTIAL_HASH_SIZE, hash_algo);
@@ -215,8 +212,6 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
 		}
 
 		cmpresult = HASH_COMPARE(file1->filehash_partial, file2->filehash_partial);
-		LOUD(if (!cmpresult) fprintf(stderr, "checkmatch: partial hashes match\n"));
-		LOUD(if (cmpresult) fprintf(stderr, "checkmatch: partial hashes do not match\n"));
 		DBG(partial_hash++;)
 
 		/* Print partial hash matching pairs if requested */
@@ -224,8 +219,6 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
 			printf("\nPartial hashes match:\n   %s\n   %s\n\n", file1->d_name, file2->d_name);
 
 		if (file1->size <= PARTIAL_HASH_SIZE || ISFLAG(flags, F_PARTIALONLY)) {
-			if (ISFLAG(flags, F_PARTIALONLY)) { LOUD(fprintf(stderr, "checkmatch: partial only mode: treating partial hash as full hash\n")); }
-			else { LOUD(fprintf(stderr, "checkmatch: small file: copying partial hash to full hash\n")); }
 			/* filehash_partial = filehash if file is small enough */
 			if (!ISFLAG(file1->flags, FF_HASH_FULL)) {
 				file1->filehash = file1->filehash_partial;
@@ -244,41 +237,33 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
 				DBG(small_file++;)
 			}
 		} else if (cmpresult == 0) {
-//      if (ISFLAG(flags, F_SKIPHASH)) {
-//        LOUD(fprintf(stderr, "checkmatch: skipping full file hashes (F_SKIPMATCH)\n"));
-//      } else {
-				/* If partial match was correct, perform a full file hash match */
-				if (!ISFLAG(file1->flags, FF_HASH_FULL)) {
-					filehash = get_filehash(file1, 0, hash_algo);
-					if (filehash == NULL) return -1;
+			/* If partial match was correct, perform a full file hash match */
+			if (!ISFLAG(file1->flags, FF_HASH_FULL)) {
+				filehash = get_filehash(file1, 0, hash_algo);
+				if (filehash == NULL) return -1;
 
-					file1->filehash = *filehash;
-					SETFLAG(file1->flags, FF_HASH_FULL);
+				file1->filehash = *filehash;
+				SETFLAG(file1->flags, FF_HASH_FULL);
 #ifndef NO_HASHDB
-					dirty1 = 1;
+				dirty1 = 1;
 #endif
-				}
+			}
 
-				if (!ISFLAG(file2->flags, FF_HASH_FULL)) {
-					filehash = get_filehash(file2, 0, hash_algo);
-					if (filehash == NULL) return -1;
+			if (!ISFLAG(file2->flags, FF_HASH_FULL)) {
+				filehash = get_filehash(file2, 0, hash_algo);
+				if (filehash == NULL) return -1;
 
-					file2->filehash = *filehash;
-					SETFLAG(file2->flags, FF_HASH_FULL);
+				file2->filehash = *filehash;
+				SETFLAG(file2->flags, FF_HASH_FULL);
 #ifndef NO_HASHDB
-					dirty2 = 1;
+				dirty2 = 1;
 #endif
-				}
+			}
 
-				/* Full file hash comparison */
-				cmpresult = HASH_COMPARE(file1->filehash, file2->filehash);
-				LOUD(if (!cmpresult) fprintf(stderr, "checkmatch: full hashes match\n"));
-				LOUD(if (cmpresult) fprintf(stderr, "checkmatch: full hashes do not match\n"));
-				DBG(full_hash++);
-//      }
-		} else {
-			DBG(partial_elim++);
-		}
+			/* Full file hash comparison */
+			cmpresult = HASH_COMPARE(file1->filehash, file2->filehash);
+			DBG(full_hash++);
+		} else { DBG(partial_elim++); }
 	}  /* if (cmpresult == 0) */
 
 	/* Add to hash database */
@@ -294,7 +279,6 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
 	} else {
 		/* All compares matched */
 		DBG(partial_to_full++;)
-		LOUD(fprintf(stderr, "checkmatch: files appear to match based on hashes\n"));
 		if (printflags == PF_FULLHASH) printf("Full hashes match:\n   %s\n   %s\n\n", file1->d_name, file2->d_name);
 		return 0;
 	}
@@ -312,7 +296,6 @@ int confirmmatch(const char * const restrict file1, const char * const restrict 
 	int retval = 0;
 
 	DBG(if (unlikely(file1 == NULL || file2 == NULL)) jc_nullptr("confirmmatch()");)
-	LOUD(fprintf(stderr, "confirmmatch running\n"));
 
 	if (unlikely(c1 == NULL || c2 == NULL)) {
 		c1 = (char *)malloc(auto_chunk_size);
@@ -324,12 +307,10 @@ int confirmmatch(const char * const restrict file1, const char * const restrict 
 	fp2 = jc_fopen(file2, JC_FILE_MODE_RDONLY_SEQ);
 	if (fp1 == NULL) {
 		if (fp2 != NULL) fclose(fp2);
-		LOUD(fprintf(stderr, "confirmmatch: warning: file open failed ('%s')\n", file1);)
 		goto different;
 	}
 	if (fp2 == NULL) {
 		if (fp1 != NULL) fclose(fp1);
-		LOUD(fprintf(stderr, "confirmmatch: warning: file open failed ('%s')\n", file2);)
 		goto different;
 	}
 

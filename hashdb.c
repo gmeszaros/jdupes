@@ -72,7 +72,6 @@ int save_hash_database(const char * const restrict dbname, const int destroy)
 	char *dbtemp;
 
 	if (dbname == NULL) goto error_hashdb_null;
-	LOUD(fprintf(stderr, "save_hash_database('%s') dirty = %d\n", dbname, hashdb_dirty);)
 	/* Don't save the hash database if it wasn't changed */
 	if (hashdb_dirty == 0 && destroy == 0) return 0;
 	if (hashdb_dirty == 1) {
@@ -94,7 +93,6 @@ int save_hash_database(const char * const restrict dbname, const int destroy)
 			}
 		}
 		if (jc_rename(dbtemp, dbname) != 0) goto error_hashdb_rename;
-		LOUD(if (hashdb_dirty == 1) fprintf(stderr, "Wrote %" PRIu64 " items to hash databse '%s'\n", cnt, dbname);)
 		hashdb_dirty = 0;
 	}
 
@@ -129,12 +127,10 @@ static int write_hashdb_entry(FILE *db, hashdb_t *cur, uint64_t *cnt, const int 
 	int err = 0;
 	static char out[PATHBUF_SIZE + 128];
 
-	LOUD(fprintf(stderr, "write_hashdb_entry(%p, %p, %p, %d)", db, cur, cnt, destroy);)
 	/* Write header and traverse array on first call */
 	if (unlikely(cur == NULL)) {
 		gettimeofday(&tm, NULL);
 		snprintf(out, PATHBUF_SIZE + 127, "jdupes hashdb:%d,%d,%08lx\n", HASHDB_VER, hash_algo, (unsigned long)tm.tv_sec);
-		LOUD(fprintf(stderr, "write hashdb: %s", out);)
 		errno = 0;
 		if (db == NULL) printf("%s", out); else fputs(out, db);
 		if (errno != 0) return 1;
@@ -156,7 +152,6 @@ static int write_hashdb_entry(FILE *db, hashdb_t *cur, uint64_t *cnt, const int 
 		snprintf(out, PATHBUF_SIZE + 127, "%u,%016" PRIx64 ",%016" PRIx64 ",%016" PRIx64 ",%016" PRIx64 ",%016" PRIx64 ",%s\n",
 			cur->hashcount, cur->partialhash, cur->fullhash, (uint64_t)cur->mtime, (uint64_t)cur->size, (uint64_t)cur->inode, cur->path);
 		(*cnt)++;
-		LOUD(fprintf(stderr, "write hashdb: %s", out);)
 		errno = 0;
 		if (db == NULL) printf("%s", out); else fputs(out, db);
 		if (errno != 0) return 1;
@@ -344,13 +339,8 @@ int64_t load_hash_database(const char * const restrict dbname)
 	int db_ver;
 	unsigned int fixed_len;
 	int64_t linenum = 1;
-#ifdef LOUD_DEBUG
-	time_t db_mtime;
-	char date[32];
-#endif /* LOUD_DEBUG */
 
 	if (dbname == NULL) goto error_hashdb_null;
-	LOUD(fprintf(stderr, "load_hash_database('%s')\n", dbname);)
 	errno = 0;
 	db = jc_fopen(dbname, JC_FILE_MODE_RDONLY_SEQ);
 	if (db == NULL) goto warn_hashdb_open;
@@ -369,9 +359,6 @@ int64_t load_hash_database(const char * const restrict dbname)
 	hashdb_algo = (int)strtoul(temp, NULL, 10);
 	temp = strtok(NULL, ",");
 	/* Database mod time is currently set but not used */
-	LOUD(db_mtime = (int)strtoul(temp, NULL, 16);)
-	LOUD(SECS_TO_TIME(date, &db_mtime);)
-	LOUD(fprintf(stderr, "hashdb header: ver %u, algo %u, mod %s\n", db_ver, hashdb_algo, date);)
 	if (db_ver < HASHDB_MIN_VER || db_ver > HASHDB_MAX_VER) goto error_hashdb_version;
 	if (hashdb_algo != hash_algo) goto warn_hashdb_algo;
 
@@ -396,7 +383,6 @@ int64_t load_hash_database(const char * const restrict dbname)
 			if (ferror(db) != 0) goto error_hashdb_read;
 			break;
 		}
-		LOUD(fprintf(stderr, "read hashdb: %s", line);)
 		strncpy(buf, line, PATHBUF_SIZE + 128);
 		linenum++;
 		linelen = (int64_t)strlen(buf);
@@ -497,7 +483,6 @@ int read_hashdb_entry(file_t *file)
 	uint64_t path_hash;
 	int exclude;
 
-	LOUD(fprintf(stderr, "read_hashdb_entry('%s')\n", file->d_name);)
 	if (file == NULL || file->d_name == NULL) goto error_null;
 	if (get_path_hash(file->d_name, &path_hash) != 0) goto error_path_hash;
 	bucket = path_hash & HT_MASK;

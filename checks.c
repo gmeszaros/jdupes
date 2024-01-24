@@ -33,55 +33,35 @@ int check_conditions(const file_t * const restrict file1, const file_t * const r
 {
 	DBG(if (unlikely(file1 == NULL || file2 == NULL || file1->d_name == NULL || file2->d_name == NULL)) jc_nullptr("check_conditions()");)
 
-	LOUD(fprintf(stderr, "check_conditions('%s', '%s')\n", file1->d_name, file2->d_name);)
-
 	/* Do not compare files that already have existing duplicates */
-	if (ISFLAG(file2->flags, FF_HAS_DUPES)) {
-		LOUD(fprintf(stderr, "check_conditions: already has matches: '%s'\n", file2->d_name);)
-		return -6;
-	}
+	if (ISFLAG(file2->flags, FF_HAS_DUPES)) return -6;
 
 #ifndef NO_USER_ORDER
 	/* Exclude based on -I/--isolate */
-	if (ISFLAG(flags, F_ISOLATE) && (file1->user_order == file2->user_order)) {
-		LOUD(fprintf(stderr, "check_conditions: files ignored: parameter isolation\n"));
-		return -3;
-	}
+	if (ISFLAG(flags, F_ISOLATE) && (file1->user_order == file2->user_order)) return -3;
 #endif /* NO_USER_ORDER */
 
 	/* Exclude based on -1/--one-file-system */
-	if (ISFLAG(flags, F_ONEFS) && (file1->device != file2->device)) {
-		LOUD(fprintf(stderr, "check_conditions: files ignored: not on same filesystem\n"));
-		return -4;
-	}
+	if (ISFLAG(flags, F_ONEFS) && (file1->device != file2->device)) return -4;
 
 	 /* Exclude files by permissions if requested */
 	if (ISFLAG(flags, F_PERMISSIONS) &&
-					(file1->mode != file2->mode
+		(file1->mode != file2->mode
 #ifndef NO_PERMS
-					|| file1->uid != file2->uid
-					|| file1->gid != file2->gid
+		|| file1->uid != file2->uid
+		|| file1->gid != file2->gid
 #endif
-					)) {
-		return -5;
-		LOUD(fprintf(stderr, "check_conditions: no match: permissions/ownership differ (-p on)\n"));
-	}
+	)) return -5;
 
 	/* Hard link and symlink + '-s' check */
 #ifndef NO_HARDLINKS
 	if ((file1->inode == file2->inode) && (file1->device == file2->device)) {
-		if (ISFLAG(flags, F_CONSIDERHARDLINKS)) {
-			LOUD(fprintf(stderr, "check_conditions: files match: hard/soft linked (-H on)\n"));
-			return 2;
-		} else {
-			LOUD(fprintf(stderr, "check_conditions: files ignored: hard/soft linked (-H off)\n"));
-			return -2;
-		}
+		if (ISFLAG(flags, F_CONSIDERHARDLINKS)) return 2;
+		else return -2;
 	}
 #endif
 
 	/* Fall through: all checks passed */
-	LOUD(fprintf(stderr, "check_conditions: all condition checks passed\n"));
 	return 0;
 }
 
@@ -93,44 +73,26 @@ int check_singlefile(file_t * const restrict newfile)
 
 	DBG(if (unlikely(newfile == NULL)) jc_nullptr("check_singlefile()");)
 
-	LOUD(fprintf(stderr, "check_singlefile: checking '%s'\n", newfile->d_name));
-
 	/* Exclude hidden files if requested */
 	if (likely(ISFLAG(flags, F_EXCLUDEHIDDEN))) {
 		if (unlikely(newfile->d_name == NULL)) jc_nullptr("check_singlefile newfile->d_name");
 		strcpy(tp, newfile->d_name);
 		tp = basename(tp);
-		if (tp[0] == '.' && jc_streq(tp, ".") && jc_streq(tp, "..")) {
-			LOUD(fprintf(stderr, "check_singlefile: excluding hidden file (-A on)\n"));
-			return 1;
-		}
+		if (tp[0] == '.' && jc_streq(tp, ".") && jc_streq(tp, "..")) return 1;
 	}
 
 	/* Get file information and check for validity */
 	const int i = getfilestats(newfile);
 
-	if (i || newfile->size == -1) {
-		LOUD(fprintf(stderr, "check_singlefile: excluding due to bad stat()\n"));
-		return 1;
-	}
+	if (i || newfile->size == -1) return 1;
 
-	if (!JC_S_ISREG(newfile->mode) && !JC_S_ISDIR(newfile->mode)) {
-		LOUD(fprintf(stderr, "check_singlefile: excluding non-regular file\n"));
-		return 1;
-	}
+	if (!JC_S_ISREG(newfile->mode) && !JC_S_ISDIR(newfile->mode)) return 1;
 
 	if (!JC_S_ISDIR(newfile->mode)) {
 		/* Exclude zero-length files if requested */
-		if (newfile->size == 0 && !ISFLAG(flags, F_INCLUDEEMPTY)) {
-		LOUD(fprintf(stderr, "check_singlefile: excluding zero-length empty file (-z not set)\n"));
-		return 1;
-	}
-
+		if (newfile->size == 0 && !ISFLAG(flags, F_INCLUDEEMPTY)) return 1;
 #ifndef NO_EXTFILTER
-		if (extfilter_exclude(newfile)) {
-			LOUD(fprintf(stderr, "check_singlefile: excluding based on an extfilter option\n"));
-			return 1;
-		}
+		if (extfilter_exclude(newfile)) return 1;
 #endif /* NO_EXTFILTER */
 	}
 
@@ -139,14 +101,10 @@ int check_singlefile(file_t * const restrict newfile)
 	 * ignore all files that have hit this limit */
  #ifndef NO_HARDLINKS
 	if (ISFLAG(a_flags, FA_HARDLINKFILES) && newfile->nlink >= 1024) {
-	#ifdef DEBUG
-		hll_exclude++;
-	#endif
-		LOUD(fprintf(stderr, "check_singlefile: excluding due to Windows 1024 hard link limit\n"));
+		DBG(hll_exclude++;)
 		return 1;
 	}
  #endif /* NO_HARDLINKS */
 #endif /* ON_WINDOWS */
-	LOUD(fprintf(stderr, "check_singlefile: all checks passed\n"));
 	return 0;
 }

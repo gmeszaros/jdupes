@@ -38,8 +38,6 @@ static file_t *init_newfile(const size_t len)
 
 	if (unlikely(!newfile)) jc_oom("init_newfile() file structure");
 
-	LOUD(fprintf(stderr, "init_newfile(len %" PRIuMAX ")\n", (uintmax_t)len));
-
 	newfile->d_name = (char *)malloc(EXTEND64(len));
 	if (!newfile->d_name) jc_oom("init_newfile() filename");
 
@@ -51,32 +49,6 @@ static file_t *init_newfile(const size_t len)
 	return newfile;
 }
 
-
-/* This is disabled until a check is in place to make it safe */
-#if 0
-/* Add a single file to the file tree */
-file_t *grokfile(const char * const restrict name, file_t * restrict * const restrict filelistp)
-{
-	file_t * restrict newfile;
-
-	if (!name || !filelistp) jc_nullptr("grokfile()");
-	LOUD(fprintf(stderr, "grokfile: '%s' %p\n", name, filelistp));
-
-	/* Allocate the file_t and the d_name entries */
-	newfile = init_newfile(strlen(name) + 2, filelistp);
-
-	strcpy(newfile->d_name, name);
-
-	/* Single-file [l]stat() and exclusion condition check */
-	if (check_singlefile(newfile) != 0) {
-		LOUD(fprintf(stderr, "grokfile: check_singlefile rejected file\n"));
-		free(newfile->d_name);
-		free(newfile);
-		return NULL;
-	}
-	return newfile;
-}
-#endif
 
 /* Load a directory's contents, recursing as needed */
 int loaddir(char * const restrict dir, int recurse)
@@ -93,7 +65,6 @@ int loaddir(char * const restrict dir, int recurse)
 	static int sf_warning = 0; /* single file warning should only appear once */
 
 	DBG(if (unlikely(dir == NULL)) jc_nullptr("loaddir()");)
-	LOUD(fprintf(stderr, "loaddir: scanning '%s' (order %d, recurse %d)\n", dir, user_item_count, recurse));
 
 	if (unlikely(interrupt != 0)) return -1;
 
@@ -101,10 +72,7 @@ int loaddir(char * const restrict dir, int recurse)
 	jc_slash_convert(dir);
 
 #ifndef NO_EXTFILTER
-	if (extfilter_path_exclude(dir)) {
-		LOUD(fprintf(stderr, "loaddir: excluding based on an extfilter string option\n"));
-		return 0;
-	}
+	if (extfilter_path_exclude(dir)) return 0;
 #endif /* NO_EXTFILTER */
 
 	/* Get directory stats (or file stats if it's a file) */
@@ -113,19 +81,6 @@ int loaddir(char * const restrict dir, int recurse)
 
 	/* if dir is actually a file, just add it to the file tree */
 	if (i == 1) {
-/* Single file addition is disabled for now because there is no safeguard
- * against the file being compared against itself if it's added in both a
- * recursion and explicitly on the command line. */
-#if 0
-		LOUD(fprintf(stderr, "loaddir -> grokfile '%s'\n", dir));
-		newfile = grokfile(dir, filelistp);
-		if (newfile == NULL) {
-			LOUD(fprintf(stderr, "grokfile rejected '%s'\n", dir));
-			return;
-		}
-		single = 1;
-		goto add_single_file;
-#endif
 		if (sf_warning == 0) {
 			fprintf(stderr, "\nFile specs on command line disabled in this version for safety\n");
 			fprintf(stderr, "This should be restored (and safe) in a future release\n");
@@ -155,7 +110,6 @@ int loaddir(char * const restrict dir, int recurse)
 		size_t d_name_len;
 
 		if (unlikely(interrupt != 0)) return -1;
-		LOUD(fprintf(stderr, "loaddir: readdir: '%s'\n", dirinfo->d_name));
 		if (unlikely(!jc_streq(dirinfo->d_name, ".") || !jc_streq(dirinfo->d_name, ".."))) continue;
 		check_sigusr1();
 		if (jc_alarm_ring != 0) {
@@ -188,7 +142,6 @@ int loaddir(char * const restrict dir, int recurse)
 
 		/* Single-file [l]stat() and exclusion condition check */
 		if (check_singlefile(newfile) != 0) {
-			LOUD(fprintf(stderr, "loaddir: check_singlefile rejected file\n"));
 			free(newfile->d_name);
 			free(newfile);
 			continue;
@@ -201,29 +154,23 @@ int loaddir(char * const restrict dir, int recurse)
 				if (ISFLAG(flags, F_ONEFS)
 						&& (getdirstats(newfile->d_name, &inode, &n_device, &mode) == 0)
 						&& (device != n_device)) {
-					LOUD(fprintf(stderr, "loaddir: directory: not recursing (--one-file-system)\n"));
 					free(newfile->d_name);
 					free(newfile);
 					continue;
 				}
 #ifndef NO_SYMLINKS
 				else if (ISFLAG(flags, F_FOLLOWLINKS) || !ISFLAG(newfile->flags, FF_IS_SYMLINK)) {
-					LOUD(fprintf(stderr, "loaddir: directory(symlink): recursing (-r/-R)\n"));
 					loaddir(newfile->d_name, recurse);
 				}
 #else
-				else {
-					LOUD(fprintf(stderr, "loaddir: directory: recursing (-r/-R)\n"));
-					loaddir(newfile->d_name, recurse);
-				}
+				else loaddir(newfile->d_name, recurse);
 #endif /* NO_SYMLINKS */
-			} else { LOUD(fprintf(stderr, "loaddir: directory: not recursing\n")); }
+			}
 			free(newfile->d_name);
 			free(newfile);
 			if (unlikely(interrupt != 0)) return -1;
 			continue;
 		} else {
-//add_single_file:
 			/* Add regular files to list, including symlink targets if requested */
 #ifndef NO_SYMLINKS
 			if (!ISFLAG(newfile->flags, FF_IS_SYMLINK) || (ISFLAG(newfile->flags, FF_IS_SYMLINK) && ISFLAG(flags, F_FOLLOWLINKS))) {
@@ -238,7 +185,6 @@ int loaddir(char * const restrict dir, int recurse)
 				progress++;
 
 			} else {
-				LOUD(fprintf(stderr, "loaddir: not a regular file: %s\n", newfile->d_name);)
 				free(newfile->d_name);
 				free(newfile);
 //    if (single == 1) return;

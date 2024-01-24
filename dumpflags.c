@@ -32,11 +32,7 @@ void dump_all_flags(void)
 	if (ISFLAG(flags, F_BENCHMARKSTOP)) fprintf(stderr, " F_BENCHMARKSTOP");
 	if (ISFLAG(flags, F_HASHDB)) fprintf(stderr, " F_HASHDB");
 
-	switch (debuglevel) {
-		case 1: fprintf(stderr, " F_DEBUG"); break;
-		case 2: fprintf(stderr, " F_LOUD"); break;
-		case 0: default: break;
-	}
+	if (debuglevel > 0) fprintf(stderr, " F_DEBUG");
 
 	/* Action-related flags */
 	if (ISFLAG(a_flags, FA_PRINTMATCHES)) fprintf(stderr, " FA_PRINTMATCHES");

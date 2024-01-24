@@ -109,8 +109,6 @@ void printjson(file_t * restrict files, const int argc, char **argv)
 	char *temp2 = (char *)malloc(PATHBUF_SIZE * 2);
 	char *temp_insert = temp;
 
-	LOUD(fprintf(stderr, "printjson: %p\n", files));
-
 	/* Output information about the jdupes command environment */
 	printf("{\n  \"jdupesVersion\": \"%s\",\n  \"jdupesVersionDate\": \"%s\",\n", VER, VERDATE);
 

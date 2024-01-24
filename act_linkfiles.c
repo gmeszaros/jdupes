@@ -90,7 +90,6 @@ void linkfiles(file_t *files, const int linktype, const int only_current)
 	static struct timeval dupfile_original_tval[2];
 #endif
 
-	LOUD(fprintf(stderr, "linkfiles(%d): %p\n", linktype, files);)
 	curfile = files;
 
 	/* Calculate a maximum */
@@ -221,7 +220,6 @@ void linkfiles(file_t *files, const int linktype, const int only_current)
 				if (i) {
 					fprintf(stderr, "warning: source file modified since scanned; changing source file:\n[SRC] ");
 					jc_fwprint(stderr, dupelist[x]->d_name, 1);
-					LOUD(fprintf(stderr, "file_has_changed: %d\n", i);)
 					srcfile = dupelist[x];
 					exit_status = EXIT_FAILURE;
 					continue;
@@ -320,7 +318,6 @@ void linkfiles(file_t *files, const int linktype, const int only_current)
 #ifndef NO_SYMLINKS
 				else {
 					i = jc_make_relative_link_name(srcfile->d_name, dupelist[x]->d_name, rel_path);
-					LOUD(fprintf(stderr, "symlink MRLN: %s to %s = %s\n", srcfile->d_name, dupelist[x]->d_name, rel_path));
 					if (i < 0) {
 						fprintf(stderr, "warning: make_relative_link_name() failed (%d)\n", i);
 					} else if (i == 1) {

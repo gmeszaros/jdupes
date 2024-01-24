@@ -23,9 +23,6 @@ const char *feature_flags[] = {
 	#ifdef __FAST_MATH__
 	"fastmath",
 	#endif
-	#ifdef LOUD_DEBUG
-	"loud",
-	#endif
 	#ifdef LOW_MEMORY
 	"lowmem",
 	#endif
@@ -94,9 +91,6 @@ void help_text(void)
 	printf("option is specified (delete, summarize, link, dedupe, etc.)\n");
 #ifdef NO_GETOPT_LONG
 	printf("\nWARNING: getopt_long disabled in this build! Long options will not work.\n\n");
-#endif
-#ifdef LOUD
-	printf(" -@ --loud        \toutput annoying low-level debug info while running\n");
 #endif
 	printf(" -0 --print-null  \toutput nulls instead of CR/LF (like 'find -print0')\n");
 	printf(" -1 --one-file-system\tdo not match files on different filesystems/devices\n");

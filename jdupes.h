@@ -103,16 +103,6 @@ extern uintmax_t comparisons;
  #endif
 #endif
 
-/* Aggressive verbosity for deep debugging */
-#ifdef LOUD_DEBUG
- #ifndef DEBUG
-  #define DEBUG
- #endif
- #define LOUD(...) if (debuglevel == 2) __VA_ARGS__
-#else
- #define LOUD(a) { }
-#endif
-
 /* Compile out debugging stat counters unless requested */
 #ifdef DEBUG
  #define DBG(a) a

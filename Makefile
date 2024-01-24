@@ -80,10 +80,6 @@ ifeq ($(OS), Windows_NT)
 endif
 
 # Debugging code inclusion
-ifdef LOUD
- DEBUG=1
- COMPILER_OPTIONS += -DLOUD_DEBUG
-endif
 ifdef DEBUG
  COMPILER_OPTIONS += -DDEBUG
 else
@@ -236,7 +232,7 @@ static: $(PROGRAM_NAME)
 	$(CC) $(CFLAGS) $(OBJS) -static $(LDFLAGS) $(STATIC_LDFLAGS) -o $(PROGRAM_NAME)$(SUFFIX)
 
 static_stripped: $(PROGRAM_NAME) static
-	-strip $(PROGRAM_NAME)$(SUFFIX)
+	strip $(PROGRAM_NAME)$(SUFFIX)
 
 $(PROGRAM_NAME): $(OBJS)
 	:

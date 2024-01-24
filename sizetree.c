@@ -23,7 +23,6 @@ static struct sizetree *sizetree_alloc(file_t *file)
 	struct sizetree *node;
 
 	DBG(if (file == NULL) jc_nullptr("sizetree_alloc");)
-	LOUD(fprintf(stderr, "sizetree_alloc('%s' [%ld])\n", file->d_name, file->size);)
 	node = (struct sizetree *)calloc(1, sizeof(struct sizetree));
 	if (node == NULL) jc_oom("sizetree_alloc");
 	node->size = file->size;
@@ -47,8 +46,6 @@ st_state_t *sizetree_state_alloc(void)
 file_t *sizetree_next_list(st_state_t *st)
 {
 	struct sizetree *cur;
-
-	LOUD(fprintf(stderr, "sizetree_next_list(%p)\n", st);)
 
 	DBG(if (st == NULL) jc_nullptr("sizetree_next_list");)
 
@@ -90,7 +87,6 @@ void sizetree_add(file_t *file)
 	struct sizetree *cur;
 
 	DBG(if (file == NULL) jc_nullptr("sizetree_add");)
-	LOUD(fprintf(stderr, "sizetree_add([%p] '%s')\n", file, file->d_name);)
 
 	if (sizetree_head == NULL) {
 		sizetree_head = sizetree_alloc(file);

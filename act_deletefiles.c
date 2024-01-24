@@ -30,7 +30,6 @@ static unsigned int get_max_dupes(const file_t *files, unsigned int * const rest
 	unsigned int groups = 0;
 
 	DBG(if (unlikely(files == NULL || max == NULL)) jc_nullptr("get_max_dupes()");)
-	LOUD(fprintf(stderr, "get_max_dupes(%p, %p)\n", (const void *)files, (void *)max);)
 
 	*max = 0;
 
@@ -60,8 +59,6 @@ void deletefiles(file_t *files, int prompt, FILE *tty)
 	char *tstr;
 	unsigned int number, sum, max, x;
 	size_t i;
-
-	LOUD(fprintf(stderr, "deletefiles: %p, %d, %p\n", files, prompt, tty));
 
 	groups = get_max_dupes(files, &max);
 

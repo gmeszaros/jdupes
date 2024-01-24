@@ -54,7 +54,6 @@ uint64_t *get_filehash(const file_t * const restrict checkfile, const size_t max
 
 	DBG(if (unlikely(checkfile == NULL || checkfile->d_name == NULL)) jc_nullptr("get_filehash()");)
 	if (unlikely((algo > HASH_ALGO_COUNT - 1) || (algo < 0))) goto error_bad_hash_algo;
-	LOUD(fprintf(stderr, "get_filehash('%s', %" PRIdMAX ")\n", checkfile->d_name, (intmax_t)max_read);)
 
 	/* Allocate on first use */
 	if (unlikely(chunk == NULL)) {
@@ -63,10 +62,7 @@ uint64_t *get_filehash(const file_t * const restrict checkfile, const size_t max
 	}
 
 	/* Get the file size. If we can't read it, bail out early */
-	if (unlikely(checkfile->size == -1)) {
-		LOUD(fprintf(stderr, "get_filehash: not hashing because stat() info is bad\n"));
-		return NULL;
-	}
+	if (unlikely(checkfile->size == -1)) return NULL;
 	fsize = checkfile->size;
 
 	/* Do not read more than the requested number of bytes */
@@ -84,10 +80,7 @@ uint64_t *get_filehash(const file_t * const restrict checkfile, const size_t max
 	if (ISFLAG(checkfile->flags, FF_HASH_PARTIAL)) {
 		*hash = checkfile->filehash_partial;
 		/* Don't bother going further if max_read is already fulfilled */
-		if (max_read != 0 && max_read <= PARTIAL_HASH_SIZE) {
-			LOUD(fprintf(stderr, "Partial hash size (%d) >= max_read (%" PRIuMAX "), not hashing anymore\n", PARTIAL_HASH_SIZE, (uintmax_t)max_read);)
-			return hash;
-		}
+		if (max_read != 0 && max_read <= PARTIAL_HASH_SIZE) return hash;
 	}
 	errno = 0;
 	file = jc_fopen(checkfile->d_name, JC_FILE_MODE_RDONLY_SEQ);
@@ -173,7 +166,6 @@ uint64_t *get_filehash(const file_t * const restrict checkfile, const size_t max
 	}
 #endif /* NO_XXHASH2 */
 
-	LOUD(fprintf(stderr, "get_filehash: returning hash: 0x%016jx\n", (uintmax_t)*hash));
 	return hash;
 error_reading_file:
 	fprintf(stderr, "\nerror reading from file "); jc_fwprint(stderr, checkfile->d_name, 1);

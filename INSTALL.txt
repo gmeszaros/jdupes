@@ -77,7 +77,6 @@ of using CFLAGS_EXTRA, i.e. 'make DEBUG=1':
 
 NO_UNICODE             [Windows only] disable all Unicode support
 DEBUG                  Turn on algorithm statistic reporting with '-D'
-LOUD                   '-@' for low-level debugging; enables DEBUG
 ENABLE_DEDUPE          Enable '-B' deduplication (Linux/macOS: on by default)
 DISABLE_DEDUPE         Forcibly disable (undefine) ENABLE_DEDUPE
 STATIC_DEDUPE_H        Build dedupe support with included minimal header file
