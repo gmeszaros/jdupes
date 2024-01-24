@@ -168,7 +168,7 @@ void add_extfilter(const char *option)
 	/* Invoke help text if requested */
 	if (jc_strcaseeq(option, "help") == 0) { help_text_extfilter(); exit(EXIT_SUCCESS); }
 
-	opt = malloc(strlen(option) + 1);
+	opt = (char *)malloc(strlen(option) + 1);
 	if (opt == NULL) jc_oom("add_extfilter option");
 	strcpy(opt, option);
 	p = opt;
@@ -192,12 +192,12 @@ void add_extfilter(const char *option)
 	if (extfilter_head != NULL) {
 		/* Add to end of exclusion stack if head is present */
 		while (extf->next != NULL) extf = extf->next;
-		extf->next = malloc(sizeof(struct extfilter) + strlen(p) + 1);
+		extf->next = (struct extfilter *)malloc(sizeof(struct extfilter) + strlen(p) + 1);
 		if (extf->next == NULL) jc_oom("add_extfilter alloc");
 		extf = extf->next;
 	} else {
 		/* Allocate extfilter_head if no exclusions exist yet */
-		extfilter_head = malloc(sizeof(struct extfilter) + strlen(p) + 1);
+		extfilter_head = (struct extfilter *)malloc(sizeof(struct extfilter) + strlen(p) + 1);
 		if (extfilter_head == NULL) jc_oom("add_extfilter alloc");
 		extf = extfilter_head;
 	}

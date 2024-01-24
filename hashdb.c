@@ -76,7 +76,7 @@ int save_hash_database(const char * const restrict dbname, const int destroy)
 	if (hashdb_dirty == 0 && destroy == 0) return 0;
 	if (hashdb_dirty == 1) {
 		errno = 0;
-		dbtemp = malloc(strlen(dbname) + 5);
+		dbtemp = (char *)malloc(strlen(dbname) + 5);
 		if (dbtemp == NULL) goto error_hashdb_alloc;
 		strcpy(dbtemp, dbname);
 		strcat(dbtemp, ".tmp");
@@ -567,7 +567,7 @@ int cleanup_hashdb(uint64_t *cnt, hashdb_t *cur)
 	if (cur->hashcount != 0) {
 		if (listsize == *cnt) {
 			listsize += 4096;
-			list = realloc(list, sizeof(char *) * listsize);
+			list = (char **)realloc(list, sizeof(char *) * listsize);
 			if (list == NULL) jc_oom("cleanup_hashdb realloc");
 		}
 		temp = (char *)malloc(strlen(cur->path) + 1);

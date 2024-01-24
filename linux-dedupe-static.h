@@ -1,6 +1,11 @@
 /* Bare header for Linux dedupe API */
 #ifndef JDUPES_DEDUPESTATIC_H
 #define JDUPES_DEDUPESTATIC_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <linux/types.h>
 #include <linux/ioctl.h>
 #define FILE_DEDUPE_RANGE_SAME    0
@@ -21,4 +26,9 @@ struct file_dedupe_range {
 	struct file_dedupe_range_info info[0];
 };
 #define FIDEDUPERANGE _IOWR(0x94, 54, struct file_dedupe_range)
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* JDUPES_DEDUPESTATIC_H */

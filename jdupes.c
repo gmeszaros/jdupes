@@ -157,7 +157,7 @@ void add_param_prefix(char *param) {
 	const char *func_name = "paramprefix";
 
 	if (param == NULL) jc_nullptr(func_name);
-	paramprefix = realloc(paramprefix, sizeof(int) * (paramprefixcnt + 1));
+	paramprefix = (int *)realloc(paramprefix, sizeof(int) * (paramprefixcnt + 1));
 	if (paramprefix == NULL) jc_oom(func_name);
 	paramprefix[paramprefixcnt] = strlen(param);
 	paramprefixcnt++;
@@ -628,7 +628,7 @@ skip_partialonly_noise:
 			exit(EXIT_FAILURE);
 		}
 
-		paramprefix = malloc(sizeof(int));
+		paramprefix = (int *)malloc(sizeof(int));
 
 		/* F_RECURSE is not set for directories before --recurse: */
 		for (int x = optind; x < firstrecurse; x++) {
