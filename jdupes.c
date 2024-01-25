@@ -23,7 +23,6 @@
 
 #include "likely_unlikely.h"
 #include "jdupes.h"
-#include "args.h"
 #include "checks.h"
 #ifdef DEBUG
  #include "dumpflags.h"
@@ -174,8 +173,6 @@ int main(int argc, char **argv)
 {
 	static file_t *files = NULL;
 	static file_t *curfile;
-	static char **oldargv;
-	static int firstrecurse;
 	static int opt;
 	static int pm = 1;
 	static int partialonly_spec = 0;
@@ -228,7 +225,6 @@ int main(int argc, char **argv)
 		{ "permissions", 0, 0, 'p' },
 		{ "quick", 0, 0, 'Q' },
 		{ "quiet", 0, 0, 'q' },
-		{ "recurse:", 0, 0, 'R' },
 		{ "recurse", 0, 0, 'r' },
 		{ "size", 0, 0, 'S' },
 		{ "symlinks", 0, 0, 's' },
@@ -248,7 +244,7 @@ int main(int argc, char **argv)
  #define GETOPT getopt
 #endif
 
-#define GETOPT_STRING "019ABC:DdEefHhIijKLlMmNnOo:P:pQqRrSsTtUuVvX:y:Zz"
+#define GETOPT_STRING "019ABC:DdEefHhIijKLlMmNnOo:P:pQqrSsTtUuVvX:y:Zz"
 
 	/* Verify libjodycode compatibility before going further */
 	if (libjodycode_version_check(1, 0) != 0) {
@@ -300,7 +296,6 @@ int main(int argc, char **argv)
 #endif
 
 	program_name = argv[0];
-	oldargv = cloneargs(argc, argv);
 
 	while ((opt = GETOPT(argc, argv, GETOPT_STRING
 #ifndef NO_GETOPT_LONG
@@ -457,9 +452,6 @@ int main(int argc, char **argv)
 		case 'r':
 			SETFLAG(flags, F_RECURSE);
 			break;
-		case 'R':
-			SETFLAG(flags, F_RECURSEAFTER);
-			break;
 		case 't':
 			SETFLAG(flags, F_NOCHANGECHECK);
 			break;
@@ -560,11 +552,6 @@ int main(int argc, char **argv)
 	}
 skip_partialonly_noise:
 
-	if (ISFLAG(flags, F_RECURSE) && ISFLAG(flags, F_RECURSEAFTER)) {
-		fprintf(stderr, "options --recurse and --recurse: are not compatible\n");
-		exit(EXIT_FAILURE);
-	}
-
 	if (ISFLAG(a_flags, FA_SUMMARIZEMATCHES) && ISFLAG(a_flags, FA_DELETEFILES)) {
 		fprintf(stderr, "options --summarize and --delete are not compatible\n");
 		exit(EXIT_FAILURE);
@@ -617,49 +604,13 @@ skip_partialonly_noise:
 		jc_alarm_ring = 1;
 	}
 
-	if (ISFLAG(flags, F_RECURSEAFTER)) {
-		firstrecurse = nonoptafter("--recurse:", argc, oldargv, argv);
-
-		if (firstrecurse == argc)
-			firstrecurse = nonoptafter("-R", argc, oldargv, argv);
-
-		if (firstrecurse == argc) {
-			fprintf(stderr, "-R option must be isolated from other options\n");
-			exit(EXIT_FAILURE);
-		}
-
-		paramprefix = (int *)malloc(sizeof(int));
-
-		/* F_RECURSE is not set for directories before --recurse: */
-		for (int x = optind; x < firstrecurse; x++) {
-			if (unlikely(interrupt)) goto interrupt_exit;
-			loaddir(argv[x], 0);
+	for (int x = optind; x < argc; x++) {
+		if (unlikely(interrupt)) goto interrupt_exit;
+		loaddir(argv[x], ISFLAG(flags, F_RECURSE));
 #ifndef NO_USER_ORDER
-			add_param_prefix(argv[x]);
+		add_param_prefix(argv[x]);
 #endif /* NO_USER_ORDER */
-			user_item_count++;
-		}
-
-		/* Set F_RECURSE for directories after --recurse: */
-		SETFLAG(flags, F_RECURSE);
-
-		for (int x = firstrecurse; x < argc; x++) {
-			if (unlikely(interrupt)) goto interrupt_exit;
-			loaddir(argv[x], 1);
-#ifndef NO_USER_ORDER
-			add_param_prefix(argv[x]);
-#endif /* NO_USER_ORDER */
-			user_item_count++;
-		}
-	} else {
-		for (int x = optind; x < argc; x++) {
-			if (unlikely(interrupt)) goto interrupt_exit;
-			loaddir(argv[x], ISFLAG(flags, F_RECURSE));
-#ifndef NO_USER_ORDER
-			add_param_prefix(argv[x]);
-#endif /* NO_USER_ORDER */
-			user_item_count++;
-		}
+		user_item_count++;
 	}
 
 	/* Abort on CTRL-C (-Z doesn't matter yet) */

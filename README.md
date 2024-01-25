@@ -134,9 +134,6 @@ parameter order
  -Q --quick             skip byte-by-byte duplicate verification. WARNING:
                         this may delete non-duplicates! Read the manual first!
  -r --recurse           for every directory, process its subdirectories too
- -R --recurse:          for each directory given after this option follow
-                        subdirectories encountered within (note the ':' at
-                        the end of the option, manpage for more details)
  -s --symlinks          follow symlinks
  -S --size              show size of duplicate files
  -t --no-change-check   disable security check for file changes (aka TOCTTOU)

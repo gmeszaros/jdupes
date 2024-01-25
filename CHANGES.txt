@@ -379,7 +379,7 @@ jdupes 1.2 (2016-03-19)
 
 jdupes 1.1.1 (2016-03-0)
 
-- Fix a bug where recursion was always enabled even if not specified 
+- Fix a bug where recursion was always enabled even if not specified
 
 jdupes 1.1 (2016-03-07)
 

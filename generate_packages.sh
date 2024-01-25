@@ -100,13 +100,13 @@ if [ "$TA" = "mac64" ] && ld -v 2>&1 | grep -q 'archs:.*i386'
 		make clean && make -j$PM CFLAGS_EXTRA="$CE"
 		cd "$WD"
 	fi
-	for X in '' '-lowmem' '-barebones' # '-loud' 
+	for X in '' '-lowmem' '-barebones' # '-loud'
 		do make clean && make -j$PM CFLAGS_EXTRA="$CE" stripped && cp $NAME$EXT $PKGNAME/$NAME$X$EXT$TYPE || ERR=1
 		[ $ERR -eq 0 ] && lipo -create -output $PKGNAME/jdupes_temp $PKGNAME/$NAME$X$EXT$TYPE $PKGNAME/$NAME$X$EXT && mv $PKGNAME/jdupes_temp $PKGNAME/$NAME$X$EXT
 	done
 	make clean
 	test $ERR -gt 0 && echo "Error building packages; aborting." && exit 1
-	rm -f $PKGNAME/$NAME$EXT$TYPE $PKGNAME/$NAME-lowmem$EXT$TYPE $PKGNAME/$NAME-barebones$EXT$TYPE # $PKGNAME/$NAME-loud$EXT$TYPE 
+	rm -f $PKGNAME/$NAME$EXT$TYPE $PKGNAME/$NAME-lowmem$EXT$TYPE $PKGNAME/$NAME-barebones$EXT$TYPE # $PKGNAME/$NAME-loud$EXT$TYPE
 fi
 test "$PKGTYPE" = "zip" && zip -9r $PKGNAME.zip $PKGNAME/
 test "$PKGTYPE" = "tar"  && tar -c $PKGNAME/ > $PKGNAME.pkg.tar

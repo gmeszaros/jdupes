@@ -127,7 +127,7 @@ extern uint32_t a_flags;
 #define F_FOLLOWLINKS		(1ULL << 3)
 #define F_INCLUDEEMPTY		(1ULL << 4)
 #define F_CONSIDERHARDLINKS	(1ULL << 5)
-#define F_RECURSEAFTER		(1ULL << 6)
+// removed
 #define F_NOPROMPT		(1ULL << 7)
 #define F_EXCLUDEHIDDEN		(1ULL << 8)
 #define F_PERMISSIONS		(1ULL << 9)

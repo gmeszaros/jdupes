@@ -116,11 +116,6 @@ skip byte-for-byte verification of duplicate pairs (use hashes only)
 .B -q --quiet
 hide progress indicator
 .TP
-.B -R --recurse:
-for each directory given after this option follow subdirectories
-encountered within (note the ':' at the end of option; see the
-Examples section below for further explanation)
-.TP
 .B -r --recurse
 for every directory given follow subdirectories encountered within
 .TP
@@ -232,9 +227,6 @@ Duplicate files are listed together in groups with each file displayed on a
 separate line. The groups are then separated from each other by blank lines.
 
 .SH EXAMPLES
-.TP
-.B jdupes a --recurse: b
-will follow subdirectories under b, but not those under a.
 .TP
 .B jdupes a --recurse b
 will follow subdirectories under both a and b.

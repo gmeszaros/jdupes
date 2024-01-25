@@ -164,9 +164,6 @@ void help_text(void)
 	printf(" -Q --quick       \tskip byte-for-byte confirmation for quick matching\n");
 	printf("                  \tWARNING: -Q can result in data loss! Be very careful!\n");
 	printf(" -r --recurse     \tfor every directory, process its subdirectories too\n");
-	printf(" -R --recurse:    \tfor each directory given after this option follow\n");
-	printf("                  \tsubdirectories encountered within (note the ':' at\n");
-	printf("                  \tthe end of the option, manpage for more details)\n");
 #ifndef NO_SYMLINKS
 	printf(" -s --symlinks    \tfollow symlinks\n");
 #endif

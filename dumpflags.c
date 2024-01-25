@@ -15,7 +15,6 @@ void dump_all_flags(void)
 	if (ISFLAG(flags, F_FOLLOWLINKS)) fprintf(stderr, " F_FOLLOWLINKS");
 	if (ISFLAG(flags, F_INCLUDEEMPTY)) fprintf(stderr, " F_INCLUDEEMPTY");
 	if (ISFLAG(flags, F_CONSIDERHARDLINKS)) fprintf(stderr, " F_CONSIDERHARDLINKS");
-	if (ISFLAG(flags, F_RECURSEAFTER)) fprintf(stderr, " F_RECURSEAFTER");
 	if (ISFLAG(flags, F_NOPROMPT)) fprintf(stderr, " F_NOPROMPT");
 	if (ISFLAG(flags, F_EXCLUDEHIDDEN)) fprintf(stderr, " F_EXCLUDEHIDDEN");
 	if (ISFLAG(flags, F_PERMISSIONS)) fprintf(stderr, " F_PERMISSIONS");
