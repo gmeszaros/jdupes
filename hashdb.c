@@ -429,7 +429,6 @@ int64_t load_hash_database(const char * const restrict dbname)
 warn_hashdb_open:
 	fprintf(stderr, "Creating a new hash database '%s'\n", dbname);
 	new_hashdb = 1;
-	fclose(db);
 	return 0;
 error_hashdb_read:
 	fprintf(stderr, "error reading hash database '%s': %s\n", dbname, strerror(errno));
