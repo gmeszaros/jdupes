@@ -30,7 +30,7 @@ void printmatches(void)
 				if (!ISFLAG(a_flags, FA_OMITFIRST)) jc_fwprint(stdout, qs->list[i]->d_name, cr);
 			} else jc_fwprint(stdout, qs->list[i]->d_name, cr);
 		}
-		if (qs->next != NULL) jc_fwprint(stdout, "", cr);
+		jc_fwprint(stdout, "", cr);
 	}
 
 // Old way
