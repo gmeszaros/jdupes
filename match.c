@@ -13,7 +13,6 @@
 #include "likely_unlikely.h"
 #include "checks.h"
 #include "filehash.h"
-#include "sort.h"
 #ifndef NO_HASHDB
  #include "hashdb.h"
 #endif
@@ -109,32 +108,24 @@ void registerpair(file_t *file1, file_t *file2)
 		return;
 	}
 	// If one file FF_HAS_DUPES but the other doesn't, insert the other into the chain
-		if (ISFLAG(file1->flags, FF_HAS_DUPES)) {
-			src = file1; dest = file2;
-		} else if (ISFLAG(file2->flags, FF_HAS_DUPES)) {
-			src = file2; dest = file1;
-		}
-		if (src != NULL) {
-			for (scan = src; scan->duplicates != NULL; scan = scan->duplicates);
-			scan->duplicates = dest;
-			dest->chain_head = src->chain_head;
-			SETFLAG(dest->flags, FF_HAS_DUPES);
-			return;
-		}
+	if (ISFLAG(file1->flags, FF_HAS_DUPES)) {
+		src = file1; dest = file2;
+	} else if (ISFLAG(file2->flags, FF_HAS_DUPES)) {
+		src = file2; dest = file1;
+	}
+	if (src != NULL) {
+		for (scan = src; scan->duplicates != NULL; scan = scan->duplicates);
+		scan->duplicates = dest;
+		dest->chain_head = src->chain_head;
+		SETFLAG(dest->flags, FF_HAS_DUPES);
+		return;
+	}
 	// If neither file FF_HAS_DUPES yet then make a new chain
-		SETFLAG(file1->flags, FF_HAS_DUPES | FF_DUPE_CHAIN_HEAD);
-		SETFLAG(file2->flags, FF_HAS_DUPES);
-		file1->chain_head = file1;
-		file2->chain_head = file1;
-		file1->duplicates = file2;
-
-/* This part doesn't do anything now; it's only here to save for later work */
-#ifndef NO_MTIME
-		if (ordertype == ORDER_TIME)
-			compare = sort_pairs_by_mtime(file1, file2);
-		else
-#endif /* NO_MTIME */
-			compare = sort_pairs_by_filename(file1, file2);
+	SETFLAG(file1->flags, FF_HAS_DUPES | FF_DUPE_CHAIN_HEAD);
+	SETFLAG(file2->flags, FF_HAS_DUPES);
+	file1->chain_head = file1;
+	file2->chain_head = file1;
+	file1->duplicates = file2;
 
 	return;
 }

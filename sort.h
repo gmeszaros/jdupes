@@ -10,10 +10,7 @@ extern "C" {
 
 #include "jdupes.h"
 
-#ifndef NO_MTIME
-int sort_pairs_by_mtime(file_t *f1, file_t *f2);
-#endif
-int sort_pairs_by_filename(file_t *f1, file_t *f2);
+int sort_by_name_numeric(file_t *file1, file_t *file2);
 
 #ifdef __cplusplus
 }

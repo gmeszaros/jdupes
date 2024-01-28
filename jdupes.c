@@ -604,6 +604,10 @@ skip_partialonly_noise:
 		jc_alarm_ring = 1;
 	}
 
+#ifndef NO_USER_ORDER
+	paramprefix = (int *)malloc(sizeof(int));
+	if (paramprefix == NULL) jc_oom("paramprefix");
+#endif /* NO_USER_ORDER */
 	for (int x = optind; x < argc; x++) {
 		if (unlikely(interrupt)) goto interrupt_exit;
 		loaddir(argv[x], ISFLAG(flags, F_RECURSE));
@@ -639,7 +643,7 @@ skip_partialonly_noise:
 	progress = 0;
 	if (!ISFLAG(flags, F_HIDEPROGRESS)) jc_alarm_ring = 1;
 
-// FIXME: big time work in progress
+	/* Populate size tree with matches */
 	st_state_t *st_state = sizetree_state_alloc();
 	for (curfile = sizetree_next_list(st_state); curfile != NULL; curfile = sizetree_next_list(st_state)) {
 		while (curfile != NULL) {
@@ -657,13 +661,12 @@ skip_partialonly_noise:
 					/* Quick or partial-only compare will never run confirmmatch()
 					 * Also skip match confirmation for hard-linked files
 					 * (This set of comparisons is ugly, but quite efficient) */
-					if (
-								 ISFLAG(flags, F_QUICKCOMPARE)
-							|| ISFLAG(flags, F_PARTIALONLY)
+					if ( ISFLAG(flags, F_QUICKCOMPARE)
+						|| ISFLAG(flags, F_PARTIALONLY)
 	#ifndef NO_HARDLINKS
-							|| (ISFLAG(flags, F_CONSIDERHARDLINKS)
-							&&  (curfile->inode == scanfile->inode)
-							&&  (curfile->device == scanfile->device))
+						|| (ISFLAG(flags, F_CONSIDERHARDLINKS)
+						&&  (curfile->inode == scanfile->inode)
+						&&  (curfile->device == scanfile->device))
 	#endif
 							) {
 						goto register_pair;

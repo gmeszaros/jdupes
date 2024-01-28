@@ -6,8 +6,9 @@
 
 #include <libjodycode.h>
 #include "jdupes.h"
-#include "sizetree.h"
 #include "query.h"
+#include "sort.h"
+#include "sizetree.h"
 
 #define QSALLOC_CHUNK_SIZE 4
 
@@ -41,12 +42,7 @@ void qstate_sort_sets(qstate_t **qstate_ptr, const int sort_type)
 			qstate_t *cur = *qstate_ptr;
 			for (; cur != NULL && cur->next != NULL; prev = cur, cur = cur->next) {
 				int res;
-#ifndef NO_USER_ORDER
-				if (cur->list[0]->user_order ==cur->next->list[0]->user_order)
-					res = jc_numeric_strcmp(cur->list[0]->d_name + paramprefix[cur->list[0]->user_order], cur->next->list[0]->d_name + paramprefix[cur->list[0]->user_order], 0);
-				else
-#endif
-					res = jc_numeric_strcmp(cur->list[0]->d_name, cur->next->list[0]->d_name, 0);
+				res = sort_by_name_numeric(cur->list[0], cur->next->list[0]);
 				if (res > 0) {
 					/* Swap the list items */
 					qstate_t *temp = cur->next;
