@@ -6,6 +6,7 @@ HASHDB="$1"
 TEMPDB="_jdupes_hashdb_clean.tmp"
 ERR=0; CNT=0
 LINELEN=87
+DELAY=128
 
 [ "$HASHDB" = "." ] && HASHDB="jdupes_hashdb.txt"
 
@@ -31,13 +32,18 @@ head -n 1 "$HASHDB" > "$TEMPDB" || ERR=1
 
 echo "Sorting items (this may take a little time)..." >&2
 
+D=0
 while read LINE
 	do
 	NAME="${LINE:$LINELEN}"
 	[ ! -e "$NAME" ] && echo "$LINE" >&2 && continue
 	echo "$LINE" >> "$TEMPDB" || ERR=1
 	CNT=$((CNT + 1))
-	echo -n "Processed $CNT/$SRCLINES lines ($((CNT * 100 / SRCLINES))%)"$'\r'
+	if [ $D -le 0 ]
+		then echo -n "Processed $CNT/$SRCLINES lines ($((CNT * 100 / SRCLINES))%)"$'\r'
+		D=$DELAY
+		else D=$((D - 1))
+	fi
 done < <(grep -v '^jdupes hashdb:' "$HASHDB" | sort -k7 -t,)
 
 if [ $ERR -eq 1 ]
