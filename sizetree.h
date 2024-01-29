@@ -23,7 +23,8 @@ typedef struct _sizetree_state {
 	int stackslots;
 } st_state_t;
 
-st_state_t *sizetree_state_alloc(void);
+st_state_t *sizetree_new_state(void);
+void sizetree_free_state(st_state_t *st);
 void sizetree_add(file_t *file);
 file_t *sizetree_next_list(st_state_t *st);
 

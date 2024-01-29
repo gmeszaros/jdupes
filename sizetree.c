@@ -32,13 +32,21 @@ static struct sizetree *sizetree_alloc(file_t *file)
 
 
 /* Allocate a sizetree iteration state */
-st_state_t *sizetree_state_alloc(void)
+st_state_t *sizetree_new_state(void)
 {
 	st_state_t *st = (st_state_t *)malloc(sizeof(st_state_t));
-	if (st == NULL) jc_oom("sizetree_state_alloc");
+	if (st == NULL) jc_oom("sizetree_new_state");
 	memset(st, 0, sizeof(st_state_t));
 	st->stackcnt = -1;
 	return st;
+}
+
+
+void sizetree_free_state(st_state_t *st)
+{
+	if (st->stack != NULL) free(st->stack);
+	free(st);
+	return;
 }
 
 

@@ -16,6 +16,46 @@ static void qstate_add_to_list(qstate_t **qstate, file_t *cur);
 static void qstate_file_swap(file_t **file1, file_t **file2);
 
 
+qstate_t *query_new_state(void)
+{
+	st_state_t *st_state;
+	qstate_t *qs = NULL, *prev = NULL, *head = NULL;
+
+	st_state = sizetree_new_state();
+	if (st_state == NULL) jc_oom("query_new_state st_state");
+
+	st_state->stackcnt = -1;
+	for (file_t *st_next = sizetree_next_list(st_state); st_next != NULL; st_next = sizetree_next_list(st_state)) {
+		for (; st_next != NULL; st_next = st_next->next) {
+			/* Get each duplicate set and put into a query state list */
+			if (ISFLAG(st_next->flags, FF_DUPE_CHAIN_HEAD)) {
+				qs = (qstate_t *)calloc(1, sizeof(qstate_t) + (sizeof(file_t *) * QSALLOC_CHUNK_SIZE));
+				if (qs == NULL) jc_oom("query_new_state");
+				qs->alloc = QSALLOC_CHUNK_SIZE;
+				for (file_t *cur = st_next; cur != NULL; cur = cur->duplicates) qstate_add_to_list(&qs, cur);
+				if (head == NULL) head = qs;
+				else if (prev != NULL) prev->next = qs;
+				prev = qs;
+			}
+		}
+	}
+
+	sizetree_free_state(st_state);
+
+	qstate_sort_lists(head, QS_NAME);
+	qstate_sort_sets(&head, QS_NAME);
+
+	return head;
+}
+
+
+void query_free_state(qstate_t *qs)
+{
+	free(qs);
+	return;
+}
+
+
 static void qstate_file_swap(file_t **file1, file_t **file2)
 {
 	file_t * const temp = *file1;
@@ -112,35 +152,4 @@ static void qstate_add_to_list(qstate_t **qstate, file_t *cur)
 
 	*qstate = qs;
 	return;
-}
-
-
-qstate_t *query_new_state(void)
-{
-	st_state_t *st_state;
-	qstate_t *qs = NULL, *prev = NULL, *head = NULL;
-
-	st_state = sizetree_state_alloc();
-	if (st_state == NULL) jc_oom("query_new_state st_state");
-
-	st_state->stackcnt = -1;
-	for (file_t *st_next = sizetree_next_list(st_state); st_next != NULL; st_next = sizetree_next_list(st_state)) {
-		for (; st_next != NULL; st_next = st_next->next) {
-			/* Get each duplicate set and put into a query state list */
-			if (ISFLAG(st_next->flags, FF_DUPE_CHAIN_HEAD)) {
-				qs = (qstate_t *)calloc(1, sizeof(qstate_t) + (sizeof(file_t *) * QSALLOC_CHUNK_SIZE));
-				if (qs == NULL) jc_oom("query_new_state");
-				qs->alloc = QSALLOC_CHUNK_SIZE;
-				for (file_t *cur = st_next; cur != NULL; cur = cur->duplicates) qstate_add_to_list(&qs, cur);
-				if (head == NULL) head = qs;
-				else if (prev != NULL) prev->next = qs;
-				prev = qs;
-			}
-		}
-	}
-
-	qstate_sort_lists(head, QS_NAME);
-	qstate_sort_sets(&head, QS_NAME);
-
-	return head;
 }

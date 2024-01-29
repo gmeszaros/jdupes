@@ -644,7 +644,7 @@ skip_partialonly_noise:
 	if (!ISFLAG(flags, F_HIDEPROGRESS)) jc_alarm_ring = 1;
 
 	/* Populate size tree with matches */
-	st_state_t *st_state = sizetree_state_alloc();
+	st_state_t *st_state = sizetree_new_state();
 	for (curfile = sizetree_next_list(st_state); curfile != NULL; curfile = sizetree_next_list(st_state)) {
 		while (curfile != NULL) {
 			if (unlikely(interrupt != 0)) {
