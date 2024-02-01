@@ -708,6 +708,7 @@ skip_file_scan:
 	signal(SIGINT, SIG_DFL);
 	if (!ISFLAG(flags, F_HIDEPROGRESS)) jc_stop_alarm();
 
+	sizetree_free_state(st_state);
 
 #ifndef NO_DELETE
 	if (ISFLAG(a_flags, FA_DELETEFILES)) {
@@ -748,6 +749,8 @@ skip_file_scan:
 #ifdef DEBUG
 skip_all_scan_code:
 #endif
+
+	free(paramprefix);
 
 #ifdef DEBUG
 	if (debuglevel > 0) {

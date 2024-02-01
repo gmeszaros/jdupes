@@ -50,17 +50,12 @@ void sizetree_free_state(st_state_t *st)
 }
 
 
-/* Return the next file list; stackcnt == -1 resets/inits the state, -2 frees memory */
+/* Return the next file list; stackcnt == -1 resets/inits the state */
 file_t *sizetree_next_list(st_state_t *st)
 {
 	struct sizetree *cur;
 
 	DBG(if (st == NULL) jc_nullptr("sizetree_next_list");)
-
-	if (unlikely(st->stackcnt == -2)) {
-		if (st->stack != NULL) free(st->stack);
-		return NULL;
-	}
 
 	if (st->stackcnt == -1 || st->stack == NULL) {
 		/* Initialize everything and push head of tree as first stack item */

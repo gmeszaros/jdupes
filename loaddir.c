@@ -39,7 +39,7 @@ static file_t *init_newfile(const size_t len)
 	if (unlikely(!newfile)) jc_oom("init_newfile() file structure");
 
 	newfile->d_name = (char *)malloc(EXTEND64(len));
-	if (!newfile->d_name) jc_oom("init_newfile() filename");
+	if (newfile->d_name == NULL) jc_oom("init_newfile() filename");
 
 #ifndef NO_USER_ORDER
 	newfile->user_order = user_item_count;
@@ -47,6 +47,16 @@ static file_t *init_newfile(const size_t len)
 	newfile->size = -1;
 	newfile->duplicates = NULL;
 	return newfile;
+}
+
+
+static void free_file(file_t *file)
+{
+	if (file != NULL) {
+		if (file->d_name != NULL) free(file->d_name);
+		free(file);
+	}
+	return;
 }
 
 
@@ -142,8 +152,7 @@ int loaddir(char * const restrict dir, int recurse)
 
 		/* Single-file [l]stat() and exclusion condition check */
 		if (check_singlefile(newfile) != 0) {
-			free(newfile->d_name);
-			free(newfile);
+			free_file(newfile);
 			continue;
 		}
 
@@ -154,8 +163,7 @@ int loaddir(char * const restrict dir, int recurse)
 				if (ISFLAG(flags, F_ONEFS)
 						&& (getdirstats(newfile->d_name, &inode, &n_device, &mode) == 0)
 						&& (device != n_device)) {
-					free(newfile->d_name);
-					free(newfile);
+					free_file(newfile);
 					continue;
 				}
 #ifndef NO_SYMLINKS
@@ -166,27 +174,26 @@ int loaddir(char * const restrict dir, int recurse)
 				else loaddir(newfile->d_name, recurse);
 #endif /* NO_SYMLINKS */
 			}
-			free(newfile->d_name);
-			free(newfile);
+			free_file(newfile);
 			if (unlikely(interrupt != 0)) return -1;
 			continue;
 		} else {
 			/* Add regular files to list, including symlink targets if requested */
 #ifndef NO_SYMLINKS
-			if (!ISFLAG(newfile->flags, FF_IS_SYMLINK) || (ISFLAG(newfile->flags, FF_IS_SYMLINK) && ISFLAG(flags, F_FOLLOWLINKS))) {
+			if (!ISFLAG(newfile->flags, FF_IS_SYMLINK) || (ISFLAG(newfile->flags, FF_IS_SYMLINK) && ISFLAG(flags, F_FOLLOWLINKS)))
 #else
-			if (JC_S_ISREG(newfile->mode)) {
+			if (JC_S_ISREG(newfile->mode))
 #endif
+			{
 #ifndef NO_HASHDB
 				if (ISFLAG(flags, F_HASHDB)) read_hashdb_entry(newfile);
 #endif
-	sizetree_add(newfile);
+				sizetree_add(newfile);
 				filecount++;
 				progress++;
 
 			} else {
-				free(newfile->d_name);
-				free(newfile);
+				free_file(newfile);
 //    if (single == 1) return;
 				continue;
 			}

@@ -42,7 +42,7 @@ uint64_t *get_filehash(const file_t * const restrict checkfile, const size_t max
 	off_t fsize;
 	/* This is an array because we return a pointer to it */
 	static uint64_t hash[1];
-	static uint64_t *chunk = NULL;
+	uint64_t *chunk = NULL;
 	FILE *file = NULL;
 	int hashing = 0;
 #ifndef NO_XXHASH2
@@ -54,12 +54,6 @@ uint64_t *get_filehash(const file_t * const restrict checkfile, const size_t max
 
 	DBG(if (unlikely(checkfile == NULL || checkfile->d_name == NULL)) jc_nullptr("get_filehash()");)
 	if (unlikely((algo > HASH_ALGO_COUNT - 1) || (algo < 0))) goto error_bad_hash_algo;
-
-	/* Allocate on first use */
-	if (unlikely(chunk == NULL)) {
-		chunk = (uint64_t *)malloc(auto_chunk_size);
-		if (unlikely(!chunk)) jc_oom("get_filehash() chunk");
-	}
 
 	/* Get the file size. If we can't read it, bail out early */
 	if (unlikely(checkfile->size == -1)) return NULL;
@@ -120,6 +114,8 @@ uint64_t *get_filehash(const file_t * const restrict checkfile, const size_t max
 #endif /* NO_XXHASH2 */
 
 	/* Read the file in chunks until we've read it all. */
+	chunk = (uint64_t *)malloc(auto_chunk_size);
+	if (unlikely(!chunk)) jc_oom("get_filehash() chunk");
 	while (fsize > 0) {
 		size_t bytes_to_read;
 
@@ -127,7 +123,7 @@ uint64_t *get_filehash(const file_t * const restrict checkfile, const size_t max
 		bytes_to_read = (fsize >= (off_t)auto_chunk_size) ? auto_chunk_size : (size_t)fsize;
 		if (unlikely(fread((void *)chunk, bytes_to_read, 1, file) != 1)) goto error_reading_file;
 
-	switch (algo) {
+		switch (algo) {
 #ifndef NO_XXHASH2
 		case HASH_ALGO_XXHASH2_64:
 			if (unlikely(XXH64_update(xxhstate, chunk, bytes_to_read) != XXH_OK)) goto error_reading_file;
@@ -138,7 +134,7 @@ uint64_t *get_filehash(const file_t * const restrict checkfile, const size_t max
 			break;
 		default:
 			goto error_bad_hash_algo;
-	}
+		}
 
 		if ((off_t)bytes_to_read > fsize) break;
 		else fsize -= (off_t)bytes_to_read;
@@ -156,6 +152,7 @@ uint64_t *get_filehash(const file_t * const restrict checkfile, const size_t max
 		}
 		continue;
 	}
+	free(chunk);
 
 	fclose(file);
 

@@ -32,6 +32,7 @@ void printmatches(void)
 		}
 		jc_fwprint(stdout, "", cr);
 	}
+	query_free_state(qstate);
 
 // Old way
 #if 0
