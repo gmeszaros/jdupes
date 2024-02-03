@@ -80,7 +80,7 @@ void dedupefiles(file_t * restrict files)
 			src_fd = open(curfile2->d_name, O_RDONLY);
 		}
 		if (src_fd == -1) continue;
-		printf("  [SRC] %s\n", curfile2->d_name);
+		printf("[SRC] %s\n", curfile2->d_name);
 
 		/* Run dedupe for each set */
 		for (dupefile = curfile->duplicates; dupefile; dupefile = dupefile->duplicates) {
@@ -89,7 +89,7 @@ void dedupefiles(file_t * restrict files)
 
 			/* Don't pass hard links to dedupe */
 			if (dupefile->device == curfile->device && dupefile->inode == curfile->inode) {
-				printf("  -==-> %s\n", dupefile->d_name);
+				printf("-==-> %s\n", dupefile->d_name);
 				continue;
 			}
 
@@ -118,7 +118,7 @@ void dedupefiles(file_t * restrict files)
 			/* Handle any errors */
 			err = fdri->status;
 			if (err != FILE_DEDUPE_RANGE_SAME || errno != 0) {
-				printf("  -XX-> %s\n", dupefile->d_name);
+				printf("-XX-> %s\n", dupefile->d_name);
 				fprintf(stderr, "error: ");
 				if (err == FILE_DEDUPE_RANGE_DIFFERS) {
 					fprintf(stderr, "not identical (files modified between scan and dedupe?)\n");
@@ -131,22 +131,22 @@ void dedupefiles(file_t * restrict files)
 					exit_status = EXIT_FAILURE;
 				}
 				if ((err == -22 || errno == 22) && err_twentytwo == 0) {
-					fprintf(stderr, "       One or more files being deduped are read-only or hard linked.\n");
-					fprintf(stderr, "       Read-only files can only be deduped by the root user.\n");
-					fprintf(stderr, "       %s\n", s_err_dedupe_notabug);
-					fprintf(stderr, "       %s\n", s_err_dedupe_repeated);
+					fprintf(stderr, "    One or more files being deduped are read-only or hard linked.\n");
+					fprintf(stderr, "    Read-only files can only be deduped by the root user.\n");
+					fprintf(stderr, "    %s\n", s_err_dedupe_notabug);
+					fprintf(stderr, "    %s\n", s_err_dedupe_repeated);
 					err_twentytwo = 1;
 	}
 				if ((err == -95 || errno == 95) && err_ninetyfive == 0) {
-					fprintf(stderr, "       One or more files is on a filesystem that does not support\n");
-					fprintf(stderr, "       block-level deduplication or are on different filesystems.\n");
-					fprintf(stderr, "       %s\n", s_err_dedupe_notabug);
-					fprintf(stderr, "       %s\n", s_err_dedupe_repeated);
+					fprintf(stderr, "    One or more files is on a filesystem that does not support\n");
+					fprintf(stderr, "    block-level deduplication or are on different filesystems.\n");
+					fprintf(stderr, "    %s\n", s_err_dedupe_notabug);
+					fprintf(stderr, "    %s\n", s_err_dedupe_repeated);
 					err_ninetyfive = 1;
 	}
 			} else {
 				/* Dedupe OK; report to the user and add to file count */
-				printf("  ====> %s\n", dupefile->d_name);
+				printf("====> %s\n", dupefile->d_name);
 				total_files++;
 			}
 			close((int)fdri->dest_fd);
