@@ -34,29 +34,6 @@ void printmatches(void)
 	}
 	query_free_state(qstate);
 
-// Old way
-#if 0
-	while (files != NULL) {
-		if (ISFLAG(files->flags, FF_DUPE_CHAIN_HEAD)) {
-			printed = 1;
-			if (!ISFLAG(a_flags, FA_OMITFIRST)) {
-				if (ISFLAG(a_flags, FA_SHOWSIZE)) printf("%" PRIdMAX " byte%c each:\n", (intmax_t)files->size,
-						(files->size != 1) ? 's' : ' ');
-				jc_fwprint(stdout, files->d_name, cr);
-			}
-			tmpfile = files->duplicates;
-			while (tmpfile != NULL) {
-				jc_fwprint(stdout, tmpfile->d_name, cr);
-				tmpfile = tmpfile->duplicates;
-			}
-			if (files->next != NULL) jc_fwprint(stdout, "", cr);
-
-		}
-
-		files = files->next;
-	}
-#endif // 0
-
 	if (printed == 0) fprintf(stderr, "%s", s_no_dupes);
 
 	return;
