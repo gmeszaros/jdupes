@@ -33,8 +33,6 @@ int file_has_changed(file_t * const restrict file)
 	/* If -t/--no-change-check specified then completely bypass this code */
 	if (ISFLAG(flags, F_NOCHANGECHECK)) return 0;
 
-	DBG(if (unlikely(file == NULL || file->d_name == NULL)) jc_nullptr("file_has_changed()");)
-
 	if (!ISFLAG(file->flags, FF_VALID_STAT)) return -66;
 
 	if (jc_stat(file->d_name, &s) != 0) return -2;
@@ -61,8 +59,6 @@ int file_has_changed(file_t * const restrict file)
 int getfilestats(file_t * const restrict file)
 {
 	struct JC_STAT s;
-
-	DBG(if (unlikely(file == NULL || file->d_name == NULL)) jc_nullptr("getfilestats()");)
 
 	/* Don't stat the same file more than once */
 	if (ISFLAG(file->flags, FF_VALID_STAT)) return 0;
@@ -100,8 +96,6 @@ int getdirstats(const char * const restrict name,
 		jdupes_mode_t * const restrict mode)
 {
 	struct JC_STAT s;
-
-	DBG(if (unlikely(name == NULL || inode == NULL || dev == NULL)) jc_nullptr("getdirstats");)
 
 	if (jc_stat(name, &s) != 0) return -1;
 	*inode = s.st_ino;

@@ -82,9 +82,6 @@ void registerpair(file_t *file1, file_t *file2)
 	int compare;
 	(void)compare;
 
-	/* NULL pointer sanity checks */
-	DBG(if (unlikely(file1 == NULL || file2 == NULL)) jc_nullptr("registerpair()");)
-
 #ifndef NO_ERRORONDUPE
 	if (ISFLAG(a_flags, FA_ERRORONDUPE)) {
 		if (!ISFLAG(flags, F_HIDEPROGRESS)) fprintf(stderr, "\r");
@@ -141,20 +138,15 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
 	int dirty1 = 0, dirty2 = 0;
 #endif
 
-	DBG(if (unlikely(file1 == NULL || file2 == NULL || file1->d_name == NULL || file2->d_name == NULL)) jc_nullptr("checkmatch()");)
-
 	/* If device and inode fields are equal one of the files is a
 	 * hard link to the other or the files have been listed twice
 	 * unintentionally. We don't want to flag these files as
 	 * duplicates unless the user specifies otherwise. */
 
-	/* Count the total number of comparisons requested */
-	DBG(comparisons++;)
-
-/* If considering hard linked files as duplicates, they are
- * automatically duplicates without being read further since
- * they point to the exact same inode. If we aren't considering
- * hard links as duplicates, we just return -1. */
+	/* If considering hard linked files as duplicates, they are
+	 * automatically duplicates without being read further since
+	 * they point to the exact same inode. If we aren't considering
+	 * hard links as duplicates, we just return -1. */
 
 	cmpresult = check_conditions(file1, file2);
 	switch (cmpresult) {
@@ -203,7 +195,6 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
 		}
 
 		cmpresult = HASH_COMPARE(file1->filehash_partial, file2->filehash_partial);
-		DBG(partial_hash++;)
 
 		/* Print partial hash matching pairs if requested */
 		if (cmpresult == 0 && printflags == PF_PARTIAL)
@@ -217,7 +208,6 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
 #ifndef NO_HASHDB
 				dirty1 = 1;
 #endif
-				DBG(small_file++;)
 			}
 			if (!ISFLAG(file2->flags, FF_HASH_FULL)) {
 				file2->filehash = file2->filehash_partial;
@@ -225,7 +215,6 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
 #ifndef NO_HASHDB
 				dirty2 = 1;
 #endif
-				DBG(small_file++;)
 			}
 		} else if (cmpresult == 0) {
 			/* If partial match was correct, perform a full file hash match */
@@ -253,8 +242,7 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
 
 			/* Full file hash comparison */
 			cmpresult = HASH_COMPARE(file1->filehash, file2->filehash);
-			DBG(full_hash++);
-		} else { DBG(partial_elim++); }
+		}
 	}  /* if (cmpresult == 0) */
 
 	/* Add to hash database */
@@ -269,7 +257,6 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
 		return -1;
 	} else {
 		/* All compares matched */
-		DBG(partial_to_full++;)
 		if (printflags == PF_FULLHASH) printf("Full hashes match:\n   %s\n   %s\n\n", file1->d_name, file2->d_name);
 		return 0;
 	}
@@ -285,8 +272,6 @@ int confirmmatch(const char * const restrict file1, const char * const restrict 
 	size_t r1, r2;
 	off_t bytes = 0;
 	int retval = 0;
-
-	DBG(if (unlikely(file1 == NULL || file2 == NULL)) jc_nullptr("confirmmatch()");)
 
 	if (unlikely(c1 == NULL || c2 == NULL)) {
 		c1 = (char *)malloc(auto_chunk_size);

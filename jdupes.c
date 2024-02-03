@@ -24,9 +24,6 @@
 #include "likely_unlikely.h"
 #include "jdupes.h"
 #include "checks.h"
-#ifdef DEBUG
- #include "dumpflags.h"
-#endif
 #ifndef NO_EXTFILTER
  #include "extfilter.h"
 #endif
@@ -84,7 +81,6 @@
 /* Behavior modification flags (a=action, p=-P) */
 uint32_t flags = 0;
 uint32_t a_flags = 0;
-int debuglevel = 0;
 enum e_printflags printflags = PF_NONE;
 
 static const char *program_name;
@@ -102,18 +98,6 @@ static const char *program_name;
 
 /* Required for progress indicator code */
 uintmax_t filecount = 0, progress = 0, item_progress = 0, dupecount = 0;
-
-/* Performance and behavioral statistics (debug mode) */
-#ifdef DEBUG
-unsigned int small_file = 0, partial_hash = 0, partial_elim = 0;
-unsigned int full_hash = 0, partial_to_full = 0, hash_fail = 0;
-uintmax_t comparisons = 0;
- #ifdef ON_WINDOWS
-	#ifndef NO_HARDLINKS
-	unsigned int hll_exclude = 0;
-	#endif
- #endif
-#endif /* DEBUG */
 
 /* Hash algorithm (see filehash.h) */
 #ifdef USE_JODY_HASH
@@ -199,11 +183,9 @@ int main(int argc, char **argv)
 	{
 		{ "print-null", 0, 0, '0' },
 		{ "one-file-system", 0, 0, '1' },
-		{ "", 0, 0, '9' },
 		{ "no-hidden", 0, 0, 'A' },
 		{ "dedupe", 0, 0, 'B' },
 		{ "chunk-size", 1, 0, 'C' },
-		{ "debug", 0, 0, 'D' },
 		{ "delete", 0, 0, 'd' },
 		{ "error-on-dupe", 0, 0, 'e' },
 		{ "ext-option", 0, 0, 'E' },
@@ -244,7 +226,7 @@ int main(int argc, char **argv)
  #define GETOPT getopt
 #endif
 
-#define GETOPT_STRING "019ABC:DdEefHhIijKLlMmNnOo:P:pQqrSsTtUuVvX:y:Zz"
+#define GETOPT_STRING "01ABC:dEefHhIijKLlMmNnOo:P:pQqrSsTtUuVvX:y:Zz"
 
 	/* Verify libjodycode compatibility before going further */
 	if (libjodycode_version_check(1, 0) != 0) {
@@ -310,11 +292,6 @@ int main(int argc, char **argv)
 		case '1':
 			SETFLAG(flags, F_ONEFS);
 			break;
-#ifdef DEBUG
-		case '9':
-			SETFLAG(flags, F_BENCHMARKSTOP);
-			break;
-#endif
 		case 'A':
 			SETFLAG(flags, F_EXCLUDEHIDDEN);
 			break;
@@ -352,13 +329,6 @@ int main(int argc, char **argv)
 			SETFLAG(a_flags, FA_DELETEFILES);
 			break;
 #endif /* NO_DELETE */
-		case 'D':
-#ifdef DEBUG
-			if (debuglevel == 0) debuglevel = 1;
-#else
-			fprintf(stderr, "warning: -D debugging is not supported in this build, ignoring\n");
-#endif
-			break;
 #ifndef NO_ERRORONDUPE
 		case 'E':
 			fprintf(stderr, "The -E option has been moved to -e as threatened in 1.26.1!\n");
@@ -562,9 +532,6 @@ skip_partialonly_noise:
 		fprintf(stderr, "warning: option --dedupe overrides the behavior of --hardlinks\n");
 #endif
 
-	/* Debugging mode: dump all set flags */
-	DBG(if (debuglevel > 0) dump_all_flags();)
-
 	/* If pm == 0, call printmatches() */
 	pm = !!ISFLAG(a_flags, FA_SUMMARIZEMATCHES) +
 			!!ISFLAG(a_flags, FA_DELETEFILES) +
@@ -628,14 +595,6 @@ skip_partialonly_noise:
 	travcheck_free(NULL);
 #endif /* NO_TRAVCHECK */
 
-#ifdef DEBUG
-	/* Pass -9 option to exit after traversal/loading code */
-	if (ISFLAG(flags, F_BENCHMARKSTOP)) {
-		fprintf(stderr, "\nBenchmarking stop requested; exiting.\n");
-		goto skip_all_scan_code;
-	}
-#endif
-
 	if (ISFLAG(flags, F_REVERSESORT)) sort_direction = -1;
 	if (!ISFLAG(flags, F_HIDEPROGRESS)) fprintf(stderr, "\n");
 
@@ -673,7 +632,6 @@ skip_partialonly_noise:
 					}
 
 					if (confirmmatch(curfile->d_name, scanfile->d_name, curfile->size) != 0) {
-						DBG(hash_fail++;)
 						goto skip_register;
 					}
 				} else goto skip_register;
@@ -746,36 +704,7 @@ skip_file_scan:
 	if (hashdb_name != NULL) free(hashdb_name);
 #endif
 
-#ifdef DEBUG
-skip_all_scan_code:
-#endif
-
 	free(paramprefix);
-
-#ifdef DEBUG
-	if (debuglevel > 0) {
-		fprintf(stderr, "\n%d partial(%uKiB) (+%d small) -> %d full hash -> %d full (%d partial elim) (%d hash%u fail)\n",
-				partial_hash, PARTIAL_HASH_SIZE >> 10, small_file, full_hash, partial_to_full,
-				partial_elim, hash_fail, (unsigned int)sizeof(uint64_t)*8);
-		fprintf(stderr, "%" PRIuMAX " total files, %" PRIuMAX " comparisons\n", filecount, comparisons);
- #ifndef NO_CHUNKSIZE
-		if (manual_chunk_size > 0) fprintf(stderr, "I/O chunk size: %ld KiB (manually set)\n", manual_chunk_size >> 10);
-		else {
-	#ifdef __linux__
-			fprintf(stderr, "I/O chunk size: %" PRIuMAX " KiB (%s)\n", (uintmax_t)(auto_chunk_size >> 10), (pci.l1 + pci.l1d) != 0 ? "dynamically sized" : "default size");
-	#else
-			fprintf(stderr, "I/O chunk size: %" PRIuMAX " KiB (default size)\n", (uintmax_t)(auto_chunk_size >> 10));
-	#endif /* __linux__ */
-		}
- #endif /* NO_CHUNKSIZE */
- #ifdef ON_WINDOWS
-	#ifndef NO_HARDLINKS
-		if (ISFLAG(a_flags, FA_HARDLINKFILES))
-			fprintf(stderr, "Exclusions based on Windows hard link limit: %u\n", hll_exclude);
-	#endif
- #endif
-	}
-#endif /* DEBUG */
 
 	exit(exit_status);
 

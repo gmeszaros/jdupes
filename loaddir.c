@@ -74,8 +74,6 @@ int loaddir(char * const restrict dir, int recurse)
 	JC_DIR *cd;
 	static int sf_warning = 0; /* single file warning should only appear once */
 
-	DBG(if (unlikely(dir == NULL)) jc_nullptr("loaddir()");)
-
 	if (unlikely(interrupt != 0)) return -1;
 
 	/* Convert forward slashes to backslashes if on Windows */

@@ -73,10 +73,9 @@ NO_TRAVCHECK       Disable double-traversal safety code (-U always on)
 NO_USER_ORDER      Disable isolation and parameter sort order -I, -O
 
 Certain options can be turned on by setting a variable passed to make instead
-of using CFLAGS_EXTRA, i.e. 'make DEBUG=1':
+of using CFLAGS_EXTRA, i.e. 'make LOW_MEMORY=1':
 
 NO_UNICODE             [Windows only] disable all Unicode support
-DEBUG                  Turn on algorithm statistic reporting with '-D'
 ENABLE_DEDUPE          Enable '-B' deduplication (Linux/macOS: on by default)
 DISABLE_DEDUPE         Forcibly disable (undefine) ENABLE_DEDUPE
 STATIC_DEDUPE_H        Build dedupe support with included minimal header file

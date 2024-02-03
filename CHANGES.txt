@@ -1,3 +1,14 @@
+jdupes development
+
+- Major core rewrite
+- Port everything to libjodycode v4 API
+- Remove all debugging code (-D, -@, -9)
+- Remove the -R:/--recursefirst: option
+- Cross-copy hashes when hard-linked pairs are found
+- Fix hashdb dirty/clean behavior
+- Don't overwrite existing hash database; use a temp file instead
+- Remove all Docker and GitHub stuff
+
 jdupes 1.27.3 (2023-08-26)
 
 - Fix crash on Linux when opening a file for hashing fails

@@ -22,7 +22,6 @@ static struct sizetree *sizetree_alloc(file_t *file)
 {
 	struct sizetree *node;
 
-	DBG(if (file == NULL) jc_nullptr("sizetree_alloc");)
 	node = (struct sizetree *)calloc(1, sizeof(struct sizetree));
 	if (node == NULL) jc_oom("sizetree_alloc");
 	node->size = file->size;
@@ -55,8 +54,6 @@ file_t *sizetree_next_list(st_state_t *st)
 {
 	struct sizetree *cur;
 
-	DBG(if (st == NULL) jc_nullptr("sizetree_next_list");)
-
 	if (st->stackcnt == -1 || st->stack == NULL) {
 		/* Initialize everything and push head of tree as first stack item */
 		if (st->stack != NULL) free(st->stack);
@@ -88,8 +85,6 @@ file_t *sizetree_next_list(st_state_t *st)
 void sizetree_add(file_t *file)
 {
 	struct sizetree *cur;
-
-	DBG(if (file == NULL) jc_nullptr("sizetree_add");)
 
 	if (sizetree_head == NULL) {
 		sizetree_head = sizetree_alloc(file);

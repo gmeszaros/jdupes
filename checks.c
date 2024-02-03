@@ -31,8 +31,6 @@
  * -5 on exclusion due to permissions */
 int check_conditions(const file_t * const restrict file1, const file_t * const restrict file2)
 {
-	DBG(if (unlikely(file1 == NULL || file2 == NULL || file1->d_name == NULL || file2->d_name == NULL)) jc_nullptr("check_conditions()");)
-
 	/* Do not compare files that already have existing duplicates */
 	if (ISFLAG(file2->flags, FF_HAS_DUPES)) return -6;
 
@@ -71,8 +69,6 @@ int check_singlefile(file_t * const restrict newfile)
 {
 	char * restrict tp = tempname;
 
-	DBG(if (unlikely(newfile == NULL)) jc_nullptr("check_singlefile()");)
-
 	/* Exclude hidden files if requested */
 	if (likely(ISFLAG(flags, F_EXCLUDEHIDDEN))) {
 		if (unlikely(newfile->d_name == NULL)) jc_nullptr("check_singlefile newfile->d_name");
@@ -100,10 +96,7 @@ int check_singlefile(file_t * const restrict newfile)
 	/* Windows has a 1023 (+1) hard link limit. If we're hard linking,
 	 * ignore all files that have hit this limit */
  #ifndef NO_HARDLINKS
-	if (ISFLAG(a_flags, FA_HARDLINKFILES) && newfile->nlink >= 1024) {
-		DBG(hll_exclude++;)
-		return 1;
-	}
+	if (ISFLAG(a_flags, FA_HARDLINKFILES) && newfile->nlink >= 1024) return 1;
  #endif /* NO_HARDLINKS */
 #endif /* ON_WINDOWS */
 	return 0;

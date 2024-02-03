@@ -65,7 +65,6 @@ int traverse_check(const dev_t device, const jdupes_ino_t inode)
 	} else {
 		traverse = travcheck_head;
 		while (1) {
-			DBG(if (traverse == NULL) jc_nullptr("traverse_check()");)
 			/* Don't re-traverse directories we've already seen */
 			if (inode == traverse->inode && device == traverse->device) {
 				return 1;

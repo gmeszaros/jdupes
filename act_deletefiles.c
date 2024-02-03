@@ -29,8 +29,6 @@ static unsigned int get_max_dupes(const file_t *files, unsigned int * const rest
 {
 	unsigned int groups = 0;
 
-	DBG(if (unlikely(files == NULL || max == NULL)) jc_nullptr("get_max_dupes()");)
-
 	*max = 0;
 
 	while (files) {

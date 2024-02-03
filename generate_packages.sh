@@ -31,14 +31,14 @@ if [[ "$TA" = "macos" || "$UNAME_S" = "darwin" ]]
 	then
 	PKGTYPE=zip
 	TA=mac32
-	test "$UNAME_M" = "x86_64" && TA=mac64
+	[ "$UNAME_M" = "x86_64" ] && TA=mac64
 fi
 
 # Detect Power Macs under macOS
 if [[ "$TA" = "macppc" || "$UNAME_P" = "Power Macintosh" || "$UNAME_P" = "powerpc" ]]
 	then
 	TA=macppc32
-	test "$(sysctl hw.cpu64bit_capable)" = "hw.cpu64bit_capable: 1" && TA=macppc64
+	[ "$(sysctl hw.cpu64bit_capable)" = "hw.cpu64bit_capable: 1" ] && TA=macppc64
 	[ -z "$PKGTYPE" ] && PKGTYPE=zip
 fi
 
@@ -62,12 +62,12 @@ if [[ "$TA" = "windows" || "$TA" = "__NONE__" ]]
 fi
 
 echo "Target architecture: $TA"
-test "$TA" = "__NONE__" && echo "Failed to detect system type" && exit 1
+[ "$TA" = "__NONE__" ] && echo "Failed to detect system type" && exit 1
 PKGNAME="${NAME}-${VER}-$TA"
 
 echo "Generating package for: $PKGNAME"
 mkdir -p "$PKGNAME" || exit 1
-test ! -d "$PKGNAME" && echo "Can't create directory for package" && exit 1
+[ ! -d "$PKGNAME" ] && echo "Can't create directory for package" && exit 1
 cp CHANGES.txt README.md LICENSE.txt $PKGNAME/ || exit 1
 if [ -d "../libjodycode" ]
 	then
@@ -77,14 +77,13 @@ if [ -d "../libjodycode" ]
 	make clean && make -j$PM CFLAGS_EXTRA="$CF"
 	cd "$WD"
 fi
-E1=1; E2=0; E3=1; E4=1
+E1=1; E2=1; E3=1
 make clean && make CFLAGS_EXTRA="$CF" -j$PM static_jc && make stripped && cp $NAME$EXT $PKGNAME/$NAME$EXT && E1=0
-#make clean && make CFLAGS_EXTRA="$CF" -j$PM LOUD=1 static_jc && make stripped && cp $NAME$EXT $PKGNAME/${NAME}-loud$EXT && E2=0
-make clean && make CFLAGS_EXTRA="$CF" -j$PM LOW_MEMORY=1 static_jc && make stripped && cp $NAME$EXT $PKGNAME/${NAME}-lowmem$EXT && E3=0
-make clean && make CFLAGS_EXTRA="$CF" -j$PM BARE_BONES=1 static_jc && make stripped && cp $NAME$EXT $PKGNAME/${NAME}-barebones$EXT && E4=0
+make clean && make CFLAGS_EXTRA="$CF" -j$PM LOW_MEMORY=1 static_jc && make stripped && cp $NAME$EXT $PKGNAME/${NAME}-lowmem$EXT && E2=0
+make clean && make CFLAGS_EXTRA="$CF" -j$PM BARE_BONES=1 static_jc && make stripped && cp $NAME$EXT $PKGNAME/${NAME}-barebones$EXT && E3=0
 strip ${PKGNAME}/${NAME}*$EXT
 make clean
-test $((E1 + E2 + E3 + E4)) -gt 0 && echo "Error building packages; aborting." && exit 1
+[ $((E1 + E2 + E3)) -gt 0 ] && echo "Error building packages; aborting." && exit 1
 # Make a fat binary on macOS x86_64 if possible
 if [ "$TA" = "mac64" ] && ld -v 2>&1 | grep -q 'archs:.*i386'
 	then
@@ -100,16 +99,16 @@ if [ "$TA" = "mac64" ] && ld -v 2>&1 | grep -q 'archs:.*i386'
 		make clean && make -j$PM CFLAGS_EXTRA="$CE"
 		cd "$WD"
 	fi
-	for X in '' '-lowmem' '-barebones' # '-loud'
+	for X in '' '-lowmem' '-barebones'
 		do make clean && make -j$PM CFLAGS_EXTRA="$CE" stripped && cp $NAME$EXT $PKGNAME/$NAME$X$EXT$TYPE || ERR=1
 		[ $ERR -eq 0 ] && lipo -create -output $PKGNAME/jdupes_temp $PKGNAME/$NAME$X$EXT$TYPE $PKGNAME/$NAME$X$EXT && mv $PKGNAME/jdupes_temp $PKGNAME/$NAME$X$EXT
 	done
 	make clean
-	test $ERR -gt 0 && echo "Error building packages; aborting." && exit 1
-	rm -f $PKGNAME/$NAME$EXT$TYPE $PKGNAME/$NAME-lowmem$EXT$TYPE $PKGNAME/$NAME-barebones$EXT$TYPE # $PKGNAME/$NAME-loud$EXT$TYPE
+	[ $ERR -gt 0 ] && echo "Error building packages; aborting." && exit 1
+	rm -f $PKGNAME/$NAME$EXT$TYPE $PKGNAME/$NAME-lowmem$EXT$TYPE $PKGNAME/$NAME-barebones$EXT$TYPE
 fi
-test "$PKGTYPE" = "zip" && zip -9r $PKGNAME.zip $PKGNAME/
-test "$PKGTYPE" = "tar"  && tar -c $PKGNAME/ > $PKGNAME.pkg.tar
-test "$PKGTYPE" = "gz"  && tar -c $PKGNAME/ | gzip -9 > $PKGNAME.pkg.tar.gz
-test "$PKGTYPE" = "xz"  && tar -c $PKGNAME/ | xz -e > $PKGNAME.pkg.tar.xz
+[ "$PKGTYPE" = "zip" ] && zip -9r $PKGNAME.zip $PKGNAME/
+[ "$PKGTYPE" = "tar" ] && tar -c $PKGNAME/ > $PKGNAME.pkg.tar
+[ "$PKGTYPE" = "gz"  ] && tar -c $PKGNAME/ | gzip -9 > $PKGNAME.pkg.tar.gz
+[ "$PKGTYPE" = "xz"  ] && tar -c $PKGNAME/ | xz -e > $PKGNAME.pkg.tar.xz
 echo "Package generation complete."

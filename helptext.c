@@ -17,9 +17,6 @@ const char *feature_flags[] = {
 	#ifdef ENABLE_DEDUPE
 	"dedupe",
 	#endif
-	#ifdef DEBUG
-	"debug",
-	#endif
 	#ifdef __FAST_MATH__
 	"fastmath",
 	#endif
@@ -109,9 +106,6 @@ void help_text(void)
 	printf("                  \tparticular directory more than once; refer to the\n");
 	printf("                  \tdocumentation for additional information\n");
 #endif /* NO_DELETE */
-#ifdef DEBUG
-	printf(" -D --debug       \toutput debug statistics after completion\n");
-#endif
 #ifndef NO_ERRORONDUPE
 	printf(" -e --error-on-dupe\texit on any duplicate found with status code 255\n");
 #endif

@@ -65,19 +65,6 @@ extern "C" {
  #endif
 #endif
 
-/* Debugging stats */
-#ifdef DEBUG
-extern unsigned int small_file, partial_hash, partial_elim;
-extern unsigned int full_hash, partial_to_full, hash_fail;
-extern uintmax_t comparisons;
- #ifdef ON_WINDOWS
-  #ifndef NO_HARDLINKS
-  extern unsigned int hll_exclude;
-  #endif
- #endif
-#endif /* DEBUG */
-
-
 #define ISFLAG(a,b) ((a & b) == b)
 #define SETFLAG(a,b) (a |= b)
 #define CLEARFLAG(a,b) (a &= (~b))
@@ -103,14 +90,6 @@ extern uintmax_t comparisons;
  #endif
 #endif
 
-/* Compile out debugging stat counters unless requested */
-#ifdef DEBUG
- #define DBG(a) a
-#else
- #define DBG(a)
-#endif
-
-
 /* Compare two hashes like memcmp() */
 #define HASH_COMPARE(a,b) ((a > b) ? 1:((a == b) ? 0:-1))
 
@@ -118,7 +97,6 @@ extern uintmax_t comparisons;
 #define EXTEND64(a) ((a & 0x7) > 0 ? ((a & (~0x7)) + 8) : a)
 
 /* Behavior modification flags */
-extern int debuglevel;
 extern uint32_t flags;
 extern uint32_t a_flags;
 #define F_RECURSE		(1ULL << 0)
@@ -127,22 +105,20 @@ extern uint32_t a_flags;
 #define F_FOLLOWLINKS		(1ULL << 3)
 #define F_INCLUDEEMPTY		(1ULL << 4)
 #define F_CONSIDERHARDLINKS	(1ULL << 5)
-// removed
-#define F_NOPROMPT		(1ULL << 7)
-#define F_EXCLUDEHIDDEN		(1ULL << 8)
-#define F_PERMISSIONS		(1ULL << 9)
-#define F_EXCLUDESIZE		(1ULL << 10)
-#define F_QUICKCOMPARE		(1ULL << 11)
-#define F_USEPARAMORDER		(1ULL << 12)
-#define F_REVERSESORT		(1ULL << 13)
-#define F_ISOLATE		(1ULL << 14)
-#define F_ONEFS			(1ULL << 15)
-#define F_PARTIALONLY		(1ULL << 16)
-#define F_NOCHANGECHECK		(1ULL << 17)
-#define F_NOTRAVCHECK		(1ULL << 18)
-#define F_SKIPHASH		(1ULL << 19)
-#define F_BENCHMARKSTOP		(1ULL << 29)
-#define F_HASHDB		(1ULL << 30)
+#define F_NOPROMPT		(1ULL << 6)
+#define F_EXCLUDEHIDDEN		(1ULL << 7)
+#define F_PERMISSIONS		(1ULL << 8)
+#define F_EXCLUDESIZE		(1ULL << 9)
+#define F_QUICKCOMPARE		(1ULL << 10)
+#define F_USEPARAMORDER		(1ULL << 11)
+#define F_REVERSESORT		(1ULL << 12)
+#define F_ISOLATE		(1ULL << 13)
+#define F_ONEFS			(1ULL << 14)
+#define F_PARTIALONLY		(1ULL << 15)
+#define F_NOCHANGECHECK		(1ULL << 16)
+#define F_NOTRAVCHECK		(1ULL << 17)
+#define F_SKIPHASH		(1ULL << 18)
+#define F_HASHDB		(1ULL << 19)
 
 /* Action-related flags */
 #define FA_PRINTMATCHES		(1U << 0)

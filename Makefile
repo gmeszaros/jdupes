@@ -30,8 +30,8 @@ INSTALL_PROGRAM = $(INSTALL) -m 0755
 INSTALL_DATA    = $(INSTALL) -m 0644
 
 # Main object files
-OBJS += checks.o dumpflags.o extfilter.o filehash.o filestat.o
-OBJS += hashdb.o jdupes.o helptext.o interrupt.o libjodycode_check.o
+OBJS += checks.o extfilter.o filehash.o filestat.o hashdb.o helptext.o
+OBJS += interrupt.o jdupes.o libjodycode_check.o
 OBJS += loaddir.o match.o progress.o query.o sizetree.o sort.o travcheck.o
 OBJS += act_deletefiles.o act_linkfiles.o act_printmatches.o act_summarize.o act_printjson.o
 
@@ -79,12 +79,12 @@ ifeq ($(OS), Windows_NT)
  endif
 endif
 
-# Debugging code inclusion
 ifdef DEBUG
  COMPILER_OPTIONS += -DDEBUG
 else
  COMPILER_OPTIONS += -DNDEBUG
 endif
+
 ifdef HARDEN
  COMPILER_OPTIONS += -Wformat -Wformat-security -D_FORTIFY_SOURCE=2 -fstack-protector-strong -fPIE -fpie -Wl,-z,relro -Wl,-z,now
 endif

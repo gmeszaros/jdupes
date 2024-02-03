@@ -110,8 +110,6 @@ static int match_extensions(char *path, const char *extlist)
 	const char *ext;
 	size_t len, extlen;
 
-	DBG(if (path == NULL || extlist == NULL) jc_nullptr("match_extensions");)
-
 	dot = NULL;
 	/* Scan to end of path, save the last dot, reset on path separators */
 	while (*path != '\0') {
@@ -161,9 +159,6 @@ void add_extfilter(const char *option)
 	struct extfilter *extf = extfilter_head;
 	const struct extfilter_tags *tags = extfilter_tags;
 	const struct jc_size_suffix *ss = jc_size_suffix;
-
-	DBG(if (option == NULL) jc_nullptr("add_extfilter()");)
-
 
 	/* Invoke help text if requested */
 	if (jc_strcaseeq(option, "help") == 0) { help_text_extfilter(); exit(EXIT_SUCCESS); }

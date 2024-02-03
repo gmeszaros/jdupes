@@ -200,7 +200,6 @@ static void rebalance_hashdb_tree(hashdb_t **parent)
 	const uint64_t center = 0x8000000000000000ULL;
 	hashdb_t *cur = *parent;
 
-	DBG(if (unlikely(cur == NULL || parent == NULL)) return;)
 	if (cur->left == NULL && cur->right == NULL) return;
 
 	if (cur->left != NULL) rebalance_hashdb_tree(&(cur->left));
@@ -232,8 +231,6 @@ hashdb_t *add_hashdb_entry(char *in_path, int pathlen, const file_t *check)
 		memset(hashdb, 0, sizeof(hashdb_t *) * HT_SIZE);
 		hashdb_init = 1;
 	}
-
-	DBG(if (unlikely((in_path == NULL && check == NULL) || (check != NULL && check->d_name == NULL))) return NULL;)
 
 	/* Get path hash and length from supplied path; use hash to choose the bucket */
 	if (in_path == NULL) path = check->d_name;
