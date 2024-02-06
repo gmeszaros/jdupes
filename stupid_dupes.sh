@@ -73,7 +73,10 @@ MSCNT=0		# Match set counter
 STATUS=0	# Exit status
 
 # A hash command that outputs a plain file hash (no file names)
-test -z "$HASHCMD" && HASHCMD=jodyhash
+[ -z "$HASHCMD" ] && for X in jodyhash xxhash md5sum sha1sum cksum
+	do $X --version >/dev/null 2>/dev/null && HASHCMD=$X && break
+done
+[ -z "$HASHCMD" ] && echo "No suitable hash command was found (try setting HASHCMD=command)" >&2 && exit 1
 
 # 'find' defaults to no-recurse
 FRECURSE="-maxdepth 1"
@@ -108,11 +111,13 @@ get_filehash () {
 	case "$1" in
 		partial)
 			PHASH[$2]="$(dd if="${FILES[$2]}" bs=4096 count=1 2>/dev/null | $HASHCMD || echo "FAIL")"
+			PHASH[$2]="${PHASH[$2]/ */}"
 			test "${PHASH[$2]}" = "FAIL" && \
 				echo "get_filehash: hashing failed: '${FILES[$2]}'" >&2 && STATUS=1
 			;;
 		full)
 			FHASH[$2]="$($HASHCMD "${FILES[$2]}" || echo "FAIL")"
+			PHASH[$2]="${PHASH[$2]/ */}"
 			test "${FHASH[$2]}" = "FAIL" && \
 				echo "get_filehash: hashing failed: '${FILES[$2]}'" >&2 && STATUS=1
 			;;
@@ -180,26 +185,23 @@ add_to_matches () {
 
 # Print all matched files
 print_matches () {
-	((V > 1)) && echo "print_matches: running" >&2
-	FIRST=1
+	((V > 1)) && echo "print_matches: running, count $MSCNT" >&2
 	CURFILE=0
 	# Outer loop: find a match pair to start with
 	for ((PRINTCNT = 1; PRINTCNT <= MSCNT; PRINTCNT++))
 		do
 		((V > 1)) && echo "               outer loop: print count $PRINTCNT, match count $MSCNT" >&2
 		# Don't reprint already-printed match pairings
-		if (( MPROC[PRINTCNT] != 0))
+		if ((MPROC[PRINTCNT] != 0))
 			then
 			((V > 1)) && echo "               skipping processed pair $PRINTCNT" >&2
 			continue
 		fi
 		CURFILE=${MLEFT[PRINTCNT]}
-		# Print a newline before each new set EXCEPT the first set
-		if ((FIRST == 1)); then FIRST=0; else echo; fi
 		echo "${FILES[CURFILE]}"
 		# Inner loop: find match pairs to print
 		CURCNT=$PRINTCNT; PREVCNT=1; unset PREV; PREV[1]=$CURFILE
-		for ((; CURCNT < MSCNT; CURCNT++))
+		for ((; CURCNT <= MSCNT; CURCNT++))
 			do
 			((V > 1)) && echo "                 inner loop: CC $CURCNT" >&2
 			((V > 1)) && echo "                 files: ${MLEFT[CURCNT]}:'${FILES[${MLEFT[CURCNT]}]}', ${MRIGHT[CURCNT]}:'${FILES[${MRIGHT[CURCNT]}]}'" >&2
@@ -239,6 +241,7 @@ print_matches () {
 				PREV[$PREVCNT]=$CURMATCH
 			fi
 		done
+		echo
 	done
 	((V > 1)) && echo "print_matches: complete" >&2
 	return 0
@@ -303,10 +306,12 @@ for X in "$@"
 	esac
 done
 
-((V > 1)) && echo "Command line: $(printf %q "$0" "$@")" >&2
+((V > 1)) && echo "Hash command: $HASHCMD" >&2
+((V > 1)) && echo "Command line: $0 $@" >&2
+((V > 1)) && echo "Arg count: $AC" >&2
 
 # Main loop
-for ((ARGNUM=1; ARGNUM < AC; ARGNUM++))
+for ((ARGNUM=1; ARGNUM <= AC; ARGNUM++))
 	do
 	((V > 1)) && echo -e "Processing argument $ARGNUM: '${ARGS[ARGNUM]}'" >&2
 	if [[ ! -f "${ARGS[ARGNUM]}" && ! -d "${ARGS[ARGNUM]}" || -h "${ARGS[ARGNUM]}" ]]
