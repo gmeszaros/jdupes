@@ -144,7 +144,7 @@ static void qstate_add_to_list(qstate_t **qstate, file_t *cur)
 	if (qs->count == qs->alloc) {
 		qs->alloc += QSALLOC_CHUNK_SIZE;
 		qs = (qstate_t *)realloc(qs, sizeof(qstate_t) + sizeof(file_t *) * qs->alloc);
-		if (qs->list == NULL) jc_oom(func_name);
+		if (qs == NULL) jc_oom(func_name);
 	}
 
 	qs->list[qs->count] = cur;
