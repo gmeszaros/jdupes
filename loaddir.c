@@ -127,7 +127,7 @@ int loaddir(char * const restrict dir, int recurse)
 
 		/* Assemble the file's full path name, optimized to avoid strcat() */
 		dirpos = dirlen;
-#ifdef JC_DIRENT_HAS_NAMLEN
+#ifdef JC_DIRENT_HAVE_D_NAMLEN
 		d_name_len = dirinfo->d_namlen;
 #else
 		d_name_len = strlen(dirinfo->d_name);
