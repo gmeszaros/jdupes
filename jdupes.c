@@ -48,11 +48,6 @@
 #ifndef USE_JODY_HASH
  #include "xxhash.h"
 #endif
-#ifdef ENABLE_DEDUPE
- #ifdef __linux__
-	#include <sys/utsname.h>
- #endif
-#endif
 
 /* Headers for post-scanning actions */
 #include "act_deletefiles.h"
