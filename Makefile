@@ -33,7 +33,8 @@ INSTALL_DATA    = $(INSTALL) -m 0644
 OBJS += checks.o extfilter.o filehash.o filestat.o hashdb.o helptext.o
 OBJS += interrupt.o jdupes.o libjodycode_check.o
 OBJS += loaddir.o match.o progress.o query.o sizetree.o sort.o travcheck.o
-OBJS += act_deletefiles.o act_linkfiles.o act_printmatches.o act_summarize.o act_printjson.o
+OBJS += act_deletefiles.o act_interactive.o act_linkfiles.o
+OBJS += act_printmatches.o act_summarize.o act_printjson.o
 
 # Configuration section
 COMPILER_OPTIONS = -Wall -Wwrite-strings -Wcast-align -Wstrict-aliasing -Wstrict-prototypes -Wpointer-arith -Wundef

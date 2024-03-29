@@ -9,7 +9,9 @@ extern "C" {
 #endif
 
 #include "jdupes.h"
-void printmatches(void);
+#include "query.h"
+
+void printmatches(qstate_t *qstate);
 void printunique(void);
 
 #ifdef __cplusplus

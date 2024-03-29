@@ -9,20 +9,24 @@
 #include "act_printmatches.h"
 #include "query.h"
 
-void printmatches(void)
+
+void printmatches(qstate_t *qstate)
 {
-	qstate_t *qstate;
-	int printed = 0;
+	int qstate_ours = 0;
+	//int printed = 0;
 	int cr = 1;
 
 	if (ISFLAG(a_flags, FA_PRINTNULL)) cr = 2;
 
 // New way
-	qstate = query_new_state();
+	if (qstate == NULL) {
+		qstate_ours = 1;
+		qstate = query_new_state();
+	}
 	for (qstate_t *qs = qstate; qs != NULL; qs = qs->next) {
 		if (qs->count == 0) continue;
 		for (int i = 0, first = 0; i < qs->count; i++) {
-			printed = 1;
+			//printed = 1;
 			if (first == 0) {
 				first = 1;
 				if (ISFLAG(a_flags, FA_SHOWSIZE)) printf("%" PRIdMAX " byte%s each:\n", (intmax_t)qs->list[i]->size,
@@ -32,9 +36,10 @@ void printmatches(void)
 		}
 		jc_fwprint(stdout, "", cr);
 	}
-	query_free_state(qstate);
+	if (qstate_ours == 1) query_free_state(qstate);
 
-	if (printed == 0) fprintf(stderr, "%s", s_no_dupes);
+	// No duplicates found? Don't do this anymore.
+	//if (printed == 0) fprintf(stderr, "%s", s_no_dupes);
 
 	return;
 }

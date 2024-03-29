@@ -166,11 +166,6 @@ int main(int argc, char **argv)
 	static struct jc_proc_cacheinfo pci;
  #endif /* __linux__ */
 #endif /* NO_CHUNKSIZE */
-#ifdef ENABLE_DEDUPE
- #ifdef __linux__
-	static struct utsname utsname;
- #endif /* __linux__ */
-#endif
 #ifndef NO_HASHDB
 	char *hashdb_name = NULL;
 	int hdblen;
@@ -298,15 +293,6 @@ int main(int argc, char **argv)
 #ifdef ENABLE_DEDUPE
 		case 'B':
 #ifdef __linux__
-			/* Refuse to dedupe on 2.x kernels; they could damage user data */
-			if (uname(&utsname)) {
-				fprintf(stderr, "Failed to get kernel version! Aborting.\n");
-				exit(EXIT_FAILURE);
-			}
-			if (*(utsname.release) == '2' && *(utsname.release + 1) == '.') {
-				fprintf(stderr, "Refusing to dedupe on a 2.x kernel; data loss could occur. Aborting.\n");
-				exit(EXIT_FAILURE);
-			}
 			/* Kernel-level dedupe will do the byte-for-byte check itself */
 			if (!ISFLAG(flags, F_PARTIALONLY)) SETFLAG(flags, F_QUICKCOMPARE);
 #endif /* __linux__ */
@@ -683,7 +669,7 @@ skip_file_scan:
 #ifdef ENABLE_DEDUPE
 	if (ISFLAG(a_flags, FA_DEDUPEFILES)) dedupefiles(files);
 #endif /* ENABLE_DEDUPE */
-	if (ISFLAG(a_flags, FA_PRINTMATCHES)) printmatches();
+	if (ISFLAG(a_flags, FA_PRINTMATCHES)) printmatches(NULL);
 	if (ISFLAG(a_flags, FA_PRINTUNIQUE)) printunique();
 #ifndef NO_JSON
 	if (ISFLAG(a_flags, FA_PRINTJSON)) printjson(files, argc, argv);
