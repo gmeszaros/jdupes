@@ -158,7 +158,7 @@ int main(int argc, char **argv)
 #ifndef NO_CHUNKSIZE
 	static long manual_chunk_size = 0;
  #ifdef __linux__
-	static struct jc_proc_cacheinfo pci;
+	struct jc_proc_cacheinfo *pci;
  #endif /* __linux__ */
 #endif /* NO_CHUNKSIZE */
 #ifndef NO_HASHDB
@@ -249,9 +249,12 @@ int main(int argc, char **argv)
 #ifndef NO_CHUNKSIZE
 #ifdef __linux__
 	/* Auto-tune chunk size to be half of L1 data cache if possible */
-	jc_get_proc_cacheinfo(&pci);
-	if (pci.l1 != 0) auto_chunk_size = (pci.l1 / 2);
-	else if (pci.l1d != 0) auto_chunk_size = (pci.l1d / 2);
+	pci = jc_get_proc_cacheinfo(0);
+	if (pci != NULL) {
+		if (pci->l1 != 0) auto_chunk_size = (pci->l1 / 2);
+		else if (pci->l1d != 0) auto_chunk_size = (pci->l1d / 2);
+		jc_get_proc_cacheinfo(1);
+	}
 	/* Must be at least 4096 (4 KiB) and cannot exceed CHUNK_SIZE */
 	if (auto_chunk_size < MIN_CHUNK_SIZE || auto_chunk_size > MAX_CHUNK_SIZE) auto_chunk_size = CHUNK_SIZE;
 	/* Force to a multiple of 4096 if it isn't already */

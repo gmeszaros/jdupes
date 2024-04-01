@@ -207,8 +207,14 @@ void version_text(int short_version)
 			(unsigned int)(sizeof(long) * 8));
 	if (!short_version) {
 		printf(", linked to libjodycode %s (%s)\n", jc_version, jc_verdate);
-		printf("Hash algorithms available:");
-		for (int i = 0; i < HASH_ALGO_COUNT; i++) printf(" %s%c", hash_algo_list[i], i == (HASH_ALGO_COUNT - 1) ? '\n' : ',');
+		printf("Hash algos:");
+		for (int i = 0; i < HASH_ALGO_COUNT; i++) printf(" %s%c", hash_algo_list[i], i == (HASH_ALGO_COUNT - 1) ? ';' : ',');
+#ifndef NO_CHUNKSIZE
+		printf(" chunk size: ");
+		if (auto_chunk_size >= 1048576) printf("%lu MiB", auto_chunk_size / 1048576);
+		else printf("%lu KiB", auto_chunk_size / 1024);
+#endif
+		printf("\n");
 	} else printf("\n");
 
 	printf("Compile-time feature flags:");
