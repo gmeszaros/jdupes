@@ -168,6 +168,8 @@ int main(int argc, char **argv)
 	uint64_t hdbout;
 #endif
 
+	const char *getopt_string = "01ABC:dEefHhIijKLlMmNnOo:P:pQqrSsTtUuVvX:y:Zz";
+
 #ifndef NO_GETOPT_LONG
 	static const struct option long_options[] =
 	{
@@ -216,9 +218,6 @@ int main(int argc, char **argv)
  #define GETOPT getopt
 #endif
 
-#define GETOPT_STRING "01ABC:dEefHhIijKLlMmNnOo:P:pQqrSsTtUuVvX:y:Zz"
-
-	/* Verify libjodycode compatibility before going further */
 	if (libjodycode_version_check(1, 0) != 0) {
 		version_text(1);
 		exit(EXIT_FAILURE);
@@ -230,6 +229,7 @@ int main(int argc, char **argv)
 		fprintf(stderr, "warning: setvbuf() failed\n");
 #endif
 
+	// TODO: Move this to libjodycode
 #ifdef UNICODE
 	/* Create a UTF-8 **argv from the wide version */
 	static char **argv;
@@ -272,7 +272,7 @@ int main(int argc, char **argv)
 
 	program_name = argv[0];
 
-	while ((opt = GETOPT(argc, argv, GETOPT_STRING
+	while ((opt = GETOPT(argc, argv, getopt_string
 #ifndef NO_GETOPT_LONG
 					, long_options, NULL
 #endif
