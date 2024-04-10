@@ -229,6 +229,9 @@ int main(int argc, char **argv)
 		fprintf(stderr, "warning: setvbuf() failed\n");
 #endif
 
+	// TODO: Remove this warning
+	fprintf(stderr, "\nWARNING: THIS VERSION DOES NOT WORK! It is being rewritten.\n\n");
+
 	// TODO: Move this to libjodycode
 #ifdef UNICODE
 	/* Create a UTF-8 **argv from the wide version */
