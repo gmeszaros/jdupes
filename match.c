@@ -168,9 +168,6 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
 
 	/* If preliminary matching succeeded, do main file data checks */
 	if (cmpresult == 0) {
-		/* Print pre-check (early) match candidates if requested */
-		if (printflags == PF_EARLYMATCH) printf("Early match check passed:\n   %s\n   %s\n\n", file1->d_name, file2->d_name);
-
 		/* Attempt to exclude files quickly with partial file hashing */
 		if (!ISFLAG(file1->flags, FF_HASH_PARTIAL)) {
 			filehash = get_filehash(file1, PARTIAL_HASH_SIZE, hash_algo);
@@ -200,7 +197,7 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
 		if (cmpresult == 0 && printflags == PF_PARTIAL)
 			printf("\nPartial hashes match:\n   %s\n   %s\n\n", file1->d_name, file2->d_name);
 
-		if (file1->size <= PARTIAL_HASH_SIZE || ISFLAG(flags, F_PARTIALONLY)) {
+		if (file1->size <= PARTIAL_HASH_SIZE) {
 			/* filehash_partial = filehash if file is small enough */
 			if (!ISFLAG(file1->flags, FF_HASH_FULL)) {
 				file1->filehash = file1->filehash_partial;

@@ -114,11 +114,10 @@ extern uint32_t a_flags;
 #define F_REVERSESORT		(1ULL << 12)
 #define F_ISOLATE		(1ULL << 13)
 #define F_ONEFS			(1ULL << 14)
-#define F_PARTIALONLY		(1ULL << 15)
-#define F_NOCHANGECHECK		(1ULL << 16)
-#define F_NOTRAVCHECK		(1ULL << 17)
-#define F_SKIPHASH		(1ULL << 18)
-#define F_HASHDB		(1ULL << 19)
+#define F_NOCHANGECHECK		(1ULL << 15)
+#define F_NOTRAVCHECK		(1ULL << 16)
+#define F_SKIPHASH		(1ULL << 17)
+#define F_HASHDB		(1ULL << 18)
 
 /* Action-related flags */
 #define FA_PRINTMATCHES		(1U << 0)
@@ -144,7 +143,7 @@ extern uint32_t a_flags;
 #define FF_NOT_UNIQUE		(1U << 6)
 
 /* Extra print flags */
-extern enum e_printflags { PF_NONE, PF_PARTIAL, PF_EARLYMATCH, PF_FULLHASH } printflags;
+extern enum e_printflags { PF_NONE, PF_PARTIAL, PF_FULLHASH } printflags;
 
 typedef enum {
 	ORDER_NAME = 0,

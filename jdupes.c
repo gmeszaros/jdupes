@@ -154,7 +154,6 @@ int main(int argc, char **argv)
 	static file_t *curfile;
 	static int opt;
 	static int pm = 1;
-	static int partialonly_spec = 0;
 #ifndef NO_CHUNKSIZE
 	static long manual_chunk_size = 0;
  #ifdef __linux__
@@ -168,7 +167,7 @@ int main(int argc, char **argv)
 	uint64_t hdbout;
 #endif
 
-	const char *getopt_string = "01ABC:dEefHhIijKLlMmNnOo:P:pQqrSsTtUuVvX:y:Zz";
+	const char *getopt_string = "01ABC:dEefHhIijKLlMmNnOo:pQqrSstUuVvX:y:Zz";
 
 #ifndef NO_GETOPT_LONG
 	static const struct option long_options[] =
@@ -195,14 +194,12 @@ int main(int argc, char **argv)
 		{ "no-prompt", 0, 0, 'N' },
 		{ "param-order", 0, 0, 'O' },
 		{ "order", 1, 0, 'o' },
-		{ "print", 1, 0, 'P' },
 		{ "permissions", 0, 0, 'p' },
 		{ "quick", 0, 0, 'Q' },
 		{ "quiet", 0, 0, 'q' },
 		{ "recurse", 0, 0, 'r' },
 		{ "size", 0, 0, 'S' },
 		{ "symlinks", 0, 0, 's' },
-		{ "partial-only", 0, 0, 'T' },
 		{ "no-change-check", 0, 0, 't' },
 		{ "no-trav-check", 0, 0, 'U' },
 		{ "print-unique", 0, 0, 'u' },
@@ -295,7 +292,7 @@ int main(int argc, char **argv)
 		case 'B':
 #ifdef __linux__
 			/* Kernel-level dedupe will do the byte-for-byte check itself */
-			if (!ISFLAG(flags, F_PARTIALONLY)) SETFLAG(flags, F_QUICKCOMPARE);
+			SETFLAG(flags, F_QUICKCOMPARE);
 #endif /* __linux__ */
 			SETFLAG(a_flags, FA_DEDUPEFILES);
 			/* It is completely useless to dedupe zero-length extents */
@@ -391,15 +388,6 @@ int main(int argc, char **argv)
 		case 'p':
 			SETFLAG(flags, F_PERMISSIONS);
 			break;
-		case 'P':
-			if (jc_streq(optarg, "partial") == 0) printflags = PF_PARTIAL;
-			else if (jc_streq(optarg, "early") == 0) printflags = PF_EARLYMATCH;
-			else if (jc_streq(optarg, "fullhash") == 0) printflags = PF_FULLHASH;
-			else {
-				fprintf(stderr, "Option '%s' is not valid for -P\n", optarg);
-				exit(EXIT_FAILURE);
-			}
-			break;
 		case 'q':
 			SETFLAG(flags, F_HIDEPROGRESS);
 			break;
@@ -411,15 +399,6 @@ int main(int argc, char **argv)
 			break;
 		case 't':
 			SETFLAG(flags, F_NOCHANGECHECK);
-			break;
-		case 'T':
-			partialonly_spec++;
-			if (partialonly_spec == 1) {
-			}
-			if (partialonly_spec == 2) {
-				SETFLAG(flags, F_PARTIALONLY);
-				CLEARFLAG(flags, F_QUICKCOMPARE);
-			}
 			break;
 		case 'u':
 			SETFLAG(a_flags, FA_PRINTUNIQUE);
@@ -481,33 +460,6 @@ int main(int argc, char **argv)
 		fprintf(stderr, "no files or directories specified (use -h option for help)\n");
 		exit(EXIT_FAILURE);
 	}
-
-	/* Make noise if people try to use -T because it's super dangerous */
-	if (partialonly_spec > 0) {
-		if (partialonly_spec > 2) {
-			if (!ISFLAG(flags, F_HIDEPROGRESS)) fprintf(stderr, "Saying -T three or more times? You're a wizard. No reminders for you.\n");
-			goto skip_partialonly_noise;
-		}
-		fprintf(stderr, "\nBIG FAT WARNING: -T/--partial-only is EXTREMELY DANGEROUS! Read the manual!\n");
-		fprintf(stderr,   "                 If used with destructive actions YOU WILL LOSE DATA!\n");
-		fprintf(stderr,   "                 YOU ARE ON YOUR OWN. Use this power carefully.\n\n");
-		if (partialonly_spec == 1) {
-			fprintf(stderr, "-T is so dangerous that you must specify it twice to use it. By doing so,\n");
-			fprintf(stderr, "you agree that you're OK with LOSING ALL OF YOUR DATA BY USING -T.\n\n");
-			exit(EXIT_FAILURE);
-		}
-		if (partialonly_spec == 2) {
-			fprintf(stderr, "You passed -T twice. I hope you know what you're doing. Last chance!\n\n");
-			fprintf(stderr, "          HIT CTRL-C TO ABORT IF YOU AREN'T CERTAIN!\n          ");
-			for (int countdown = 10; countdown > 0; countdown--) {
-				fprintf(stderr, "%d, ", countdown);
-				sleep(1);
-			}
-			fprintf(stderr, "bye-bye, data, it was nice knowing you.\n");
-			fprintf(stderr, "For wizards: three tees is the way to be.\n\n");
-		}
-	}
-skip_partialonly_noise:
 
 	if (ISFLAG(a_flags, FA_SUMMARIZEMATCHES) && ISFLAG(a_flags, FA_DELETEFILES)) {
 		fprintf(stderr, "options --summarize and --delete are not compatible\n");
@@ -604,11 +556,10 @@ skip_partialonly_noise:
 
 				match = checkmatch(curfile, scanfile);
 				if (match == 0) {
-					/* Quick or partial-only compare will never run confirmmatch()
+					/* Quick compare will never run confirmmatch()
 					 * Also skip match confirmation for hard-linked files
 					 * (This set of comparisons is ugly, but quite efficient) */
 					if ( ISFLAG(flags, F_QUICKCOMPARE)
-						|| ISFLAG(flags, F_PARTIALONLY)
 	#ifndef NO_HARDLINKS
 						|| (ISFLAG(flags, F_CONSIDERHARDLINKS)
 						&&  (curfile->inode == scanfile->inode)
