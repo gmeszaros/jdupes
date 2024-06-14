@@ -233,7 +233,7 @@ hashdb_t *add_hashdb_entry(char *in_path, int pathlen, const file_t *check)
 	}
 
 	/* Get path hash and length from supplied path; use hash to choose the bucket */
-	if (in_path == NULL) path = check->d_name;
+	if (in_path == NULL) path = check->dirent->d_name;
 	else path = in_path;
 	if (pathlen == 0) pathlen = strlen(path);
 	if (get_path_hash(path, &path_hash) != 0) return NULL;
@@ -251,12 +251,12 @@ hashdb_t *add_hashdb_entry(char *in_path, int pathlen, const file_t *check)
 		while (1) {
 			/* If path is set then this entry may already exist and we need to check */
 			if (check != NULL && cur->path != NULL) {
-				if (cur->path_hash == path_hash && strcmp(cur->path, check->d_name) == 0) {
+				if (cur->path_hash == path_hash && strcmp(cur->path, check->dirent->d_name) == 0) {
 					/* Should we invalidate this entry? */
 					exclude = 0;
-					if (cur->mtime != check->mtime) exclude |= 1;
-					if (cur->inode != check->inode) exclude |= 2;
-					if (cur->size  != check->size)  exclude |= 4;
+					if (cur->mtime != check->stat->mtime) exclude |= 1;
+					if (cur->inode != check->stat->st_ino) exclude |= 2;
+					if (cur->size  != check->stat->st_size)  exclude |= 4;
 					if (exclude == 0) {
 						if (cur->hashcount == 1 && ISFLAG(check->flags, FF_HASH_FULL)) {
 							cur->hashcount = 2;
@@ -303,15 +303,15 @@ hashdb_t *add_hashdb_entry(char *in_path, int pathlen, const file_t *check)
 	}
 
 	/* If a check entry was given then populate it */
-	if (check != NULL && check->d_name != NULL && ISFLAG(check->flags, FF_HASH_PARTIAL)) {
+	if (check != NULL && check->dirent->d_name != NULL && ISFLAG(check->flags, FF_HASH_PARTIAL)) {
 		hashdb_dirty = 1;
 		file->path_hash = path_hash;
 		file->path = (char *)((uintptr_t)file + (uintptr_t)sizeof(hashdb_t));
-		memcpy(file->path, check->d_name, pathlen + 1);
+		memcpy(file->path, check->dirent->d_name, pathlen + 1);
 		*(file->path + pathlen) = '\0';
-		file->size = check->size;
-		file->inode = check->inode;
-		file->mtime = check->mtime;
+		file->stat->st_size = check->stat->st_size;
+		file->stat->st_ino = check->stat->st_ino;
+		file->stat->st_mtim.tv_sec = check->stat->mtime;
 		file->partialhash = check->filehash_partial;
 		file->fullhash = check->filehash;
 		if (ISFLAG(check->flags, FF_HASH_FULL)) file->hashcount = 2;
@@ -479,8 +479,8 @@ int read_hashdb_entry(file_t *file)
 	uint64_t path_hash;
 	int exclude;
 
-	if (file == NULL || file->d_name == NULL) goto error_null;
-	if (get_path_hash(file->d_name, &path_hash) != 0) goto error_path_hash;
+	if (file == NULL || file->dirent->d_name == NULL) goto error_null;
+	if (get_path_hash(file->dirent->d_name, &path_hash) != 0) goto error_path_hash;
 	bucket = path_hash & HT_MASK;
 	if (hashdb[bucket] == NULL) return 0;
 	cur = hashdb[bucket];
@@ -492,16 +492,16 @@ int read_hashdb_entry(file_t *file)
 			continue;
 		}
 		/* Found a matching path hash */
-		if (strcmp(cur->path, file->d_name) != 0) {
+		if (strcmp(cur->path, file->dirent->d_name) != 0) {
 			cur = cur->left;
 			if (cur == NULL) return 0;
 			continue;
 		} else {
 			/* Found a matching path too but check mtime */
 			exclude = 0;
-			if (cur->mtime != file->mtime) exclude |= 1;
-			if (cur->inode != file->inode) exclude |= 2;
-			if (cur->size  != file->size)  exclude |= 4;
+			if (cur->mtime != file->stat->mtim.tv_sec) exclude |= 1;
+			if (cur->inode != file->stat->st_ino) exclude |= 2;
+			if (cur->size  != file->stat->st_size)  exclude |= 4;
 			if (exclude != 0) {
 				/* Invalidate if something has changed */
 				cur->hashcount = 0;

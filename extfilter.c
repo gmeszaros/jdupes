@@ -255,18 +255,18 @@ int extfilter_exclude(file_t * const restrict file)
 		uint32_t sflag = extf->flags;
 		if (
 				 /* Any line that passes will result in file exclusion */
-				    ((sflag == XF_SIZE_EQ)    && (file->size != extf->size))
-				 || ((sflag == XF_SIZE_LTEQ)  && (file->size > extf->size))
-				 || ((sflag == XF_SIZE_GTEQ)  && (file->size < extf->size))
-				 || ((sflag == XF_SIZE_GT)    && (file->size <= extf->size))
-				 || ((sflag == XF_SIZE_LT)    && (file->size >= extf->size))
-				 || ((sflag == XF_EXCL_EXT)   && match_extensions(file->d_name, extf->param))
-				 || ((sflag == XF_ONLY_EXT)   && !match_extensions(file->d_name, extf->param))
-				 || ((sflag == XF_EXCL_STR)   && strstr(file->d_name, extf->param))
-				 || ((sflag == XF_ONLY_STR)   && !strstr(file->d_name, extf->param))
+				    ((sflag == XF_SIZE_EQ)    && (file->stat->st_size != extf->size))
+				 || ((sflag == XF_SIZE_LTEQ)  && (file->stat->st_size > extf->size))
+				 || ((sflag == XF_SIZE_GTEQ)  && (file->stat->st_size < extf->size))
+				 || ((sflag == XF_SIZE_GT)    && (file->stat->st_size <= extf->size))
+				 || ((sflag == XF_SIZE_LT)    && (file->stat->st_size >= extf->size))
+				 || ((sflag == XF_EXCL_EXT)   && match_extensions(file->dirent->d_name, extf->param))
+				 || ((sflag == XF_ONLY_EXT)   && !match_extensions(file->dirent->d_name, extf->param))
+				 || ((sflag == XF_EXCL_STR)   && strstr(file->dirent->d_name, extf->param))
+				 || ((sflag == XF_ONLY_STR)   && !strstr(file->dirent->d_name, extf->param))
 #ifndef NO_MTIME
-				 || ((sflag == XF_DATE_NEWER) && (file->mtime < extf->size))
-				 || ((sflag == XF_DATE_OLDER) && (file->mtime >= extf->size))
+				 || ((sflag == XF_DATE_NEWER) && (file->stat->st_mtim.tv_sec < extf->size))
+				 || ((sflag == XF_DATE_OLDER) && (file->stat->st_mtim.tv_sec >= extf->size))
 #endif
 		) return 1;
 	}

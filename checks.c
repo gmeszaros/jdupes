@@ -40,20 +40,20 @@ int check_conditions(const file_t * const restrict file1, const file_t * const r
 #endif /* NO_USER_ORDER */
 
 	/* Exclude based on -1/--one-file-system */
-	if (ISFLAG(flags, F_ONEFS) && (file1->device != file2->device)) return -4;
+	if (ISFLAG(flags, F_ONEFS) && (file1->stat->st_dev != file2->stat->st_dev)) return -4;
 
 	 /* Exclude files by permissions if requested */
 	if (ISFLAG(flags, F_PERMISSIONS) &&
-		(file1->mode != file2->mode
+		(file1->stat->st_mode != file2->stat->st_mode
 #ifndef NO_PERMS
-		|| file1->uid != file2->uid
-		|| file1->gid != file2->gid
+		|| file1->stat->st_uid != file2->stat->st_uid
+		|| file1->stat->st_gid != file2->stat->st_gid
 #endif
 	)) return -5;
 
 	/* Hard link and symlink + '-s' check */
 #ifndef NO_HARDLINKS
-	if ((file1->inode == file2->inode) && (file1->device == file2->device)) {
+	if ((file1->stat->st_ino == file2->stat->st_ino) && (file1->stat->st_dev == file2->stat->st_dev)) {
 		if (ISFLAG(flags, F_CONSIDERHARDLINKS)) return 2;
 		else return -2;
 	}
@@ -71,8 +71,8 @@ int check_singlefile(file_t * const restrict newfile)
 
 	/* Exclude hidden files if requested */
 	if (likely(ISFLAG(flags, F_EXCLUDEHIDDEN))) {
-		if (unlikely(newfile->d_name == NULL)) jc_nullptr("check_singlefile newfile->d_name");
-		strcpy(tp, newfile->d_name);
+		if (unlikely(newfile->dirent->d_name == NULL)) jc_nullptr("check_singlefile newfile->dirent->d_name");
+		strcpy(tp, newfile->dirent->d_name);
 		tp = basename(tp);
 		if (tp[0] == '.' && jc_streq(tp, ".") && jc_streq(tp, "..")) return 1;
 	}
@@ -80,13 +80,13 @@ int check_singlefile(file_t * const restrict newfile)
 	/* Get file information and check for validity */
 	const int i = getfilestats(newfile);
 
-	if (i || newfile->size == -1) return 1;
+	if (i || newfile->stat->st_size == -1) return 1;
 
-	if (!JC_S_ISREG(newfile->mode) && !JC_S_ISDIR(newfile->mode)) return 1;
+	if (!JC_S_ISREG(newfile->stat->st_mode) && !JC_S_ISDIR(newfile->stat->st_mode)) return 1;
 
-	if (!JC_S_ISDIR(newfile->mode)) {
+	if (!JC_S_ISDIR(newfile->stat->st_mode)) {
 		/* Exclude zero-length files if requested */
-		if (newfile->size == 0 && !ISFLAG(flags, F_INCLUDEEMPTY)) return 1;
+		if (newfile->stat->st_size == 0 && !ISFLAG(flags, F_INCLUDEEMPTY)) return 1;
 #ifndef NO_EXTFILTER
 		if (extfilter_exclude(newfile)) return 1;
 #endif /* NO_EXTFILTER */

@@ -94,7 +94,7 @@ extern "C" {
 #define HASH_COMPARE(a,b) ((a > b) ? 1:((a == b) ? 0:-1))
 
 /* Extend an allocation length to the next 64-bit (8-byte) boundary */
-#define EXTEND64(a) ((a & 0x7) > 0 ? ((a & (~0x7)) + 8) : a)
+#define EXTEND64(a) (((a) & 0x7) > 0 ? (((a) & (~0x7)) + 8) : (a))
 
 /* Behavior modification flags */
 extern uint32_t flags;
@@ -159,14 +159,14 @@ typedef struct _file {
 	struct _file *chain_head;
 	struct _file *duplicates;
 	struct _file *next;
-	struct JC_DIRENT *dirent;
-	struct JC_STAT *stat;
 	uint64_t filehash_partial;
 	uint64_t filehash;
 	uint32_t flags;  /* Status flags */
 #ifndef NO_USER_ORDER
 	uint32_t user_order; /* Order of the originating command-line parameter */
 #endif
+	struct JC_STAT *stat;
+	struct JC_DIRENT *dirent;
 } file_t;
 
 /* Progress indicator variables */

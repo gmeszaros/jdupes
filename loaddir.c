@@ -34,17 +34,16 @@
 
 static file_t *init_newfile(const size_t len)
 {
-	file_t * const restrict newfile = (file_t *)calloc(1, sizeof(file_t));
+	file_t * const restrict newfile = (file_t *)calloc(1, EXTEND64(sizeof(file_t) + len));
 
 	if (unlikely(!newfile)) jc_oom("init_newfile() file structure");
 
-	newfile->d_name = (char *)malloc(EXTEND64(len));
-	if (newfile->d_name == NULL) jc_oom("init_newfile() filename");
+	if (newfile->dirent->d_name == NULL) jc_oom("init_newfile() filename");
 
 #ifndef NO_USER_ORDER
 	newfile->user_order = user_item_count;
 #endif
-	newfile->size = -1;
+	newfile->stat->st_size = -1;
 	newfile->duplicates = NULL;
 	return newfile;
 }
@@ -52,10 +51,7 @@ static file_t *init_newfile(const size_t len)
 
 static void free_file(file_t *file)
 {
-	if (file != NULL) {
-		if (file->d_name != NULL) free(file->d_name);
-		free(file);
-	}
+	if (file != NULL) free(file);
 	return;
 }
 
@@ -144,7 +140,7 @@ int loaddir(char * const restrict dir, int recurse)
 		newfile = init_newfile(dirpos + d_name_len + 2);
 
 		tp = tempname;
-		memcpy(newfile->d_name, tp, dirpos + d_name_len);
+		memcpy(newfile->dirent->d_name, tp, dirpos + d_name_len);
 
 		/*** WARNING: tempname global gets reused by check_singlefile here! ***/
 
@@ -155,21 +151,21 @@ int loaddir(char * const restrict dir, int recurse)
 		}
 
 		/* Optionally recurse directories, including symlinked ones if requested */
-		if (JC_S_ISDIR(newfile->mode)) {
+		if (JC_S_ISDIR(newfile->stat->st_mode)) {
 			if (recurse) {
 				/* --one-file-system - WARNING: this clobbers inode/mode */
 				if (ISFLAG(flags, F_ONEFS)
-						&& (getdirstats(newfile->d_name, &inode, &n_device, &mode) == 0)
+						&& (getdirstats(newfile->dirent->d_name, &inode, &n_device, &mode) == 0)
 						&& (device != n_device)) {
 					free_file(newfile);
 					continue;
 				}
 #ifndef NO_SYMLINKS
 				else if (ISFLAG(flags, F_FOLLOWLINKS) || !ISFLAG(newfile->flags, FF_IS_SYMLINK)) {
-					loaddir(newfile->d_name, recurse);
+					loaddir(newfile->dirent->d_name, recurse);
 				}
 #else
-				else loaddir(newfile->d_name, recurse);
+				else loaddir(newfile->dirent->d_name, recurse);
 #endif /* NO_SYMLINKS */
 			}
 			free_file(newfile);
@@ -180,7 +176,7 @@ int loaddir(char * const restrict dir, int recurse)
 #ifndef NO_SYMLINKS
 			if (!ISFLAG(newfile->flags, FF_IS_SYMLINK) || (ISFLAG(newfile->flags, FF_IS_SYMLINK) && ISFLAG(flags, F_FOLLOWLINKS)))
 #else
-			if (JC_S_ISREG(newfile->mode))
+			if (JC_S_ISREG(newfile->stat->st_mode))
 #endif
 			{
 #ifndef NO_HASHDB

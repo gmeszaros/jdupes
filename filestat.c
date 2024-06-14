@@ -35,20 +35,21 @@ int file_has_changed(file_t * const restrict file)
 
 	if (!ISFLAG(file->flags, FF_VALID_STAT)) return -66;
 
-	if (jc_stat(file->d_name, &s) != 0) return -2;
-	if (file->inode != s.st_ino) return 1;
-	if (file->size != s.st_size) return 1;
-	if (file->device != s.st_dev) return 1;
-	if (file->mode != s.st_mode) return 1;
+	if (jc_stat(file->dirent->d_name, &s) != 0) return -2;
+	if (file->stat->st_ino != s.st_ino) return 1;
+	if (file->stat->st_size != s.st_size) return 1;
+	if (file->stat->st_dev != s.st_dev) return 1;
+	if (file->stat->st_mode != s.st_mode) return 1;
 #ifndef NO_MTIME
-	if (file->mtime != s.st_mtim.tv_sec) return 1;
+	if (file->stat->st_mtim.tv_sec != s.st_mtim.tv_sec) return 1;
+	if (file->stat->st_mtim.tv_nsec != s.st_mtim.tv_nsec) return 1;
 #endif
 #ifndef NO_PERMS
-	if (file->uid != s.st_uid) return 1;
-	if (file->gid != s.st_gid) return 1;
+	if (file->stat->st_uid != s.st_uid) return 1;
+	if (file->stat->st_gid != s.st_gid) return 1;
 #endif
 #ifndef NO_SYMLINKS
-	if (lstat(file->d_name, &s) != 0) return -3;
+	if (lstat(file->dirent->d_name, &s) != 0) return -3;
 	if ((JC_S_ISLNK(s.st_mode) > 0) ^ ISFLAG(file->flags, FF_IS_SYMLINK)) return 1;
 #endif
 
@@ -64,26 +65,28 @@ int getfilestats(file_t * const restrict file)
 	if (ISFLAG(file->flags, FF_VALID_STAT)) return 0;
 	SETFLAG(file->flags, FF_VALID_STAT);
 
-	if (jc_stat(file->d_name, &s) != 0) return -1;
-	file->size = s.st_size;
-	file->inode = s.st_ino;
-	file->device = s.st_dev;
+	if (jc_stat(file->dirent->d_name, &s) != 0) return -1;
+	file->stat->st_size = s.st_size;
+	file->stat->st_ino = s.st_ino;
+	file->stat->st_dev = s.st_dev;
 #ifndef NO_MTIME
-	file->mtime = s.st_mtim.tv_sec;
+	file->stat->st_mtim.tv_sec = s.st_mtim.tv_sec;
+	file->stat->st_mtim.tv_nsec = s.st_mtim.tv_nsec;
 #endif
 #ifndef NO_ATIME
-	file->atime = s.st_atim.tv_sec;
+	file->stat->st_atim.tv_sec = s.st_atim.tv_sec;
+	file->stat->st_atim.tv_nsec = s.st_atim.tv_nsec;
 #endif
-	file->mode = s.st_mode;
+	file->stat->st_mode = s.st_mode;
 #ifndef NO_HARDLINKS
-	file->nlink = s.st_nlink;
+	file->stat->st_nlink = s.st_nlink;
 #endif
 #ifndef NO_PERMS
-	file->uid = s.st_uid;
-	file->gid = s.st_gid;
+	file->stat->st_uid = s.st_uid;
+	file->stat->st_gid = s.st_gid;
 #endif
 #ifndef NO_SYMLINKS
-	if (lstat(file->d_name, &s) != 0) return -1;
+	if (lstat(file->dirent->d_name, &s) != 0) return -1;
 	if (JC_S_ISLNK(s.st_mode) > 0) SETFLAG(file->flags, FF_IS_SYMLINK);
 #endif
 	return 0;

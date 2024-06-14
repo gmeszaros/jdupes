@@ -55,8 +55,8 @@ uint64_t *get_filehash(const file_t * const restrict checkfile, const size_t max
 	if (unlikely((algo > HASH_ALGO_COUNT - 1) || (algo < 0))) goto error_bad_hash_algo;
 
 	/* Get the file size. If we can't read it, bail out early */
-	if (unlikely(checkfile->size == -1)) return NULL;
-	fsize = checkfile->size;
+	if (unlikely(checkfile->stat->st_size == -1)) return NULL;
+	fsize = checkfile->stat->st_size;
 
 	/* Do not read more than the requested number of bytes */
 	if (max_read > 0 && fsize > (off_t)max_read)
@@ -76,9 +76,9 @@ uint64_t *get_filehash(const file_t * const restrict checkfile, const size_t max
 		if (max_read != 0 && max_read <= PARTIAL_HASH_SIZE) return hash;
 	}
 	errno = 0;
-	file = jc_fopen(checkfile->d_name, JC_FILE_MODE_RDONLY_SEQ);
+	file = jc_fopen(checkfile->dirent->d_name, JC_FILE_MODE_RDONLY_SEQ);
 	if (file == NULL) {
-		fprintf(stderr, "\n%s error opening file ", strerror(errno)); jc_fwprint(stderr, checkfile->d_name, 1);
+		fprintf(stderr, "\n%s error opening file ", strerror(errno)); jc_fwprint(stderr, checkfile->dirent->d_name, 1);
 		return NULL;
 	}
 	/* Actually seek past the first chunk if applicable
@@ -86,7 +86,7 @@ uint64_t *get_filehash(const file_t * const restrict checkfile, const size_t max
 	if (ISFLAG(checkfile->flags, FF_HASH_PARTIAL)) {
 		if (fseeko(file, PARTIAL_HASH_SIZE, SEEK_SET) == -1) {
 			fclose(file);
-			fprintf(stderr, "\nerror seeking in file "); jc_fwprint(stderr, checkfile->d_name, 1);
+			fprintf(stderr, "\nerror seeking in file "); jc_fwprint(stderr, checkfile->dirent->d_name, 1);
 			return NULL;
 		}
 		fsize -= PARTIAL_HASH_SIZE;
@@ -143,7 +143,7 @@ uint64_t *get_filehash(const file_t * const restrict checkfile, const size_t max
 			jc_alarm_ring = 0;
 			/* Only show "hashing" part if hashing one file updates progress at least twice */
 			if (hashing == 1) {
-				update_phase2_progress("hashing", (int)(((checkfile->size - fsize) * 100) / checkfile->size));
+				update_phase2_progress("hashing", (int)(((checkfile->stat->st_size - fsize) * 100) / checkfile->stat->st_size));
 			} else {
 				update_phase2_progress(NULL, -1);
 				hashing = 1;
@@ -164,7 +164,7 @@ uint64_t *get_filehash(const file_t * const restrict checkfile, const size_t max
 
 	return hash;
 error_reading_file:
-	fprintf(stderr, "\nerror reading from file "); jc_fwprint(stderr, checkfile->d_name, 1);
+	fprintf(stderr, "\nerror reading from file "); jc_fwprint(stderr, checkfile->dirent->d_name, 1);
 	fclose(file);
 	return NULL;
 error_bad_hash_algo:
