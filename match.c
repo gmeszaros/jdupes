@@ -86,7 +86,7 @@ void registerpair(file_t *file1, file_t *file2)
 	if (ISFLAG(a_flags, FA_ERRORONDUPE)) {
 		if (!ISFLAG(flags, F_HIDEPROGRESS)) fprintf(stderr, "\r");
 		fprintf(stderr, "Exiting based on user request (-e); duplicates found:\n");
-		printf("%s\n%s\n", file1->d_name, file2->d_name);
+		printf("%s\n%s\n", file1->dirent->d_name, file2->dirent->d_name);
 		exit(255);
 	}
 #endif
@@ -195,9 +195,9 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
 
 		/* Print partial hash matching pairs if requested */
 		if (cmpresult == 0 && printflags == PF_PARTIAL)
-			printf("\nPartial hashes match:\n   %s\n   %s\n\n", file1->d_name, file2->d_name);
+			printf("\nPartial hashes match:\n   %s\n   %s\n\n", file1->dirent->d_name, file2->dirent->d_name);
 
-		if (file1->size <= PARTIAL_HASH_SIZE) {
+		if (file1->stat->st_size <= PARTIAL_HASH_SIZE) {
 			/* filehash_partial = filehash if file is small enough */
 			if (!ISFLAG(file1->flags, FF_HASH_FULL)) {
 				file1->filehash = file1->filehash_partial;
@@ -254,7 +254,7 @@ int checkmatch(file_t * restrict file1, file_t * const restrict file2)
 		return -1;
 	} else {
 		/* All compares matched */
-		if (printflags == PF_FULLHASH) printf("Full hashes match:\n   %s\n   %s\n\n", file1->d_name, file2->d_name);
+		if (printflags == PF_FULLHASH) printf("Full hashes match:\n   %s\n   %s\n\n", file1->dirent->d_name, file2->dirent->d_name);
 		return 0;
 	}
 }

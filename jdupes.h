@@ -8,6 +8,8 @@
 extern "C" {
 #endif
 
+#include "libjodycode.h"
+
 /* Detect Windows and modify as needed */
 #if defined _WIN32 || defined __MINGW32__
  #ifndef ON_WINDOWS

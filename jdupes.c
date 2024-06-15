@@ -562,14 +562,14 @@ int main(int argc, char **argv)
 					if ( ISFLAG(flags, F_QUICKCOMPARE)
 	#ifndef NO_HARDLINKS
 						|| (ISFLAG(flags, F_CONSIDERHARDLINKS)
-						&&  (curfile->inode == scanfile->inode)
-						&&  (curfile->device == scanfile->device))
+						&&  (curfile->stat->st_ino == scanfile->stat->st_ino)
+						&&  (curfile->stat->st_dev == scanfile->stat->st_dev))
 	#endif
 							) {
 						goto register_pair;
 					}
 
-					if (confirmmatch(curfile->d_name, scanfile->d_name, curfile->size) != 0) {
+					if (confirmmatch(curfile->dirent->d_name, scanfile->dirent->d_name, curfile->stat->st_size) != 0) {
 						goto skip_register;
 					}
 				} else goto skip_register;

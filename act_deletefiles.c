@@ -75,7 +75,7 @@ void deletefiles(file_t *files, int prompt, FILE *tty)
 			dupelist[counter] = files;
 
 			if (prompt) {
-				printf("[%u] ", counter); jc_fwprint(stdout, files->d_name, 1);
+				printf("[%u] ", counter); jc_fwprint(stdout, files->dirent->d_name, 1);
 			}
 
 			tmpfile = files->duplicates;
@@ -83,7 +83,7 @@ void deletefiles(file_t *files, int prompt, FILE *tty)
 			while (tmpfile) {
 				dupelist[++counter] = tmpfile;
 				if (prompt) {
-					printf("[%u] ", counter); jc_fwprint(stdout, tmpfile->d_name, 1);
+					printf("[%u] ", counter); jc_fwprint(stdout, tmpfile->dirent->d_name, 1);
 				}
 				tmpfile = tmpfile->duplicates;
 			}
@@ -105,8 +105,8 @@ void deletefiles(file_t *files, int prompt, FILE *tty)
 			 printf(", [s]ymlink all");
 #endif
 			 printf(")");
-				if (ISFLAG(a_flags, FA_SHOWSIZE)) printf(" (%" PRIuMAX " byte%c each)", (uintmax_t)files->size,
-					(files->size != 1) ? 's' : ' ');
+				if (ISFLAG(a_flags, FA_SHOWSIZE)) printf(" (%" PRIuMAX " byte%c each)", (uintmax_t)files->stat->st_size,
+					(files->stat->st_size != 1) ? 's' : ' ');
 				printf(": ");
 				fflush(stdout);
 
@@ -209,22 +209,22 @@ stop_scanning:
 
 			for (x = 1; x <= counter; x++) {
 				if (preserve[x]) {
-					printf("   [+] "); jc_fwprint(stdout, dupelist[x]->d_name, 1);
+					printf("   [+] "); jc_fwprint(stdout, dupelist[x]->dirent->d_name, 1);
 				} else {
 					if (file_has_changed(dupelist[x])) {
-						printf("   [!] "); jc_fwprint(stdout, dupelist[x]->d_name, 0);
+						printf("   [!] "); jc_fwprint(stdout, dupelist[x]->dirent->d_name, 0);
 						printf("-- file changed since being scanned\n");
 						exit_status = EXIT_FAILURE;
-					} else if (jc_remove(dupelist[x]->d_name) == 0) {
-						printf("   [-] "); jc_fwprint(stdout, dupelist[x]->d_name, 1);
+					} else if (jc_remove(dupelist[x]->dirent->d_name) == 0) {
+						printf("   [-] "); jc_fwprint(stdout, dupelist[x]->dirent->d_name, 1);
 #ifndef NO_HASHDB
 						if (ISFLAG(flags, F_HASHDB)) {
-							dupelist[x]->mtime = 0;
+							dupelist[x]->stat->st_mtim.tv_sec = 0;
 							add_hashdb_entry(NULL, 0, dupelist[x]);
 					}
 #endif
 					} else {
-						printf("   [!] "); jc_fwprint(stdout, dupelist[x]->d_name, 0);
+						printf("   [!] "); jc_fwprint(stdout, dupelist[x]->dirent->d_name, 0);
 						printf("-- unable to delete file\n");
 						exit_status = EXIT_FAILURE;
 					}

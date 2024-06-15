@@ -119,7 +119,7 @@ void qstate_sort_lists(qstate_t * restrict qs, const int sort_type)
 				done = 1;
 				for (int i = 0; (i + 1) < qs->count; i++) {
 					for (int j = i + 1; j < qs->count; j++) {
-						if (jc_numeric_strcmp(qs->list[i]->d_name, qs->list[j]->d_name, 0) > 0) {
+						if (jc_numeric_strcmp(qs->list[i]->dirent->d_name, qs->list[j]->dirent->d_name, 0) > 0) {
 							qstate_file_swap(&(qs->list[i]), &(qs->list[j]));
 							done = 0;
 						}

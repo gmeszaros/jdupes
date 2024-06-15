@@ -254,7 +254,7 @@ hashdb_t *add_hashdb_entry(char *in_path, int pathlen, const file_t *check)
 				if (cur->path_hash == path_hash && strcmp(cur->path, check->dirent->d_name) == 0) {
 					/* Should we invalidate this entry? */
 					exclude = 0;
-					if (cur->mtime != check->stat->mtime) exclude |= 1;
+					if (cur->mtime != check->stat->st_mtim.tv_sec) exclude |= 1;
 					if (cur->inode != check->stat->st_ino) exclude |= 2;
 					if (cur->size  != check->stat->st_size)  exclude |= 4;
 					if (exclude == 0) {
@@ -309,9 +309,9 @@ hashdb_t *add_hashdb_entry(char *in_path, int pathlen, const file_t *check)
 		file->path = (char *)((uintptr_t)file + (uintptr_t)sizeof(hashdb_t));
 		memcpy(file->path, check->dirent->d_name, pathlen + 1);
 		*(file->path + pathlen) = '\0';
-		file->stat->st_size = check->stat->st_size;
-		file->stat->st_ino = check->stat->st_ino;
-		file->stat->st_mtim.tv_sec = check->stat->mtime;
+		file->size = check->stat->st_size;
+		file->inode = check->stat->st_ino;
+		file->mtime = check->stat->st_mtim.tv_sec;
 		file->partialhash = check->filehash_partial;
 		file->fullhash = check->filehash;
 		if (ISFLAG(check->flags, FF_HASH_FULL)) file->hashcount = 2;
@@ -499,7 +499,7 @@ int read_hashdb_entry(file_t *file)
 		} else {
 			/* Found a matching path too but check mtime */
 			exclude = 0;
-			if (cur->mtime != file->stat->mtim.tv_sec) exclude |= 1;
+			if (cur->mtime != file->stat->st_mtim.tv_sec) exclude |= 1;
 			if (cur->inode != file->stat->st_ino) exclude |= 2;
 			if (cur->size  != file->stat->st_size)  exclude |= 4;
 			if (exclude != 0) {

@@ -135,15 +135,15 @@ void printjson(file_t * restrict files, const int argc, char **argv)
 		if (ISFLAG(files->flags, FF_DUPE_CHAIN_HEAD)) {
 			if (comma) printf(",\n");
 			printf("    {\n      \"fileSize\": %" PRIdMAX ",\n      \"fileList\": [\n        { \"filePath\": \"",
-					(intmax_t)files->size);
-			sprintf(temp, "%s", files->d_name);
+					(intmax_t)files->stat->st_size);
+			sprintf(temp, "%s", files->dirent->d_name);
 			json_escape(temp, temp2);
 			jc_fwprint(stdout, temp2, 0);
 			printf("\"");
 			tmpfile = files->duplicates;
 			while (tmpfile != NULL) {
 				printf(" },\n        { \"filePath\": \"");
-				sprintf(temp, "%s", tmpfile->d_name);
+				sprintf(temp, "%s", tmpfile->dirent->d_name);
 				json_escape(temp, temp2);
 				jc_fwprint(stdout, temp2, 0);
 				printf("\"");

@@ -29,10 +29,10 @@ void printmatches(qstate_t *qstate)
 			//printed = 1;
 			if (first == 0) {
 				first = 1;
-				if (ISFLAG(a_flags, FA_SHOWSIZE)) printf("%" PRIdMAX " byte%s each:\n", (intmax_t)qs->list[i]->size,
-						(qs->list[i]->size != 1) ? "s" : "");
-				if (!ISFLAG(a_flags, FA_OMITFIRST)) jc_fwprint(stdout, qs->list[i]->d_name, cr);
-			} else jc_fwprint(stdout, qs->list[i]->d_name, cr);
+				if (ISFLAG(a_flags, FA_SHOWSIZE)) printf("%" PRIdMAX " byte%s each:\n", (intmax_t)qs->list[i]->stat->st_size,
+						(qs->list[i]->stat->st_size != 1) ? "s" : "");
+				if (!ISFLAG(a_flags, FA_OMITFIRST)) jc_fwprint(stdout, qs->list[i]->dirent->d_name, cr);
+			} else jc_fwprint(stdout, qs->list[i]->dirent->d_name, cr);
 		}
 		jc_fwprint(stdout, "", cr);
 	}
@@ -70,9 +70,9 @@ void printunique(void)
 	while (files != NULL) {
 		if (!ISFLAG(files->flags, FF_NOT_UNIQUE)) {
 			printed = 1;
-			if (ISFLAG(a_flags, FA_SHOWSIZE)) printf("%" PRIdMAX " byte%s each:\n", (intmax_t)files->size,
-					(files->size != 1) ? "s" : "");
-			jc_fwprint(stdout, files->d_name, cr);
+			if (ISFLAG(a_flags, FA_SHOWSIZE)) printf("%" PRIdMAX " byte%s each:\n", (intmax_t)files->stat->st_size,
+					(files->stat->st_size != 1) ? "s" : "");
+			jc_fwprint(stdout, files->dirent->d_name, cr);
 		}
 		files = files->next;
 	}

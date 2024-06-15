@@ -21,7 +21,7 @@ void summarizematches(const file_t * restrict files)
 			tmpfile = files->duplicates;
 			while (tmpfile != NULL) {
 				numfiles++;
-				numbytes += files->size;
+				numbytes += files->stat->st_size;
 				tmpfile = tmpfile->duplicates;
 			}
 		}

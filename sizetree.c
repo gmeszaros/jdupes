@@ -24,7 +24,7 @@ static struct sizetree *sizetree_alloc(file_t *file)
 
 	node = (struct sizetree *)calloc(1, sizeof(struct sizetree));
 	if (node == NULL) jc_oom("sizetree_alloc");
-	node->size = file->size;
+	node->size = file->stat->st_size;
 	node->list = file;
 	return node;
 }
@@ -93,13 +93,13 @@ void sizetree_add(file_t *file)
 
 	cur = sizetree_head;
 	while (1) {
-		if (file->size == cur->size) {
+		if (file->stat->st_size == cur->size) {
 			file->next = cur->list;
 			cur->list = file;
 			return;
 		}
 
-		if (file->size < cur->size) {
+		if (file->stat->st_size < cur->size) {
 			if (cur->left == NULL) {
 				cur->left = sizetree_alloc(file);
 				return;
@@ -108,7 +108,7 @@ void sizetree_add(file_t *file)
 			continue;
 		}
 
-		if (file->size > cur->size) {
+		if (file->stat->st_size > cur->size) {
 			if (cur->right == NULL) {
 				cur->right = sizetree_alloc(file);
 				return;

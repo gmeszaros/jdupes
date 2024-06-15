@@ -153,13 +153,13 @@ void linkfiles(file_t *files, const int linktype, const int only_current)
 #endif
 			}
 			if (!ISFLAG(flags, F_HIDEPROGRESS)) {
-				printf("[SRC] "); jc_fwprint(stdout, srcfile->d_name, 1);
+				printf("[SRC] "); jc_fwprint(stdout, srcfile->dirent->d_name, 1);
 			}
 			if (linktype == 2) {
 #ifdef ENABLE_CLONEFILE_LINK
-				if (jc_stat(srcfile->d_name, &s) != 0) {
+				if (jc_stat(srcfile->dirent->d_name, &s) != 0) {
 					fprintf(stderr, "warning: stat() on source file failed, skipping:\n[SRC] ");
-					jc_fwprint(stderr, srcfile->d_name, 1);
+					jc_fwprint(stderr, srcfile->dirent->d_name, 1);
 					exit_status = EXIT_FAILURE;
 					goto linkfile_loop;
 				}
@@ -175,19 +175,19 @@ void linkfiles(file_t *files, const int linktype, const int only_current)
 			for (; x <= counter; x++) {
 				if (linktype == 1 || linktype == 2) {
 					/* Can't hard link files on different devices */
-					if (srcfile->device != dupelist[x]->device) {
+					if (srcfile->stat->st_dev != dupelist[x]->stat->st_dev) {
 						fprintf(stderr, "warning: hard link target on different device, not linking:\n-//-> ");
-						jc_fwprint(stderr, dupelist[x]->d_name, 1);
+						jc_fwprint(stderr, dupelist[x]->dirent->d_name, 1);
 						exit_status = EXIT_FAILURE;
 						continue;
 					} else {
 						/* The devices for the files are the same, but we still need to skip
 						 * anything that is already hard linked (-L and -H both set) */
-						if (srcfile->inode == dupelist[x]->inode) {
+						if (srcfile->stat->st_ino == dupelist[x]->stat->st_ino) {
 							/* Don't show == arrows when not matching against other hard links */
 							if (ISFLAG(flags, F_CONSIDERHARDLINKS))
 								if (!ISFLAG(flags, F_HIDEPROGRESS)) {
-									printf("-==-> "); jc_fwprint(stdout, dupelist[x]->d_name, 1);
+									printf("-==-> "); jc_fwprint(stdout, dupelist[x]->dirent->d_name, 1);
 								}
 							continue;
 						}
@@ -207,10 +207,10 @@ void linkfiles(file_t *files, const int linktype, const int only_current)
 #ifdef ON_WINDOWS
 				!JC_S_ISRO(dupelist[x]->mode) &&
 #endif
-				(jc_access(dupelist[x]->d_name, JC_W_OK) != 0))
+				(jc_access(dupelist[x]->dirent->d_name, JC_W_OK) != 0))
 				{
 					fprintf(stderr, "warning: link target is a read-only file, not linking:\n-//-> ");
-					jc_fwprint(stderr, dupelist[x]->d_name, 1);
+					jc_fwprint(stderr, dupelist[x]->dirent->d_name, 1);
 					exit_status = EXIT_FAILURE;
 					continue;
 				}
@@ -219,23 +219,23 @@ void linkfiles(file_t *files, const int linktype, const int only_current)
 				i = file_has_changed(srcfile);
 				if (i) {
 					fprintf(stderr, "warning: source file modified since scanned; changing source file:\n[SRC] ");
-					jc_fwprint(stderr, dupelist[x]->d_name, 1);
+					jc_fwprint(stderr, dupelist[x]->dirent->d_name, 1);
 					srcfile = dupelist[x];
 					exit_status = EXIT_FAILURE;
 					continue;
 				}
 				if (file_has_changed(dupelist[x])) {
 					fprintf(stderr, "warning: target file modified since scanned, not linking:\n-//-> ");
-					jc_fwprint(stderr, dupelist[x]->d_name, 1);
+					jc_fwprint(stderr, dupelist[x]->dirent->d_name, 1);
 					exit_status = EXIT_FAILURE;
 					continue;
 				}
 #ifdef ON_WINDOWS
 				/* For Windows, the hard link count maximum is 1023 (+1); work around
 				 * by skipping linking or changing the link source file as needed */
-				if (jc_stat(srcfile->d_name, &s) != 0) {
+				if (jc_stat(srcfile->dirent->d_name, &s) != 0) {
 					fprintf(stderr, "warning: win_stat() on source file failed, changing source file:\n[SRC] ");
-					jc_fwprint(stderr, dupelist[x]->d_name, 1);
+					jc_fwprint(stderr, dupelist[x]->dirent->d_name, 1);
 					srcfile = dupelist[x];
 					exit_status = EXIT_FAILURE;
 					continue;
@@ -246,19 +246,19 @@ void linkfiles(file_t *files, const int linktype, const int only_current)
 					exit_status = EXIT_FAILURE;
 					continue;
 				}
-				if (jc_stat(dupelist[x]->d_name, &s) != 0) continue;
+				if (jc_stat(dupelist[x]->dirent->d_name, &s) != 0) continue;
 				if (s.st_nlink >= 1024) {
 					fprintf(stderr, "warning: maximum destination link count reached, skipping:\n-//-> ");
-					jc_fwprint(stderr, dupelist[x]->d_name, 1);
+					jc_fwprint(stderr, dupelist[x]->dirent->d_name, 1);
 					exit_status = EXIT_FAILURE;
 					continue;
 				}
 #endif
 #ifdef ENABLE_CLONEFILE_LINK
 				if (linktype == 2) {
-					if (jc_stat(dupelist[x]->d_name, &s) != 0) {
+					if (jc_stat(dupelist[x]->dirent->d_name, &s) != 0) {
 						fprintf(stderr, "warning: stat() on destination file failed, skipping:\n-##-> ");
-						jc_fwprint(stderr, dupelist[x]->d_name, 1);
+						jc_fwprint(stderr, dupelist[x]->dirent->d_name, 1);
 						exit_status = EXIT_FAILURE;
 						continue;
 					}
@@ -276,19 +276,19 @@ void linkfiles(file_t *files, const int linktype, const int only_current)
 #endif
 
 				/* Make sure the name will fit in the buffer before trying */
-				name_len = strlen(dupelist[x]->d_name) + 14;
+				name_len = strlen(dupelist[x]->dirent->d_name) + 14;
 				if (name_len > PATHBUF_SIZE) continue;
 				/* Assemble a temporary file name */
-				strcpy(tempname, dupelist[x]->d_name);
+				strcpy(tempname, dupelist[x]->dirent->d_name);
 				strcat(tempname, ".__jdupes__.tmp");
 				/* Rename the destination file to the temporary name */
-				i = jc_rename(dupelist[x]->d_name, tempname);
+				i = jc_rename(dupelist[x]->dirent->d_name, tempname);
 				if (i != 0) {
 					fprintf(stderr, "warning: cannot move link target to a temporary name, not linking:\n-//-> ");
-					jc_fwprint(stderr, dupelist[x]->d_name, 1);
+					jc_fwprint(stderr, dupelist[x]->dirent->d_name, 1);
 					exit_status = EXIT_FAILURE;
 					/* Just in case the rename succeeded yet still returned an error, roll back the rename */
-					jc_rename(tempname, dupelist[x]->d_name);
+					jc_rename(tempname, dupelist[x]->dirent->d_name);
 					continue;
 				}
 
@@ -296,33 +296,33 @@ void linkfiles(file_t *files, const int linktype, const int only_current)
 				errno = 0;
 				success = 0;
 				if (linktype == 1) {
-					if (jc_link(srcfile->d_name, dupelist[x]->d_name) == 0) success = 1;
+					if (jc_link(srcfile->dirent->d_name, dupelist[x]->dirent->d_name) == 0) success = 1;
 #ifdef ENABLE_CLONEFILE_LINK
 				} else if (linktype == 2) {
-					if (clonefile(srcfile->d_name, dupelist[x]->d_name, 0) == 0) {
-						if (copyfile(tempname, dupelist[x]->d_name, NULL, COPYFILE_METADATA) == 0) {
+					if (clonefile(srcfile->dirent->d_name, dupelist[x]->dirent->d_name, 0) == 0) {
+						if (copyfile(tempname, dupelist[x]->dirent->d_name, NULL, COPYFILE_METADATA) == 0) {
 							/* If the preserved flags match what we just copied from the original dupfile, we're done.
 							 * Otherwise, we need to update the flags to avoid data loss due to differing compression flags */
 							if (dupfile_original_flags == (srcfile_preserved_flags | dupfile_preserved_flags)) {
 								success = 1;
-							} else if (chflags(dupelist[x]->d_name, srcfile_preserved_flags | dupfile_preserved_flags) == 0) {
+							} else if (chflags(dupelist[x]->dirent->d_name, srcfile_preserved_flags | dupfile_preserved_flags) == 0) {
 								/* chflags overrides the timestamps that were restored by copyfile, so we need to reapply those as well */
-								if (utimes(dupelist[x]->d_name, dupfile_original_tval) == 0) {
+								if (utimes(dupelist[x]->dirent->d_name, dupfile_original_tval) == 0) {
 									success = 1;
-								} else clonefile_error("utimes", dupelist[x]->d_name);
-							} else clonefile_error("chflags", dupelist[x]->d_name);
-						} else clonefile_error("copyfile", dupelist[x]->d_name);
-					} else clonefile_error("clonefile", dupelist[x]->d_name);
+								} else clonefile_error("utimes", dupelist[x]->dirent->d_name);
+							} else clonefile_error("chflags", dupelist[x]->dirent->d_name);
+						} else clonefile_error("copyfile", dupelist[x]->dirent->d_name);
+					} else clonefile_error("clonefile", dupelist[x]->dirent->d_name);
 #endif /* ENABLE_CLONEFILE_LINK */
 				}
 #ifndef NO_SYMLINKS
 				else {
-					i = jc_make_relative_link_name(srcfile->d_name, dupelist[x]->d_name, rel_path);
+					i = jc_make_relative_link_name(srcfile->dirent->d_name, dupelist[x]->dirent->d_name, rel_path);
 					if (i < 0) {
 						fprintf(stderr, "warning: make_relative_link_name() failed (%d)\n", i);
 					} else if (i == 1) {
 						fprintf(stderr, "warning: files to be linked have the same canonical path; not linking\n");
-					} else if (symlink(rel_path, dupelist[x]->d_name) == 0) success = 1;
+					} else if (symlink(rel_path, dupelist[x]->dirent->d_name) == 0) success = 1;
 				}
 #endif /* NO_SYMLINKS */
 				if (success) {
@@ -341,12 +341,13 @@ void linkfiles(file_t *files, const int linktype, const int only_current)
 								break;
 #endif
 						}
-						jc_fwprint(stdout, dupelist[x]->d_name, 1);
+						jc_fwprint(stdout, dupelist[x]->dirent->d_name, 1);
 					}
 #ifndef NO_HASHDB
 					/* Delete the hashdb entry for new hard/symbolic links */
 					if (linktype != 2 && ISFLAG(flags, F_HASHDB)) {
-						dupelist[x]->mtime = 0;
+						dupelist[x]->stat->st_mtim.tv_sec = 0;
+						dupelist[x]->stat->st_mtim.tv_nsec = 0;
 						add_hashdb_entry(NULL, 0, dupelist[x]);
 					}
 #endif
@@ -354,13 +355,13 @@ void linkfiles(file_t *files, const int linktype, const int only_current)
 					/* The link failed. Warn the user and put the link target back */
 					exit_status = EXIT_FAILURE;
 					if (!ISFLAG(flags, F_HIDEPROGRESS)) {
-						printf("-//-> "); jc_fwprint(stdout, dupelist[x]->d_name, 1);
+						printf("-//-> "); jc_fwprint(stdout, dupelist[x]->dirent->d_name, 1);
 					}
-					fprintf(stderr, "warning: unable to link '"); jc_fwprint(stderr, dupelist[x]->d_name, 0);
-					fprintf(stderr, "' -> '"); jc_fwprint(stderr, srcfile->d_name, 0);
+					fprintf(stderr, "warning: unable to link '"); jc_fwprint(stderr, dupelist[x]->dirent->d_name, 0);
+					fprintf(stderr, "' -> '"); jc_fwprint(stderr, srcfile->dirent->d_name, 0);
 					fprintf(stderr, "': %s\n", strerror(errno));
-					i = jc_rename(tempname, dupelist[x]->d_name);
-					if (i != 0) revert_failed(dupelist[x]->d_name, tempname);
+					i = jc_rename(tempname, dupelist[x]->dirent->d_name);
+					if (i != 0) revert_failed(dupelist[x]->dirent->d_name, tempname);
 					continue;
 				}
 
@@ -372,12 +373,12 @@ void linkfiles(file_t *files, const int linktype, const int only_current)
 					fprintf(stderr, "\nwarning: can't delete temp file, reverting: ");
 					jc_fwprint(stderr, tempname, 1);
 					exit_status = EXIT_FAILURE;
-					i = jc_remove(dupelist[x]->d_name);
+					i = jc_remove(dupelist[x]->dirent->d_name);
 					/* This last error really should not happen, but we can't assume it won't */
 					if (i != 0) fprintf(stderr, "\nwarning: couldn't remove link to restore original file\n");
 					else {
-						i = jc_rename(tempname, dupelist[x]->d_name);
-						if (i != 0) revert_failed(dupelist[x]->d_name, tempname);
+						i = jc_rename(tempname, dupelist[x]->dirent->d_name);
+						if (i != 0) revert_failed(dupelist[x]->dirent->d_name, tempname);
 					}
 				}
 			}

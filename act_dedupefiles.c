@@ -71,16 +71,16 @@ void dedupefiles(file_t * restrict files)
 
 		/* For each duplicate list head, handle the duplicates in the list */
 		curfile2 = curfile;
-		src_fd = open(curfile->d_name, O_RDONLY);
+		src_fd = open(curfile->dirent->d_name, O_RDONLY);
 		/* If an open fails, keep going down the dupe list until it is exhausted */
 		while (src_fd == -1 && curfile2->duplicates && curfile2->duplicates->duplicates) {
-			fprintf(stderr, "dedupe: open failed (skipping): %s\n", curfile2->d_name);
+			fprintf(stderr, "dedupe: open failed (skipping): %s\n", curfile2->dirent->d_name);
 			exit_status = EXIT_FAILURE;
 			curfile2 = curfile2->duplicates;
-			src_fd = open(curfile2->d_name, O_RDONLY);
+			src_fd = open(curfile2->dirent->d_name, O_RDONLY);
 		}
 		if (src_fd == -1) continue;
-		printf("[SRC] %s\n", curfile2->d_name);
+		printf("[SRC] %s\n", curfile2->dirent->d_name);
 
 		/* Run dedupe for each set */
 		for (dupefile = curfile->duplicates; dupefile; dupefile = dupefile->duplicates) {
@@ -88,26 +88,26 @@ void dedupefiles(file_t * restrict files)
 			int err;
 
 			/* Don't pass hard links to dedupe */
-			if (dupefile->device == curfile->device && dupefile->inode == curfile->inode) {
-				printf("-==-> %s\n", dupefile->d_name);
+			if (dupefile->stat->st_dev == curfile->stat->st_dev && dupefile->stat->st_ino == curfile->stat->st_ino) {
+				printf("-==-> %s\n", dupefile->dirent->d_name);
 				continue;
 			}
 
 			/* Open destination file, skipping any that fail */
-			fdri->dest_fd = open(dupefile->d_name, O_RDONLY);
+			fdri->dest_fd = open(dupefile->dirent->d_name, O_RDONLY);
 			if (fdri->dest_fd == -1) {
-				fprintf(stderr, "dedupe: open failed (skipping): %s\n", dupefile->d_name);
+				fprintf(stderr, "dedupe: open failed (skipping): %s\n", dupefile->dirent->d_name);
 				exit_status = EXIT_FAILURE;
 				continue;
 			}
 
 			/* Dedupe src <--> dest, 16 MiB or less at a time */
-			remain = dupefile->size;
+			remain = dupefile->stat->st_size;
 			fdri->status = FILE_DEDUPE_RANGE_SAME;
 			/* Consume data blocks until no data remains */
 			while (remain) {
 				errno = 0;
-				fdr->src_offset = (uint64_t)(dupefile->size - remain);
+				fdr->src_offset = (uint64_t)(dupefile->stat->st_size - remain);
 				fdri->dest_offset = fdr->src_offset;
 				fdr->src_length = (uint64_t)(remain <= KERNEL_DEDUP_MAX_SIZE ? remain : KERNEL_DEDUP_MAX_SIZE);
 				ioctl(src_fd, FIDEDUPERANGE, fdr);
@@ -118,7 +118,7 @@ void dedupefiles(file_t * restrict files)
 			/* Handle any errors */
 			err = fdri->status;
 			if (err != FILE_DEDUPE_RANGE_SAME || errno != 0) {
-				printf("-XX-> %s\n", dupefile->d_name);
+				printf("-XX-> %s\n", dupefile->dirent->d_name);
 				fprintf(stderr, "error: ");
 				if (err == FILE_DEDUPE_RANGE_DIFFERS) {
 					fprintf(stderr, "not identical (files modified between scan and dedupe?)\n");
@@ -146,7 +146,7 @@ void dedupefiles(file_t * restrict files)
 	}
 			} else {
 				/* Dedupe OK; report to the user and add to file count */
-				printf("====> %s\n", dupefile->d_name);
+				printf("====> %s\n", dupefile->dirent->d_name);
 				total_files++;
 			}
 			close((int)fdri->dest_fd);

@@ -34,11 +34,13 @@
 
 static file_t *init_newfile(const size_t len)
 {
-	file_t * const restrict newfile = (file_t *)calloc(1, EXTEND64(sizeof(file_t) + len));
-
-	if (unlikely(!newfile)) jc_oom("init_newfile() file structure");
-
-	if (newfile->dirent->d_name == NULL) jc_oom("init_newfile() filename");
+	const char *fn = "init_newfile()";
+	file_t * const restrict newfile = (file_t *)calloc(1, sizeof(file_t));
+	if (unlikely(newfile == NULL)) jc_oom(fn);
+	newfile->stat = (struct JC_STAT *)calloc(1, sizeof(struct JC_STAT));
+	if (unlikely(newfile->stat == NULL)) jc_oom(fn);
+	newfile->dirent = (struct JC_DIRENT *)calloc(1, sizeof(struct JC_DIRENT) + EXTEND64(len));
+	if (unlikely(newfile->dirent == NULL)) jc_oom(fn);
 
 #ifndef NO_USER_ORDER
 	newfile->user_order = user_item_count;
@@ -51,7 +53,11 @@ static file_t *init_newfile(const size_t len)
 
 static void free_file(file_t *file)
 {
-	if (file != NULL) free(file);
+	if (file != NULL) {
+		if (file->stat != NULL) free(file->stat);
+		if (file->dirent != NULL) free(file->dirent);
+		free(file);
+	}
 	return;
 }
 
