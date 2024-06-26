@@ -466,7 +466,6 @@ int64_t load_hash_database(char *dbname)
 
 warn_hashdb_open:
   fprintf(stderr, "Creating a new hash database '%s'\n", dbname);
-  fclose(db);
   new_hashdb = 1;
   return 0;
 error_hashdb_read:
