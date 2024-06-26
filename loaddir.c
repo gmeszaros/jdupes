@@ -187,9 +187,23 @@ void loaddir(const char * const restrict dir,
       update_phase1_progress("dirs");
     }
 
+    /* Copied from libjodycode 4 jc_get_d_namlen() */
+#ifdef _DIRENT_HAVE_D_NAMLEN
+    d_name_len = dirinfo->d_namlen;
+#elif defined _DIRENT_HAVE_D_RECLEN
+    const size_t base = (sizeof(struct dirent) - sizeof(((struct dirent *)0)->d_name)) - offsetof(struct dirent, d_name) - 1;
+    size_t skip;
+
+    skip = dirinfo->d_reclen - (sizeof(struct dirent) - sizeof(((struct dirent *)0)->d_name));
+if (skip > 0) skip -= base;
+    d_name_len = skip + strlen(dirinfo->d_name + skip);
+#else
+    d_name_len = strlen(dirinfo->d_name);
+#endif
+
+
     /* Assemble the file's full path name, optimized to avoid strcat() */
     dirpos = dirlen;
-    d_name_len = strlen(dirinfo->d_name);
     memcpy(tp, dir, dirpos + 1);
     if (dirpos != 0 && tp[dirpos - 1] != dir_sep) {
       tp[dirpos] = dir_sep;
