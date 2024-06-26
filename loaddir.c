@@ -14,6 +14,7 @@
 #include "jdupes.h"
 #include "checks.h"
 #include "filestat.h"
+#include "get_d_namlen.h"
 #ifndef NO_HASHDB
  #include "hashdb.h"
 #endif
@@ -34,7 +35,7 @@
  const char dir_sep = '/';
 #endif /* _WIN32 || __MINGW32__ */
 
-static file_t *init_newfile(const size_t len, file_t * restrict * const restrict filelistp)
+static file_t *init_newfile(const size_t len, const size_t namlen, file_t * restrict * const restrict filelistp)
 {
   file_t * const restrict newfile = (file_t *)malloc(sizeof(file_t));
 
@@ -47,6 +48,7 @@ static file_t *init_newfile(const size_t len, file_t * restrict * const restrict
   newfile->d_name = (char *)malloc(EXTEND64(len));
   if (!newfile->d_name) jc_oom("init_newfile() filename");
 
+  newfile->d_name_len = namlen;
   newfile->next = *filelistp;
 #ifndef NO_USER_ORDER
   newfile->user_order = user_item_count;
@@ -187,22 +189,8 @@ void loaddir(const char * const restrict dir,
       update_phase1_progress("dirs");
     }
 
-    /* Copied from libjodycode 4 jc_get_d_namlen() */
-#ifdef _DIRENT_HAVE_D_NAMLEN
-    d_name_len = dirinfo->d_namlen;
-#elif defined _DIRENT_HAVE_D_RECLEN
-    const size_t base = (sizeof(struct dirent) - sizeof(((struct dirent *)0)->d_name)) - offsetof(struct dirent, d_name) - 1;
-    size_t skip;
-
-    skip = dirinfo->d_reclen - (sizeof(struct dirent) - sizeof(((struct dirent *)0)->d_name));
-if (skip > 0) skip -= base;
-    d_name_len = skip + strlen(dirinfo->d_name + skip);
-#else
-    d_name_len = strlen(dirinfo->d_name);
-#endif
-
-
     /* Assemble the file's full path name, optimized to avoid strcat() */
+    d_name_len = get_d_namlen(dirinfo);
     dirpos = dirlen;
     memcpy(tp, dir, dirpos + 1);
     if (dirpos != 0 && tp[dirpos - 1] != dir_sep) {
@@ -217,7 +205,7 @@ if (skip > 0) skip -= base;
     d_name_len++;
 
     /* Allocate the file_t and the d_name entries */
-    newfile = init_newfile(dirpos + d_name_len + 2, filelistp);
+    newfile = init_newfile(dirpos + d_name_len + 2, d_name_len, filelistp);
 
     tp = tempname;
     memcpy(newfile->d_name, tp, dirpos + d_name_len);

@@ -12,6 +12,7 @@
 #include "jdupes.h"
 #include "libjodycode.h"
 #include "likely_unlikely.h"
+#include "get_d_namlen.h"
 #include "hashdb.h"
 
 #define HASHDB_VER 2
@@ -37,7 +38,7 @@ static int new_hashdb = 0;
 enum pivot { PIVOT_LEFT, PIVOT_RIGHT };
 
 static int write_hashdb_entry(FILE *db, hashdb_t *cur, uint64_t *cnt, const int destroy);
-static int get_path_hash(char *path, uint64_t *path_hash);
+static int get_path_hash(char *path, int pathlen, uint64_t *path_hash);
 
 
 #if 0
@@ -265,10 +266,12 @@ hashdb_t *add_hashdb_entry(char *in_path, int pathlen, const file_t *check)
   if (unlikely((in_path == NULL && check == NULL) || (check != NULL && check->d_name == NULL))) return NULL;
 
   /* Get path hash and length from supplied path; use hash to choose the bucket */
-  if (in_path == NULL) path = check->d_name;
-  else path = in_path;
+  if (in_path == NULL) {
+    path = check->d_name;
+    pathlen = check->d_name_len;
+  } else path = in_path;
   if (pathlen == 0) pathlen = strlen(path);
-  if (get_path_hash(path, &path_hash) != 0) return NULL;
+  if (get_path_hash(path, pathlen, &path_hash) != 0) return NULL;
   bucket = path_hash & HT_MASK;
 
 
@@ -283,7 +286,7 @@ hashdb_t *add_hashdb_entry(char *in_path, int pathlen, const file_t *check)
     while (1) {
       /* If path is set then this entry may already exist and we need to check */
       if (check != NULL && cur->path != NULL) {
-        if (cur->path_hash == path_hash && strcmp(cur->path, check->d_name) == 0) {
+        if (cur->path_hash == path_hash && cur->pathlen == check->d_name_len && memcmp(cur->path, check->d_name, cur->pathlen) == 0) {
           /* Should we invalidate this entry? */
           exclude = 0;
           if (cur->mtime != check->mtime) exclude |= 1;
@@ -339,6 +342,7 @@ hashdb_t *add_hashdb_entry(char *in_path, int pathlen, const file_t *check)
     hashdb_dirty = 1;
     file->path_hash = path_hash;
     file->path = (char *)((uintptr_t)file + (uintptr_t)sizeof(hashdb_t));
+    file->pathlen = pathlen;
     memcpy(file->path, check->d_name, pathlen + 1);
     *(file->path + pathlen) = '\0';
     file->size = check->size;
@@ -498,16 +502,17 @@ warn_hashdb_algo:
 }
  
 
-static int get_path_hash(char *path, uint64_t *path_hash)
+static int get_path_hash(char *path, int pathlen, uint64_t *path_hash)
 {
   uint64_t aligned_path[(PATH_MAX + 8) / sizeof(uint64_t)];
   int retval;
 
   *path_hash = 0;
+  if (pathlen < 1) pathlen = strlen(path);
   if ((uintptr_t)path & 0x0f) {
     strncpy((char *)&aligned_path, path, PATH_MAX);
-    retval = jc_block_hash((uint64_t *)aligned_path, path_hash, strlen((char *)aligned_path));
-  } else retval = jc_block_hash((uint64_t *)path, path_hash, strlen(path));
+    retval = jc_block_hash((uint64_t *)aligned_path, path_hash, pathlen);
+  } else retval = jc_block_hash((uint64_t *)path, path_hash, pathlen);
   return retval;
 }
 
@@ -522,7 +527,7 @@ int read_hashdb_entry(file_t *file)
 
   LOUD(fprintf(stderr, "read_hashdb_entry('%s')\n", file->d_name);)
   if (file == NULL || file->d_name == NULL) goto error_null;
-  if (get_path_hash(file->d_name, &path_hash) != 0) goto error_path_hash;
+  if (get_path_hash(file->d_name, file->d_name_len, &path_hash) != 0) goto error_path_hash;
   bucket = path_hash & HT_MASK;
   if (hashdb[bucket] == NULL) return 0;
   cur = hashdb[bucket];
@@ -534,7 +539,7 @@ int read_hashdb_entry(file_t *file)
       continue;
     }
     /* Found a matching path hash */
-    if (strcmp(cur->path, file->d_name) != 0) {
+    if (cur->pathlen == file->d_name_len && memcmp(cur->path, file->d_name, cur->pathlen) == 0) {
       cur = cur->left;
       if (cur == NULL) return 0;
       continue;
