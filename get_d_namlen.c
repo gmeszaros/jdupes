@@ -5,6 +5,8 @@
  */
 
 #include <dirent.h>
+#include <stddef.h>
+#include <string.h>
 #include "libjodycode.h"
 
 #if LIBJODYCODE_API_VERSION < 4
@@ -25,5 +27,5 @@ size_t get_d_namlen(const struct dirent * const restrict dirent)
 #endif
 }
 #else
-#define get_d_namlen(a) jc_get_d_namlen(a)
+ #define get_d_namlen(a) jc_get_d_namlen(a)
 #endif  /* LIBJODYCODE_API_VERSION < 4 */
