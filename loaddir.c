@@ -45,7 +45,7 @@ static file_t *init_newfile(const size_t pathlen, file_t * restrict * const rest
   LOUD(fprintf(stderr, "init_newfile(len %" PRIuMAX ", filelistp %p)\n", (uintmax_t)pathlen, filelistp));
 
   memset(newfile, 0, sizeof(file_t));
-  newfile->d_name = (char *)malloc(EXTEND64(pathlen));
+  newfile->d_name = (char *)malloc(EXTEND64(pathlen + 1));
   if (!newfile->d_name) jc_oom("init_newfile() filename");
 
   newfile->d_name_len = pathlen;
@@ -208,7 +208,7 @@ void loaddir(const char * const restrict dir,
     newfile = init_newfile(d_name_len, filelistp);
 
     tp = tempname;
-    memcpy(newfile->d_name, tp, d_name_len);
+    memcpy(newfile->d_name, tp, d_name_len + 1);
 
     /*** WARNING: tempname global gets reused by check_singlefile here! ***/
 

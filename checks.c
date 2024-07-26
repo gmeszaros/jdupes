@@ -115,7 +115,7 @@ int check_singlefile(file_t * const restrict newfile)
   /* Get file information and check for validity */
   const int i = getfilestats(newfile);
 
-  if (i || newfile->size == -1) {
+  if (i != 0 || newfile->size == -1) {
     LOUD(fprintf(stderr, "check_singlefile: excluding due to bad stat()\n"));
     return 1;
   }

@@ -271,7 +271,6 @@ hashdb_t *add_hashdb_entry(char *in_path, int pathlen, const file_t *check)
   if (pathlen == 0) pathlen = strlen(path);
   if (get_path_hash(path, pathlen, &path_hash) != 0) return NULL;
   bucket = path_hash & HT_MASK;
-fprintf(stderr, "hashdb check: %d,%d '%s'\n", pathlen, strlen(path), path);
 
   if (hashdb[bucket] == NULL) {
     file = alloc_hashdb_node(pathlen);
@@ -448,7 +447,6 @@ int64_t load_hash_database(char *dbname)
     path = buf + fixed_len;
     path = strtok(path, "\n"); if (path == NULL) goto error_hashdb_line;
     pathlen = linelen - fixed_len - 1;
-fprintf(stderr, "lengths: line %d, fixed %d, line %d\n", linelen, fixed_len, linelen - fixed_len + 1);
     if (pathlen > PATH_MAX) goto error_hashdb_line;
     *(path + pathlen) = '\0';
 
