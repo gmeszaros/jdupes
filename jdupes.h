@@ -142,7 +142,7 @@ extern uintmax_t comparisons;
 #define HASH_COMPARE(a,b) ((a > b) ? 1:((a == b) ? 0:-1))
 
 /* Extend an allocation length to the next 64-bit (8-byte) boundary */
-#define EXTEND64(a) ((a & 0x7) > 0 ? ((a & (~0x7)) + 8) : a)
+#define EXTEND64(a) (((a) & 0x7) > 0 ? (((a) & (~0x7)) + 8) : (a))
 
 /* Behavior modification flags */
 extern uint64_t flags, a_flags, p_flags;

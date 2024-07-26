@@ -202,11 +202,10 @@ void loaddir(const char * const restrict dir,
     memcpy(tp, dirinfo->d_name, d_name_len);
     tp += d_name_len;
     *tp = '\0';
-    d_name_len += dirpos + 1;
+    d_name_len += dirpos;
 
     /* Allocate the file_t and the d_name entries */
     newfile = init_newfile(d_name_len, filelistp);
-fprintf(stderr, "loaddir newfile: %ld '%s'\n", d_name_len, dirinfo->d_name);
 
     tp = tempname;
     memcpy(newfile->d_name, tp, d_name_len);
