@@ -35,20 +35,20 @@
  const char dir_sep = '/';
 #endif /* _WIN32 || __MINGW32__ */
 
-static file_t *init_newfile(const size_t len, const size_t namlen, file_t * restrict * const restrict filelistp)
+static file_t *init_newfile(const size_t pathlen, file_t * restrict * const restrict filelistp)
 {
   file_t * const restrict newfile = (file_t *)malloc(sizeof(file_t));
 
   if (unlikely(!newfile)) jc_oom("init_newfile() file structure");
   if (unlikely(!filelistp)) jc_nullptr("init_newfile() filelistp");
 
-  LOUD(fprintf(stderr, "init_newfile(len %" PRIuMAX ", filelistp %p)\n", (uintmax_t)len, filelistp));
+  LOUD(fprintf(stderr, "init_newfile(len %" PRIuMAX ", filelistp %p)\n", (uintmax_t)pathlen, filelistp));
 
   memset(newfile, 0, sizeof(file_t));
-  newfile->d_name = (char *)malloc(EXTEND64(len));
+  newfile->d_name = (char *)malloc(EXTEND64(pathlen));
   if (!newfile->d_name) jc_oom("init_newfile() filename");
 
-  newfile->d_name_len = namlen;
+  newfile->d_name_len = pathlen;
   newfile->next = *filelistp;
 #ifndef NO_USER_ORDER
   newfile->user_order = user_item_count;
@@ -202,13 +202,14 @@ void loaddir(const char * const restrict dir,
     memcpy(tp, dirinfo->d_name, d_name_len);
     tp += d_name_len;
     *tp = '\0';
-    d_name_len++;
+    d_name_len += dirpos + 1;
 
     /* Allocate the file_t and the d_name entries */
-    newfile = init_newfile(dirpos + d_name_len + 2, d_name_len, filelistp);
+    newfile = init_newfile(d_name_len, filelistp);
+fprintf(stderr, "loaddir newfile: %ld '%s'\n", d_name_len, dirinfo->d_name);
 
     tp = tempname;
-    memcpy(newfile->d_name, tp, dirpos + d_name_len);
+    memcpy(newfile->d_name, tp, d_name_len);
 
     /*** WARNING: tempname global gets reused by check_singlefile here! ***/
 

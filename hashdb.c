@@ -12,7 +12,6 @@
 #include "jdupes.h"
 #include "libjodycode.h"
 #include "likely_unlikely.h"
-#include "get_d_namlen.h"
 #include "hashdb.h"
 
 #define HASHDB_VER 2
@@ -272,7 +271,7 @@ hashdb_t *add_hashdb_entry(char *in_path, int pathlen, const file_t *check)
   if (pathlen == 0) pathlen = strlen(path);
   if (get_path_hash(path, pathlen, &path_hash) != 0) return NULL;
   bucket = path_hash & HT_MASK;
-
+fprintf(stderr, "hashdb check: %d '%s'\n", pathlen, path);
 
   if (hashdb[bucket] == NULL) {
     file = alloc_hashdb_node(pathlen);
