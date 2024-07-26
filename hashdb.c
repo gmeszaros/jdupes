@@ -483,8 +483,8 @@ static int get_path_hash(char *path, uint64_t *path_hash)
   *path_hash = 0;
   if ((uintptr_t)path & 0x0f) {
     strncpy((char *)&aligned_path, path, PATHBUF_SIZE);
-    retval = jc_block_hash((uint64_t *)aligned_path, path_hash, strlen((char *)aligned_path));
-  } else retval = jc_block_hash((uint64_t *)path, path_hash, strlen(path));
+    retval = jc_block_hash(NORMAL, (uint64_t *)aligned_path, path_hash, strlen((char *)aligned_path));
+  } else retval = jc_block_hash(NORMAL, (uint64_t *)path, path_hash, strlen(path));
   return retval;
 }
 

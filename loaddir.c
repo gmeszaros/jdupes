@@ -84,7 +84,7 @@ void loaddir(char * const restrict dir,
                 int recurse)
 {
   file_t * restrict newfile;
-  JC_DIRENT *dirinfo;
+  struct JC_DIRENT *dirinfo;
   size_t dirlen, dirpos;
   int i;
 //  single = 0;
