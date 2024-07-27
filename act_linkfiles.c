@@ -205,7 +205,7 @@ void linkfiles(file_t *files, const int linktype, const int only_current)
 				/* Do not attempt to hard link files for which we don't have write access */
 	if (
 #ifdef ON_WINDOWS
-				!JC_S_ISRO(dupelist[x]->mode) &&
+				!JC_S_ISRO(dupelist[x]->stat->st_mode) &&
 #endif
 				(jc_access(dupelist[x]->dirent->d_name, JC_W_OK) != 0))
 				{

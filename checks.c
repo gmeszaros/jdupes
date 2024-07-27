@@ -96,7 +96,7 @@ int check_singlefile(file_t * const restrict newfile)
 	/* Windows has a 1023 (+1) hard link limit. If we're hard linking,
 	 * ignore all files that have hit this limit */
  #ifndef NO_HARDLINKS
-	if (ISFLAG(a_flags, FA_HARDLINKFILES) && newfile->nlink >= 1024) return 1;
+	if (ISFLAG(a_flags, FA_HARDLINKFILES) && newfile->stat->st_nlink >= 1024) return 1;
  #endif /* NO_HARDLINKS */
 #endif /* ON_WINDOWS */
 	return 0;
