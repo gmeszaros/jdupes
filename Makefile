@@ -229,7 +229,7 @@ static_jc: $(PROGRAM_NAME)
 static: $(PROGRAM_NAME)
 	$(CC) $(CFLAGS) $(OBJS) -static $(LDFLAGS) $(STATIC_LDFLAGS) -o $(PROGRAM_NAME)$(SUFFIX)
 
-static_stripped: $(PROGRAM_NAME) static
+static_stripped: $(PROGRAM_NAME) static static_jc
 	-strip $(PROGRAM_NAME)$(SUFFIX)
 
 $(PROGRAM_NAME): $(OBJS)
@@ -262,7 +262,7 @@ uninstall: uninstalldirs
 test:
 	./test.sh
 
-stripped: $(PROGRAM_NAME)
+stripped: $(PROGRAM_NAME) dynamic_jc
 	strip $(PROGRAM_NAME)$(SUFFIX)
 
 clean:
