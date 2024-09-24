@@ -87,10 +87,6 @@ Usage
 ```
 Usage: jdupes [options] DIRECTORY...
 ```
-### Or with Docker
-```
-docker run -it --init -v /path/to/dir:/data ghcr.io/jbruchon/jdupes:latest [options] /data
-```
 
 Duplicate file sets will be printed by default unless a different action
 option is specified (delete, summarize, link, dedupe, etc.)
