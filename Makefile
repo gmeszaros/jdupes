@@ -2,6 +2,7 @@
 
 # Default flags to pass to the C compiler (can be overridden)
 CFLAGS ?= -O2 -g
+#CFLAGS ?= -Og -g3
 
 # PREFIX determines where files will be installed. Common examples
 # include "/usr" or "/usr/local".
